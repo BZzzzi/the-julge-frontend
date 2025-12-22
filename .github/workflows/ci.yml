@@ -1,0 +1,35 @@
+# develop 또는 main 브랜치로 PR 시 빌드 테스트 진행
+name: PR Build and Test
+
+on:
+  pull_request:
+    branches:
+      - develop
+      - main
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      # 저장소 checkout
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      # Node.js 환경 설정
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      # 의존성 설치
+      - name: Install dependencies
+        run: npm ci
+
+      # ESLint 검사
+      - name: Run ESLint
+        run: npm run lint
+
+      # 빌드 테스트 (ESLint 포함)
+      - name: Build project
+        run: npm run build
