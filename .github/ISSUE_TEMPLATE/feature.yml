@@ -1,58 +1,75 @@
-name: ✨ Feature Request
-description: 새로운 기능 또는 개선 사항 제안
-title: "[Feature] "
-labels: ["feature"]
+name: General Issue
+description: 기능 개발, 버그 수정, 리팩토링 등 범용 이슈 템플릿
+title: "[Type] "
+labels: []
 assignees: []
+
 body:
   - type: markdown
     attributes:
       value: |
-        새로운 기능 제안 감사합니다.
-        가능한 한 구체적으로 작성해 주세요.
+        ## 🏷️ 이슈 타입
+        아래 중 하나를 제목의 [Type] 자리에 명시해주세요.
+        - Feat / Fix / Refactor / Chore / Docs / Test
 
   - type: textarea
-    id: problem
+    id: summary
     attributes:
-      label: 해결하고 싶은 문제
-      description: 현재 어떤 불편함이나 한계가 있는지 설명해 주세요.
-      placeholder: 예) 현재는 ○○ 기능이 없어 △△ 작업이 번거롭습니다.
+      label: 개요
+      description: 이 이슈에서 무엇을 왜 하는지 간단히 작성해주세요.
+      placeholder: |
+        예)
+        - 롤링페이퍼 생성 기능 구현
+        - 기존 생성 로직 리팩토링
     validations:
       required: true
 
   - type: textarea
-    id: solution
+    id: background
     attributes:
-      label: 제안하는 해결 방법
-      description: 어떤 방식으로 해결되면 좋을지 작성해 주세요.
-      placeholder: 예) ○○ 버튼을 추가해서 △△를 자동화하면 좋겠습니다.
-    validations:
-      required: true
+      label: 배경 / 문제 정의 (선택)
+      description: 왜 이 작업이 필요한지, 현재 문제점이 있다면 작성해주세요.
+      placeholder: |
+        예)
+        - 생성 API가 분산되어 있어 유지보수가 어려움
+        - 응답 지연 시 사용자 경험 저하
 
-  - type: textarea
-    id: alternatives
+  - type: markdown
     attributes:
-      label: 고려해본 대안
-      description: 다른 해결 방법이나 우회 방법이 있다면 작성해 주세요.
-      placeholder: 예) 설정 페이지에서 옵션으로 제공
-    validations:
-      required: false
+      value: |
+        ## 🛠️ 작업 내용 체크리스트
+        작업 단위를 최대한 작게 나눠 체크해주세요.
 
-  - type: dropdown
-    id: priority
+  - type: checkboxes
+    id: tasks
     attributes:
-      label: 우선순위
+      label: 작업 목록
       options:
-        - 낮음
-        - 보통
-        - 높음
-        - 매우 높음
-    validations:
-      required: true
+        - label: 요구사항 정리
+        - label: 설계 / 구조 결정
+        - label: 기능 구현
+        - label: 예외 처리
+        - label: 테스트 코드 작성
+        - label: 리팩토링
+        - label: 문서 정리
 
   - type: textarea
-    id: additional_context
+    id: implementation
     attributes:
-      label: 추가 컨텍스트
-      description: 스크린샷, 참고 링크 등 추가 정보가 있다면 작성해 주세요.
-    validations:
-      required: false
+      label: 구현 메모
+      description: 기술적 결정, API 설계, 주의사항 등을 기록해주세요.
+      placeholder: |
+        예)
+        - App Router 기준 server action 사용
+        - soft delete 적용
+        - 실패 시 토스트 메시지 노출
+
+  - type: textarea
+    id: reference
+    attributes:
+      label: 참고 사항 / 후속 작업
+      description: 이슈 종료 후 이어질 작업이나 공유할 내용이 있다면 작성해주세요.
+      placeholder: |
+        예)
+        - 기능 완료 후 성능 측정 필요
+        - 추후 배치 작업으로 분리 검토
