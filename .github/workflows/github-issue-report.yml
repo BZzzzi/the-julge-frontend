@@ -1,0 +1,151 @@
+name: Issue Report CSV
+
+on:
+  workflow_dispatch:
+    inputs:
+      start:
+        description: "시작 날짜 (YYYY-MM-DD)"
+        required: true
+      end:
+        description: "종료 날짜 (YYYY-MM-DD)"
+        required: true
+
+  schedule:
+    - cron: "0 0 * * *" # 매일 00:00 UTC
+
+jobs:
+  issue-metrics:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Generate issue metrics CSV
+        uses: actions/github-script@v7
+        env:
+          START_DATE: ${{ github.event.inputs.start }}
+          END_DATE: ${{ github.event.inputs.end }}
+        with:
+          script: |
+            const fs = require("fs");
+            const day = 24 * 60 * 60 * 1000;
+
+            const isScheduled = context.eventName === "schedule";
+
+            let start, end;
+
+            if (isScheduled) {
+              // === schedule: 어제 하루 ===
+              const today = new Date();
+              const yesterday = new Date(Date.UTC(
+                today.getUTCFullYear(),
+                today.getUTCMonth(),
+                today.getUTCDate() - 1
+              ));
+
+              start = new Date(yesterday);
+              end = new Date(yesterday.getTime() + day - 1);
+            } else {
+              // === workflow_dispatch: 환경변수에서 가져오기 ===
+              const startInput = process.env.START_DATE;
+              const endInput = process.env.END_DATE;
+
+              if (!startInput || !endInput) {
+                throw new Error("start, end 날짜를 반드시 입력해야 합니다.");
+              }
+
+              start = new Date(`${startInput}T00:00:00Z`);
+              end = new Date(`${endInput}T23:59:59Z`);
+            }
+
+            if (isNaN(start) || isNaN(end)) {
+              throw new Error("Invalid date value");
+            }
+
+            console.log(`기간: ${start.toISOString()} ~ ${end.toISOString()}`);
+
+            // 전주
+            const prevStart = new Date(start.getTime() - 7 * day);
+            const prevEnd = new Date(end.getTime() - 7 * day);
+
+            const issues = await github.paginate(
+              github.rest.issues.listForRepo,
+              {
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                state: "closed",
+                since: prevStart.toISOString(),
+              }
+            );
+
+            const current = [];
+            const previous = [];
+
+            for (const issue of issues) {
+              if (!issue.closed_at) continue;
+
+              const closedAt = new Date(issue.closed_at);
+              const createdAt = new Date(issue.created_at);
+              const leadTime = (closedAt - createdAt) / day;
+
+              const record = {
+                number: issue.number,
+                title: issue.title,
+                assignee: issue.assignee?.login ?? "Unassigned",
+                labels: issue.labels.map(l => l.name).join("|") || "No Label",
+                leadTime,
+              };
+
+              if (closedAt >= start && closedAt <= end) {
+                current.push(record);
+              } else if (closedAt >= prevStart && closedAt <= prevEnd) {
+                previous.push(record);
+              }
+            }
+
+            const avgLead =
+              current.reduce((s, i) => s + i.leadTime, 0) /
+              (current.length || 1);
+
+            const slowest = [...current].sort(
+              (a, b) => b.leadTime - a.leadTime
+            )[0];
+
+            // groupBy 헬퍼 함수
+            const groupBy = (array, keyFn) => {
+              const groups = {};
+              for (const item of array) {
+                const key = keyFn(item);
+                if (!groups[key]) {
+                  groups[key] = 0;
+                }
+                groups[key]++;
+              }
+              return groups;
+            };
+
+            // UTF-8 BOM 추가
+            let csv = "\uFEFF";
+            csv += `기간,${start.toISOString().slice(0,10)} ~ ${end.toISOString().slice(0,10)}\n`;
+            csv += `종료된 이슈 수,${current.length}\n`;
+            csv += `전주 대비,${current.length - previous.length}\n`;
+            csv += `평균 리드타임(일),${avgLead.toFixed(2)}\n`;
+            csv += `가장 오래 걸린 이슈,#${slowest?.number ?? ""} ${slowest?.title ?? ""}\n`;
+
+            csv += "\n담당자,종료 이슈 수\n";
+            for (const [k, v] of Object.entries(groupBy(current, i => i.assignee))) {
+              csv += `${k},${v}\n`;
+            }
+
+            csv += "\n라벨,이슈 수\n";
+            for (const [k, v] of Object.entries(groupBy(current, i => i.labels))) {
+              csv += `${k},${v}\n`;
+            }
+
+            fs.writeFileSync("issue-metrics.csv", csv, "utf8");
+
+            console.log("CSV 파일이 생성되었습니다.");
+
+      - name: Upload CSV
+        uses: actions/upload-artifact@v4
+        with:
+          name: issue-metrics
+          path: issue-metrics.csv
