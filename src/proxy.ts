@@ -6,7 +6,7 @@ export function proxy(request: NextRequest) {
   // const userInfoCookie = request.cookies.get("userInfo")?.value;
 
   const { pathname } = request.nextUrl;
-  const publicPage = ["/login", "/signup"];
+  const publicPage = ["/", "/login", "/signup"];
 
   // 토큰이 없는데 publicPage가 아닌 곳에 접근하면 로그인 페이지로 리다이렉트
   if (!token && !publicPage.includes(pathname)) {
