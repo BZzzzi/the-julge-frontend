@@ -4,11 +4,11 @@ import "./globals.css";
 
 const spoqaHanSans = localFont({
   src: [
-    { path: "../../public/font/SpoqaHanSansNeo-Thin.woff2", weight: "100" },
-    { path: "../../public/font/SpoqaHanSansNeo-Light.woff2", weight: "300" },
-    { path: "../../public/font/SpoqaHanSansNeo-Regular.woff2", weight: "400" },
-    { path: "../../public/font/SpoqaHanSansNeo-Medium.woff2", weight: "500" },
-    { path: "../../public/font/SpoqaHanSansNeo-Bold.woff2", weight: "700" },
+    { path: "../fonts/SpoqaHanSansNeo-Thin.woff2", weight: "100" },
+    { path: "../fonts/SpoqaHanSansNeo-Light.woff2", weight: "300" },
+    { path: "../fonts/SpoqaHanSansNeo-Regular.woff2", weight: "400" },
+    { path: "../fonts/SpoqaHanSansNeo-Medium.woff2", weight: "500" },
+    { path: "../fonts/SpoqaHanSansNeo-Bold.woff2", weight: "700" },
   ],
   variable: "--font-spoqa",
   display: "swap",
