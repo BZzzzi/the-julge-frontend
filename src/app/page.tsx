@@ -1,74 +1,74 @@
 export default function Home() {
   return (
-    <div className="space-y-12 p-10">
-      {/* 1. 타이포그래피 테스트 (h1~h6 및 폰트 두께) */}
-      <section className="space-y-6">
-        <h2 className="text-gray-40 border-b pb-2 text-sm tracking-widest uppercase">
-          1. Typography & Weights
-        </h2>
-        <div className="space-y-4">
-          <h1 className="text-4xl font-bold">h1: 스포카 한 산스 Neo Bold (700)</h1>
-          <h2 className="text-3xl font-medium">h2: 스포카 한 산스 Neo Medium (500)</h2>
-          <p className="font-regular text-xl">p: 스포카 한 산스 Neo Regular (400)</p>
-          <p className="text-lg font-light text-gray-50">p: 스포카 한 산스 Neo Light (300)</p>
-          <p className="text-gray-40 text-base font-thin">p: 스포카 한 산스 Neo Thin (100)</p>
-        </div>
-      </section>
+    <div className="mx-auto max-w-screen-lg space-y-16 p-6 md:p-10">
+      {/* HEADER */}
+      <header className="border-gray-20 border-b pb-6">
+        <h1 className="mb-1 text-black">Design System Preview</h1>
+        <p className="text-gray-40 text-lg">The Julge App 스타일 가이드</p>
+      </header>
 
-      <hr className="border-gray-20" />
-
-      {/* 2. 컬러 팔레트 테스트 */}
-      <section className="space-y-6">
-        <h2 className="text-gray-40 border-b pb-2 text-sm tracking-widest uppercase">
-          2. Color Palette
-        </h2>
-
-        <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-          {/* Gray Scale */}
-          <div className="space-y-2">
-            <p className="text-sm font-bold">Gray Scale</p>
-            <div className="flex h-10 items-center bg-black px-3 text-xs text-white">Black</div>
-            <div className="flex h-10 items-center bg-gray-50 px-3 text-xs">Gray 50</div>
-            <div className="bg-gray-30 flex h-10 items-center px-3 text-xs">Gray 30</div>
-            <div className="bg-gray-10 flex h-10 items-center px-3 text-xs">Gray 10</div>
-            <div className="bg-gray-5 border-gray-20 flex h-10 items-center border px-3 text-xs text-black">
-              Gray 5
-            </div>
+      {/* 1. TYPOGRAPHY */}
+      <section>
+        <h3 className="text-blue-20 mb-6 text-sm tracking-wider uppercase">1. Typography</h3>
+        <div className="space-y-6">
+          <div className="flex flex-col gap-1">
+            <span className="text-gray-30 font-mono text-xs">Bold (700)</span>
+            <h1 className="m-0 text-4xl">가나다라마바사 - Title Large</h1>
           </div>
-
-          {/* Red Scale */}
-          <div className="space-y-2">
-            <p className="text-sm font-bold">Red Scale</p>
-            <div className="bg-red-40 flex h-10 items-center px-3 text-xs text-white">Red 40</div>
-            <div className="bg-red-30 flex h-10 items-center px-3 text-xs text-white">Red 30</div>
-            <div className="bg-red-20 flex h-10 items-center px-3 text-xs">Red 20</div>
-            <div className="bg-red-10 text-red-40 flex h-10 items-center px-3 text-xs">Red 10</div>
+          <div className="flex flex-col gap-1">
+            <span className="text-gray-30 font-mono text-xs">Medium (500)</span>
+            <h2 className="m-0 text-2xl font-medium text-gray-50">가나다라마바사 - Sub Title</h2>
           </div>
-
-          {/* Blue & Green */}
-          <div className="space-y-2">
-            <p className="text-sm font-bold">Points</p>
-            <div className="bg-blue-20 flex h-10 items-center px-3 text-xs text-white">Blue 20</div>
-            <div className="bg-blue-10 text-blue-20 flex h-10 items-center px-3 text-xs">
-              Blue 10
-            </div>
-            <div className="bg-green-20 flex h-10 items-center px-3 text-xs text-white">
-              Green 20
-            </div>
-            <div className="bg-green-10 text-green-20 flex h-10 items-center px-3 text-xs">
-              Green 10
-            </div>
-          </div>
-
-          {/* Brand */}
-          <div className="space-y-2">
-            <p className="text-sm font-bold">Brand</p>
-            <div className="bg-kakao flex h-10 items-center px-3 text-xs font-bold text-black">
-              Kakao Yellow
-            </div>
+          <div className="flex flex-col gap-1">
+            <span className="text-gray-30 font-mono text-xs">Regular (400)</span>
+            <p className="text-gray-40 text-base">가나다라마바사 - Body Text (Default)</p>
           </div>
         </div>
       </section>
+
+      {/* 2. COLOR PALETTE */}
+      <section>
+        <h3 className="text-blue-20 mb-6 text-sm tracking-wider uppercase">2. Color Palette</h3>
+        <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
+          <ColorCard name="Black" bg="bg-black" text="text-white" />
+          <ColorCard name="Gray 50" bg="bg-gray-50" text="text-white" />
+          <ColorCard name="Gray 30" bg="bg-gray-30" />
+          <ColorCard name="Gray 10" bg="bg-gray-10" />
+          <ColorCard name="Red 40" bg="bg-red-40" text="text-white" />
+          <ColorCard name="Blue 20" bg="bg-blue-20" text="text-white" />
+          <ColorCard name="Green 20" bg="bg-green-20" text="text-white" />
+          <ColorCard name="Kakao" bg="bg-kakao" text="text-black" />
+        </div>
+      </section>
+
+      {/* 3. BREAKPOINT TEST */}
+      <section>
+        <h3 className="text-blue-20 mb-6 text-sm tracking-wider uppercase">3. Breakpoint Test</h3>
+        <div className="bg-gray-5 border-gray-20 bg-red-10 md:bg-blue-10 lg:bg-green-10 rounded-xl border p-8 text-center transition-all">
+          <div className="mb-2 text-xl font-bold">
+            <span className="text-red-40 font-bold md:hidden">Mobile (375px ~)</span>
+            <span className="text-blue-20 hidden font-bold md:inline lg:hidden">
+              Tablet (744px ~)
+            </span>
+            <span className="text-green-20 hidden font-bold lg:inline">PC (1440px ~)</span>
+          </div>
+          <p className="text-gray-40 text-sm">화면 너비를 조절하면 색상과 문구가 바뀝니다.</p>
+        </div>
+      </section>
+    </div>
+  );
+}
+
+// 컬러 카드를 위한 간단한 서브 컴포넌트
+function ColorCard({ name, bg, text = "text-black" }: { name: string; bg: string; text?: string }) {
+  return (
+    <div className="flex flex-col gap-2">
+      <div className={`h-16 w-full rounded-lg shadow-inner ${bg}`} />
+      <span
+        className={`text-center text-[11px] font-medium uppercase ${text === "text-black" ? "text-gray-50" : ""}`}
+      >
+        {name}
+      </span>
     </div>
   );
 }
