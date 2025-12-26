@@ -28,7 +28,7 @@ export async function login(
     secure: true,
     path: "/",
   });
-  const userInfo = { id: data.item.user.id, type: data.item.user.type };
+  const userInfo = { id: data.item.user.item.id, type: data.item.user.item.type };
   // 유저 정보 쿠키
   resolvedCookie.set("userInfo", JSON.stringify(userInfo), {
     httpOnly: true,
