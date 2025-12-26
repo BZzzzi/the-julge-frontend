@@ -1,5 +1,7 @@
+import StoreInitializer from "@/components/domain/auth/store-initializer";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
+import { cookies } from "next/headers";
 import "./globals.css";
 
 const spoqaHanSans = localFont({
@@ -19,13 +21,25 @@ export const metadata: Metadata = {
   description: "The Julge app",
 };
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: Readonly<{
   children: React.ReactNode;
 }>) {
+  const cookieStore = await cookies();
+  const userInfoCookie = cookieStore.get("userInfo")?.value;
+
+  let userInfo = null;
+
+  try {
+    userInfo = userInfoCookie ? JSON.parse(userInfoCookie) : null;
+  } catch {
+    userInfo = null;
+  }
+
   return (
     <html lang="ko" className={`${spoqaHanSans.variable}`}>
+      <StoreInitializer userInfo={userInfo} />
       <body className="antialiased">{children}</body>
     </html>
   );
