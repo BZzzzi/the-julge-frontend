@@ -42,7 +42,7 @@ export default function Select({
     >
       <SelectPrimitive.Trigger
         className={cn(
-          "relative w-full rounded-md border bg-white px-5 text-sm text-gray-900",
+          "relative w-full rounded-md border bg-white px-5 text-sm",
           "flex items-center",
           "outline-none focus:outline-none focus-visible:outline-none",
           "focus:ring-2 focus:ring-offset-0",
@@ -50,7 +50,8 @@ export default function Select({
           error
             ? "border-red-500 focus:ring-red-200"
             : "border-gray-300 focus:border-gray-400 focus:ring-gray-200",
-          disabled && "cursor-not-allowed bg-gray-100 text-gray-500",
+          disabled && "cursor-not-allowed bg-gray-100",
+          "text-gray-900, data-placeholder:text-gray-400",
           className
         )}
         aria-invalid={error || undefined}
