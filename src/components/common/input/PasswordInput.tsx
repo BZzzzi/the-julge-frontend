@@ -28,7 +28,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
           type={visible ? "text" : "password"}
           aria-invalid={error || undefined}
           className={cn(
-            "w-full rounded-md border bg-white px-4 text-sm text-gray-900 outline-none",
+            "w-full rounded-md border bg-white px-5 text-sm text-gray-900 outline-none",
             "placeholder:text-gray-400",
             "focus:ring-2 focus:ring-offset-0",
             inputSizeClassMap[size],
