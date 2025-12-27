@@ -1,8 +1,8 @@
 export { default as Field } from "./Field";
 export type { FieldProps } from "./Field";
 
-export { default as Input } from "./Input";
-export type { InputProps } from "./Input";
+export { default as FieldInput } from "./FieldInput";
+export type { FieldInputProps } from "./FieldInput";
 
 export { default as PasswordInput } from "./PasswordInput";
 export type { PasswordInputProps } from "./PasswordInput";

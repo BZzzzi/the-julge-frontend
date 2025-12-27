@@ -10,8 +10,6 @@ export type FieldProps = {
   className?: string;
 
   children: React.ReactNode;
-
-  /** 입력 요소 id를 전달하면 label/htmlFor, helper aria-describedby 연결이 더 정확해짐 */
   htmlFor?: string;
 };
 
@@ -41,8 +39,6 @@ export default function Field({
         </label>
       )}
 
-      {/* children에 helperId, error를 자동 주입하고 싶다면 cloneElement 패턴도 가능하지만,
-          팀 사용성(예측 가능성) 위해 명시적으로 props 넘기는 방식 추천 */}
       {children}
 
       {(helperText || isError) && (
