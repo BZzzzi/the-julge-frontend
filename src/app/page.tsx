@@ -1,3 +1,9 @@
+import Card from "@/components/domain/card";
+
 export default function Home() {
-  return <div>PR CI 테스트</div>;
+  return (
+    <div>
+      <Card />
+    </div>
+  );
 }
