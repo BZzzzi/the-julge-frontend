@@ -99,10 +99,10 @@ export default function Card() {
   if (error) return <div>카드를 불러오지 못했습니다.</div>;
 
   return (
-    <div className="max-w-241 mx-auto">
+    <div className="mx-auto lg:max-w-241 md:max-w-169.5 sm:max-w-87.5 max-w-87.5">
       <p className="font-bold text-[28px] mb-8">최근에 본 공고</p>
 
-      <div className="grid grid-cols-3 gap-3.5">
+      <div className="grid lg:grid-cols-3 md:gap-3.5 md:grid-cols-2 sm:grid-cols-2 sm:gap-2 grid-cols-2 gap-2">
         {cards.map((c) => {
           const diffPercent =
             ((c.hourlyPay - BASE_HOURLY_PAY) / BASE_HOURLY_PAY) * 100;
@@ -122,22 +122,21 @@ export default function Card() {
           return (
             <div
               key={c.id}
-              className={`relative h-87.25 rounded-lg overflow-hidden cursor-pointer ${
+              className={`relative h-full rounded-lg overflow-hidden cursor-pointer ${
                 isPast ? "bg-[var(--color-gray-30)]" : "bg-white"
               }`}
             >
               {/* 지난 공고 */}
               {isPast && (
-                <div className="absolute inset-0 z-20 flex items-center justify-center bg-black/25 pointer-events-none">
+                <div className="absolute inset-0 z-20 pt-19.75 flex items-start justify-center bg-black/25 pointer-events-none">
                   <span className="text-[28px] text-white font-bold">
                     지난 공고
                   </span>
                 </div>
               )}
 
-              <div className="mx-4 mt-4">
-                {/* ✅ 메인 이미지도 배경색이 보이게: 컨테이너에 bg 깔고 이미지 dim */}
-                <div className="relative w-full h-40 rounded-xl overflow-hidden bg-[var(--color-gray-30)]">
+              <div className="mx-3 mt-3 sm:mx-4 sm:mt-4">
+                <div className="relative w-full lg:h-40 sm:h-21 h-21 rounded-xl overflow-hidden bg-[var(--color-gray-30)]">
                   <Image
                     src={c.imageUrl}
                     alt={c.name}
@@ -149,7 +148,7 @@ export default function Card() {
 
               {/* 내용 */}
               <div className="px-4 mt-5">
-                <p className={`font-bold text-[20px] ${isPast ? "text-gray-600" : "text-black"}`}>
+                <p className={`font-bold md:text-[20px] sm:text-[16px] ${isPast ? "bg-[var(--color-gray-30)]" : "text-black"}`}>
                   {c.name}
                 </p>
 
@@ -159,9 +158,9 @@ export default function Card() {
                     alt="clock"
                     width={20}
                     height={20}
-                    className={imgDim}   // ✅ 아이콘도 dim
+                    className={imgDim}
                   />
-                  <p className={`text-sm ${isPast ? "text-gray-600" : "text-black"}`}>
+                  <p className={`text-sm ${isPast ? "bg-[var(--color-gray-30)]" : "text-[var(--color-gray-50)]"}`}>
                     {formatKSTDateTime(start)} ~ {formatKSTTime(end)} ({c.workhour}시간)
                   </p>
                 </div>
@@ -172,19 +171,19 @@ export default function Card() {
                     alt="location"
                     width={16}
                     height={20}
-                    className={imgDim}   // ✅ 아이콘도 dim
+                    className={imgDim}
                   />
-                  <p className="text-sm font-regular text-gray-600">{c.address1}</p>
+                  <p className={`text-sm font-regular ${isPast ? "bg-[var(--color-gray-30)]" : "text-[var(--color-gray-50)]"}`}>{c.address1}</p>
                 </div>
 
                 <div className="flex items-center justify-between mt-4 mb-4">
-                  <p className={`text-2xl font-bold ${isPast ? "text-gray-600" : "text-black"}`}>
+                  <p className={`text-2xl font-bold ${isPast ? "bg-[var(--color-gray-30)]" : "text-[var(--color-black)]"}`}>
                     {c.hourlyPay.toLocaleString()}원
                   </p>
 
                   <div
-                    className={`w-[168px] h-[32px] flex items-center justify-center text-center rounded-[20px] text-white ${
-                      isPast ? "bg-gray-400" : isUp ? "bg-red-500" : "bg-blue-500"
+                    className={`w-42 h-8 flex items-center justify-center text-center rounded-[20px] text-white ${
+                      isPast ? "bg-gray-400" : isUp ? "bg-[var(--color-red-40)]" : "bg-blue-500"
                     }`}
                   >
                     <div className="flex items-center justify-center w-full gap-0.5">
@@ -195,7 +194,7 @@ export default function Card() {
                         alt={isUp ? "up" : "down"}
                         width={16}
                         height={16}
-                        className={`${isUp ? "" : "rotate-90"} ${imgDim}`} // ✅ 벡터도 dim + 회전
+                        className={`${isUp ? "" : "rotate-90"} ${imgDim}`}
                       />
                     </div>
                   </div>
