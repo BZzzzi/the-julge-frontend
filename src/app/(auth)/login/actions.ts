@@ -36,5 +36,5 @@ export async function login(
     path: "/",
   });
 
-  redirect("/notice");
+  redirect("/notice-list");
 }
