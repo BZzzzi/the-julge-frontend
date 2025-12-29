@@ -1,8 +1,12 @@
 import Card from "@/components/domain/card";
+import Footer from "@/components/domain/footer";
 
 function NoticesDetail() {
   return (
-    <Card/>
+    <div>
+      <Card />
+      <Footer />
+    </div>
   );
 }
 
