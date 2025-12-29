@@ -35,7 +35,7 @@ export default function Field({
           className="mb-2 block text-sm font-semibold text-gray-900"
         >
           {label}
-          {required && <span className="ml-0.5 text-red-600">*</span>}
+          {required && <span className="ml-0.5 text-red-40]">*</span>}
         </label>
       )}
 
@@ -46,7 +46,7 @@ export default function Field({
           id={helperId}
           className={cn(
             "mt-2 text-xs",
-            isError ? "text-red-600" : "text-gray-500"
+            isError ? "text-red-40" : "text-gray-50"
           )}
         >
           {isError ? errorMessage : helperText}

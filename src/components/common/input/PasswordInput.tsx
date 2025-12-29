@@ -34,8 +34,8 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
             inputSizeClassMap[size],
             error
               ? "border-red-500 focus:ring-red-200"
-              : "border-gray-300 focus:border-gray-400 focus:ring-gray-200",
-            props.disabled && "cursor-not-allowed bg-gray-100 text-gray-500",
+              : "border-gray-30 focus:border-gray-40 focus:ring-gray-20",
+            props.disabled && "cursor-not-allowed bg-gray-10 text-gray-50",
             allowToggle && "pr-16",
             className
           )}

@@ -44,13 +44,13 @@ const FieldInput = React.forwardRef<
 
     const baseClass = cn(
       "w-full rounded-md border bg-white px-5 text-sm text-gray-900 outline-none",
-      "placeholder:text-gray-400",
+      "placeholder:text-gray-40",
       "focus:ring-2 focus:ring-offset-0",
       inputSizeClassMap[size],
       error
         ? "border-red-500 focus:ring-red-200"
-        : "border-gray-300 focus:border-gray-400 focus:ring-gray-200",
-      props.disabled && "cursor-not-allowed bg-gray-100 text-gray-500",
+        : "border-gray-30 focus:border-gray-40 focus:ring-gray-20",
+      props.disabled && "cursor-not-allowed bg-gray-10 text-gray-50",
       !isTextarea && rightSlot && "pr-12",
       className
     );
