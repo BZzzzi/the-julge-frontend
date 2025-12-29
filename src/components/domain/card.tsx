@@ -33,7 +33,6 @@ type NoticesResponse = {
   }>;
 };
 
-const BASE_URL = "https://bootcamp-api.codeit.kr/api/20-1/the-julge";
 const BASE_HOURLY_PAY = 10320;
 
 // KST 기준 "YYYY-MM-DD HH:mm" 포맷
@@ -72,7 +71,7 @@ export default function Card() {
   useEffect(() => {
     async function fetchNotices() {
       try {
-        const res = await fetch(`${BASE_URL}/notices?limit=6&sort=time`);
+        const res = await fetch(`/api/notices?limit=6&sort=time`);
         if (!res.ok) throw new Error("fetch 실패");
 
         const data: NoticesResponse = await res.json();
