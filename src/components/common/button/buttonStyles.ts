@@ -1,5 +1,5 @@
 export type ButtonVariant = "primary" | "outline";
-export type ButtonSize = "lg" | "md" | "sm";
+export type ButtonSize = "lg" | "md" ;
 
 export const buttonBaseClass =
   "inline-flex items-center justify-center gap-2 rounded-md font-bold transition-colors cursor-pointer " +
@@ -7,9 +7,8 @@ export const buttonBaseClass =
 
 export const buttonSizeClassMap: Record<ButtonSize, string> = {
   // 높이/패딩/폰트만 통일 (너비는 레이아웃에서 w-full로)
-  lg: "h-12 px-4 text-md", // CTA bold1
-  md: "h-10 px-3 text-md", // 기본 bold2
-  sm: "h-9 px-2 text-xs" ,  // 작은 버튼 caption
+  lg: "h-12 px-4 text-lg", // 높이 48px
+  md: "h-9.5 px-3 text-md", // 높이 38px
 };
 
 export const buttonVariantClassMap: Record<ButtonVariant, string> = {

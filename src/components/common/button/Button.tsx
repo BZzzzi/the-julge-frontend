@@ -27,7 +27,7 @@ export type ButtonProps = React.ButtonHTMLAttributes<HTMLButtonElement> & {
 
 export default function Button({
   variant = "primary",
-  size = "md",
+  size = "lg",
   fullWidth = false,
   loading = false,
   loadingText = "처리 중 ...",
