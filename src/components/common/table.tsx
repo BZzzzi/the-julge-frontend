@@ -1,8 +1,8 @@
 import { Pagination } from "@/components/common/pagination";
-import { ApplicationItem } from "@/types/application";
+import { NoticeApplicationItem } from "@/types/application";
 
 interface TableProps {
-  applications: ApplicationItem[];
+  applications: NoticeApplicationItem[];
   totalCount: number;
   page: number;
   itemsPerPage: number;
@@ -59,25 +59,30 @@ export default function Table({
             </thead>
 
             <tbody className="divide-gray-20 divide-y">
-              {applications.map((app) => (
-                <tr key={app.id} className="group hover:bg-gray-5 transition-colors">
-                  <td className="group-hover:bg-gray-5 sticky left-0 z-10 bg-white px-[12px] py-[16px] align-middle text-base text-black transition-colors after:absolute after:top-0 after:right-0 after:h-full after:w-[1px] after:bg-gray-100 after:content-[''] min-[964px]:after:hidden">
-                    <div className="truncate">{app.user.item.name || "이름 없음"}</div>
-                  </td>
+              {applications.map((app) => {
+                const item = app.item;
+                const userItem = item.user?.item;
 
-                  <td className="px-[12px] py-[16px] align-middle text-base text-black">
-                    <div className="line-clamp-2 break-keep whitespace-normal">
-                      {app.user.item.bio || "소개가 없습니다."}
-                    </div>
-                  </td>
+                return (
+                  <tr key={item.id} className="group hover:bg-gray-5 transition-colors">
+                    <td className="group-hover:bg-gray-5 sticky left-0 z-10 bg-white px-[12px] py-[16px] align-middle text-base text-black transition-colors after:absolute after:top-0 after:right-0 after:h-full after:w-[1px] after:bg-gray-100 after:content-[''] min-[964px]:after:hidden">
+                      <div className="truncate">{userItem?.name || "이름 없음"}</div>
+                    </td>
 
-                  <td className="px-[12px] py-[16px] align-middle text-base text-black">
-                    {app.user.item.phone || "010-0000-0000"}
-                  </td>
+                    <td className="px-[12px] py-[16px] align-middle text-base text-black">
+                      <div className="line-clamp-2 break-keep whitespace-normal">
+                        {userItem?.bio || "소개가 없습니다."}
+                      </div>
+                    </td>
 
-                  <td className="px-[12px] py-[16px] text-left align-middle"></td>
-                </tr>
-              ))}
+                    <td className="px-[12px] py-[16px] align-middle text-base text-black">
+                      {userItem?.phone || "010-0000-0000"}
+                    </td>
+
+                    <td className="px-[12px] py-[16px] text-left align-middle"></td>
+                  </tr>
+                );
+              })}
             </tbody>
           </table>
         </div>
