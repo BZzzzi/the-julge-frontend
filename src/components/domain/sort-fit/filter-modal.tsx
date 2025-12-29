@@ -193,15 +193,15 @@ const FilterModal = ({ onClose, onApply }: FilterModalProps) => {
   const CHIP_H = 30;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-hidden min-[744px]:items-center">
+    <div className="fixed inset-0 z-50 flex items-start justify-center overflow-hidden md:items-center">
       <div className="absolute inset-0 bg-black/30" />
 
-      <div className="relative flex h-[100dvh] w-screen flex-col overflow-hidden rounded-none bg-white shadow-none min-[744px]:h-auto min-[744px]:max-h-[min(845px,100dvh)] min-[744px]:w-[390px] min-[744px]:rounded-2xl min-[744px]:shadow-xl">
+      <div className="relative flex h-[100dvh] w-screen flex-col overflow-hidden rounded-none bg-white shadow-none md:h-auto md:max-h-[min(845px,100dvh)] md:w-[390px] md:rounded-2xl md:shadow-xl">
         <div className="flex min-h-0 flex-1 flex-col">
-          <div className="flex min-h-0 flex-1 flex-col px-3 min-[744px]:px-5">
-            <div className="pt-4 min-[744px]:pt-6">
+          <div className="flex min-h-0 flex-1 flex-col px-3 md:px-5">
+            <div className="pt-4 md:pt-6">
               <div className="flex h-9 w-full items-center justify-between">
-                <h3 className="text-[16px] leading-[24px] font-bold">상세 필터</h3>
+                <h3 className="mb-0 text-[16px] leading-[24px] font-bold">상세 필터</h3>
 
                 <button
                   type="button"
@@ -216,7 +216,6 @@ const FilterModal = ({ onClose, onApply }: FilterModalProps) => {
 
             <div className="mt-3 min-h-0 flex-1 overflow-y-auto overscroll-contain">
               <div className="flex flex-col">
-                {/* 위치 */}
                 <section className="flex w-full flex-col gap-2">
                   <div className="flex w-full items-center justify-between">
                     <div className="text-[16px] leading-[26px] font-normal">위치</div>
@@ -226,7 +225,6 @@ const FilterModal = ({ onClose, onApply }: FilterModalProps) => {
                     </div>
                   </div>
 
-                  {/* 위치 리스트 박스 */}
                   <div className="flex w-full flex-col rounded-lg border border-black/10 p-2">
                     <div className="h-[258px] w-[350px] max-w-full overflow-y-auto pr-2">
                       <ul className="m-0 flex w-full list-none flex-wrap gap-2 p-0">
@@ -261,7 +259,6 @@ const FilterModal = ({ onClose, onApply }: FilterModalProps) => {
                     </div>
                   </div>
 
-                  {/* 선택한 위치 2열 */}
                   {draft.locations.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
                       {draft.locations.map((loc) => (
@@ -271,7 +268,7 @@ const FilterModal = ({ onClose, onApply }: FilterModalProps) => {
                             <button
                               type="button"
                               onClick={() => removeLocation(loc)}
-                              className="hover:bg- ml-2 flex h-5 w-5 items-center justify-center rounded-full"
+                              className="ml-2 flex h-5 w-5 items-center justify-center rounded-full"
                               aria-label={`${loc} 제거`}
                             >
                               ✕
@@ -310,8 +307,8 @@ const FilterModal = ({ onClose, onApply }: FilterModalProps) => {
                   <section className="flex w-full flex-col gap-2">
                     <div className="text-[14px] leading-[20px] font-semibold">금액</div>
 
-                    <div className="flex w-full items-center gap-2 min-[744px]:w-56">
-                      <div className="relative h-16 min-w-0 flex-1 min-[744px]:w-40 min-[744px]:flex-none">
+                    <div className="flex w-full items-center gap-2 md:w-56">
+                      <div className="relative h-16 min-w-0 flex-1 md:w-40 md:flex-none">
                         <input
                           inputMode="numeric"
                           placeholder="입력"
@@ -331,21 +328,20 @@ const FilterModal = ({ onClose, onApply }: FilterModalProps) => {
                   </section>
                 </div>
 
-                <div className="h-4 min-[744px]:h-10" />
+                <div className="h-4 md:h-10" />
               </div>
             </div>
           </div>
 
-          {/* footer */}
           <div className="flex w-full shrink-0 flex-col bg-white px-0 pt-0 pb-0">
-            <div className="w-full min-[744px]:hidden">
+            <div className="w-full md:hidden">
               <div className="w-full border-t border-black/10 bg-white shadow-sm">
                 <div className="pt-4 pb-4">
                   <div className="flex w-full items-center gap-2 px-3">
                     <button
                       type="button"
                       onClick={handleResetClick}
-                      className="hover:bg-red-20 h-12 flex-[82] rounded-lg border border-red-600 text-[14px] leading-[20px] font-semibold text-red-600"
+                      className="h-12 flex-[82] rounded-lg border border-red-600 text-[14px] leading-[20px] font-semibold text-red-600"
                     >
                       초기화
                     </button>
@@ -362,7 +358,7 @@ const FilterModal = ({ onClose, onApply }: FilterModalProps) => {
               </div>
             </div>
 
-            <div className="hidden min-[744px]:block">
+            <div className="hidden md:block">
               <div className="pb-6">
                 <div className="mx-auto flex w-[350px] max-w-full items-center gap-2">
                   <button
