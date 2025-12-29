@@ -2,7 +2,7 @@
 
 import Table from "@/components/common/table";
 import { NoticeApplicationItem } from "@/types/application";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 
 // [샘플 데이터]
 const MOCK_DATA: NoticeApplicationItem[] = [
@@ -151,20 +151,15 @@ const MOCK_DATA: NoticeApplicationItem[] = [
     },
   },
 ];
+
 const ITEMS_PER_PAGE = 5;
 
 export default function NoticeDetailPage() {
-  const [applications, setApplications] = useState<NoticeApplicationItem[]>([]);
-  const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
 
-  useEffect(() => {
-    const offset = (page - 1) * ITEMS_PER_PAGE;
-    const slicedData = MOCK_DATA.slice(offset, offset + ITEMS_PER_PAGE);
-
-    setApplications(slicedData);
-    setTotalCount(MOCK_DATA.length);
-  }, [page]);
+  const offset = (page - 1) * ITEMS_PER_PAGE;
+  const applications = MOCK_DATA.slice(offset, offset + ITEMS_PER_PAGE);
+  const totalCount = MOCK_DATA.length;
 
   return (
     <div className="flex min-h-screen flex-col items-center py-10">
