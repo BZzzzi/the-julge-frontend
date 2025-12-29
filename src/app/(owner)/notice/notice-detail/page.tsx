@@ -4,6 +4,7 @@ import Table from "@/components/common/table";
 import { NoticeApplicationItem } from "@/types/application";
 import { useEffect, useState } from "react";
 
+// [샘플 데이터]
 const MOCK_DATA: NoticeApplicationItem[] = [
   {
     item: {
@@ -150,28 +151,19 @@ const MOCK_DATA: NoticeApplicationItem[] = [
     },
   },
 ];
+const ITEMS_PER_PAGE = 5;
 
 export default function NoticeDetailPage() {
-  const [applications, setApplications] = useState<NoticeApplicationItem[]>([]); // ✅ 타입 변경
+  const [applications, setApplications] = useState<NoticeApplicationItem[]>([]);
   const [totalCount, setTotalCount] = useState(0);
   const [page, setPage] = useState(1);
 
-  const ITEMS_PER_PAGE = 5;
-
-  const fetchApplications = async (pageNumber: number) => {
-    try {
-      const offset = (pageNumber - 1) * ITEMS_PER_PAGE;
-      const slicedData = MOCK_DATA.slice(offset, offset + ITEMS_PER_PAGE);
-
-      setApplications(slicedData);
-      setTotalCount(MOCK_DATA.length);
-    } catch (error) {
-      console.error(error);
-    }
-  };
-
   useEffect(() => {
-    fetchApplications(page);
+    const offset = (page - 1) * ITEMS_PER_PAGE;
+    const slicedData = MOCK_DATA.slice(offset, offset + ITEMS_PER_PAGE);
+
+    setApplications(slicedData);
+    setTotalCount(MOCK_DATA.length);
   }, [page]);
 
   return (
@@ -183,15 +175,12 @@ export default function NoticeDetailPage() {
           <p className="text-gray-500">공고 상세 정보 영역</p>
         </div>
 
-        {/* 공통 컴포넌트 Table 사용 */}
         <Table
           applications={applications}
           totalCount={totalCount}
           page={page}
           itemsPerPage={ITEMS_PER_PAGE}
           onPageChange={setPage}
-          onAccept={(id) => alert(`지원자(ID:${id})를 승인했습니다.`)}
-          onReject={(id) => alert(`지원자(ID:${id})를 거절했습니다.`)}
         />
       </div>
     </div>

@@ -7,8 +7,6 @@ interface TableProps {
   page: number;
   itemsPerPage: number;
   onPageChange: (page: number) => void;
-  onAccept: (applicationId: string) => void;
-  onReject: (applicationId: string) => void;
 }
 
 export default function Table({
@@ -17,10 +15,7 @@ export default function Table({
   page,
   itemsPerPage,
   onPageChange,
-  onAccept,
-  onReject,
 }: TableProps) {
-  // 신청자가 없으면 렌더링 안 함
   if (!applications || applications.length === 0) {
     return null;
   }
@@ -79,7 +74,7 @@ export default function Table({
                       {userItem?.phone || "010-0000-0000"}
                     </td>
 
-                    <td className="px-[12px] py-[16px] text-left align-middle"></td>
+                    <td className="px-[12px] py-[16px] text-left align-middle">{/* 비워둠 */}</td>
                   </tr>
                 );
               })}
