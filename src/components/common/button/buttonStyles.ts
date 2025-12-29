@@ -8,7 +8,7 @@ export const buttonBaseClass =
 export const buttonSizeClassMap: Record<ButtonSize, string> = {
   // 높이/패딩/폰트만 통일 (너비는 레이아웃에서 w-full로)
   lg: "h-12 px-4 text-lg", // 높이 48px
-  md: "h-9.5 px-3 text-md", // 높이 38px
+  md: "h-9.5 px-3 text-sm", // 높이 38px
 };
 
 export const buttonVariantClassMap: Record<ButtonVariant, string> = {
