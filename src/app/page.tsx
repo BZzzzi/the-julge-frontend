@@ -1,3 +1,5 @@
+import FilterModal from "../components/domain/sort-fit/filter-model";
+
 export default function Home() {
-  return <div>PR CI 테스트</div>;
+  return <FilterModal />;
 }
