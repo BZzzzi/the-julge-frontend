@@ -19,6 +19,12 @@ export default function Home() {
           >
             로그인 페이지
           </Link>
+          <Link
+            href="/signup"
+            className="bg-red-30 rounded-lg px-6 py-3 text-center font-medium text-white transition-colors hover:bg-gray-50/90 active:bg-gray-50/80"
+          >
+            회원가입 페이지
+          </Link>
         </div>
       </div>
 
@@ -27,7 +33,7 @@ export default function Home() {
         <h2 className="mb-4 text-xl font-semibold">공고 관련 (Owner)</h2>
         <div className="flex flex-col gap-4 sm:flex-row sm:gap-6">
           <Link
-            href="/notice/notice-list"
+            href="/notice/notices-list"
             className="rounded-lg bg-purple-500 px-6 py-3 text-center font-medium text-white transition-colors hover:bg-purple-600 active:bg-purple-700"
           >
             공고 리스트
