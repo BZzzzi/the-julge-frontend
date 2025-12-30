@@ -17,10 +17,10 @@ export async function login(
   });
 
   const data = await res.json();
-
   if (!res.ok) return { error: data.message };
 
   const resolvedCookie = await cookies();
+  const userInfo = { id: data.item.user.item.id, type: data.item.user.item.type };
 
   // 토큰 정보 쿠키
   resolvedCookie.set("token", data.item.token, {
@@ -28,7 +28,7 @@ export async function login(
     secure: true,
     path: "/",
   });
-  const userInfo = { id: data.item.user.item.id, type: data.item.user.item.type };
+
   // 유저 정보 쿠키
   resolvedCookie.set("userInfo", JSON.stringify(userInfo), {
     httpOnly: true,
@@ -36,5 +36,6 @@ export async function login(
     path: "/",
   });
 
+  // TODO: 로그인 후, 페이지 이동
   redirect("/notice-list");
 }
