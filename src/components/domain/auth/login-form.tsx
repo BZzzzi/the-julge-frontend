@@ -1,53 +1,114 @@
 "use client";
 
 import { login } from "@/app/(auth)/login/actions";
-import { useActionState } from "react";
+import { Button } from "@/components/common/button";
+import { Field, FieldInput } from "@/components/common/input";
+import { startTransition, useActionState, useState } from "react";
 
 export default function LoginForm() {
   const [state, formAction] = useActionState(login, null);
 
+  const [emailError, setEmailError] = useState("");
+  const [passwordError, setPasswordError] = useState("");
+  const [isEmailValid, setIsEmailValid] = useState(false);
+  const [isPasswordValid, setIsPasswordValid] = useState(false);
+
+  const validateEmail = (value: string) => {
+    if (!value.trim()) {
+      setEmailError("");
+      setIsEmailValid(false);
+      return false;
+    }
+
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value.trim())) {
+      setEmailError("이메일 형식으로 작성해 주세요.");
+      setIsEmailValid(false);
+      return false;
+    }
+
+    setEmailError("");
+    setIsEmailValid(true);
+    return true;
+  };
+
+  const validatePassword = (value: string) => {
+    if (!value.trim()) {
+      setPasswordError("");
+      setIsPasswordValid(false);
+      return false;
+    }
+
+    if (value.trim().length < 8) {
+      setPasswordError("8자 이상 입력해 주세요.");
+      setIsPasswordValid(false);
+      return false;
+    }
+
+    setPasswordError("");
+    setIsPasswordValid(true);
+    return true;
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault();
+
+    const form = e.currentTarget;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+
+    const emailValid = validateEmail(email);
+    const passwordValid = validatePassword(password);
+
+    if (!emailValid || !passwordValid) return;
+
+    startTransition(() => {
+      formAction(new FormData(form));
+    });
+  };
+
   return (
-    <form action={formAction} className="mx-auto w-full max-w-md space-y-6">
-      <div className="space-y-2">
-        <label htmlFor="email" className="block text-sm font-medium text-black">
-          이메일
-        </label>
-        <input
-          type="email"
-          name="email"
+    <form
+      onSubmit={handleSubmit}
+      noValidate
+      className="mx-auto w-full max-w-md space-y-7 sm:px-[13px] md:px-0"
+    >
+      <Field label="이메일" htmlFor="email" required errorMessage={emailError}>
+        <FieldInput
           id="email"
-          required
-          className="border-gray-20 placeholder:text-gray-40 focus:border-blue-20 focus:ring-blue-20/20 w-full rounded-lg border px-4 py-3 text-base text-black focus:ring-2 focus:outline-none"
-          placeholder="이메일을 입력하세요"
+          name="email"
+          type="email"
+          placeholder="이메일 입력"
+          size="lg"
+          onBlur={(e) => validateEmail(e.target.value)}
         />
-      </div>
+      </Field>
 
-      <div className="space-y-2">
-        <label htmlFor="password" className="block text-sm font-medium text-black">
-          비밀번호
-        </label>
-        <input
-          type="password"
-          name="password"
+      <Field label="비밀번호" htmlFor="password" required errorMessage={passwordError}>
+        <FieldInput
           id="password"
-          required
-          className="border-gray-20 placeholder:text-gray-40 focus:border-blue-20 focus:ring-blue-20/20 w-full rounded-lg border px-4 py-3 text-base text-black focus:ring-2 focus:outline-none"
-          placeholder="비밀번호를 입력하세요"
+          name="password"
+          type="password"
+          placeholder="비밀번호 입력"
+          size="lg"
+          onBlur={(e) => validatePassword(e.target.value)}
         />
-      </div>
+      </Field>
 
+      {/* TODO: 서버에서 내려주는 에러 메시지 모달 컴포넌트로 만들기 */}
       {state?.error && (
-        <div className="bg-red-10 rounded-lg px-4 py-3">
-          <p className="text-red-40 text-sm">{state.error}</p>
+        <div className="text-sm text-red-600" role="alert">
+          {state.error}
         </div>
       )}
 
-      <button
+      <Button
+        variant="primary"
+        className="mb-5 w-full"
         type="submit"
-        className="bg-blue-20 hover:bg-blue-20/90 active:bg-blue-20/80 w-full rounded-lg px-6 py-3 text-center font-medium text-white transition-colors"
+        disabled={!isEmailValid || !isPasswordValid}
       >
-        로그인
-      </button>
+        로그인하기
+      </Button>
     </form>
   );
 }
