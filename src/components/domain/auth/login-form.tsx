@@ -72,7 +72,12 @@ export default function LoginForm() {
       noValidate
       className="mx-auto w-full max-w-md space-y-7 sm:px-[13px] md:px-0"
     >
-      <Field label="이메일" htmlFor="email" required errorMessage={emailError}>
+      <Field
+        label="이메일"
+        htmlFor="email"
+        required
+        errorMessage={emailError}
+      >
         <FieldInput
           id="email"
           name="email"
@@ -83,7 +88,12 @@ export default function LoginForm() {
         />
       </Field>
 
-      <Field label="비밀번호" htmlFor="password" required errorMessage={passwordError}>
+      <Field
+        label="비밀번호"
+        htmlFor="password"
+        required
+        errorMessage={passwordError}
+      >
         <FieldInput
           id="password"
           name="password"
@@ -96,7 +106,10 @@ export default function LoginForm() {
 
       {/* TODO: 서버에서 내려주는 에러 메시지 모달 컴포넌트로 만들기 */}
       {state?.error && (
-        <div className="text-sm text-red-600" role="alert">
+        <div
+          className="text-sm text-red-600"
+          role="alert"
+        >
           {state.error}
         </div>
       )}
