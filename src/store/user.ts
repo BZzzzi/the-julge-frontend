@@ -19,7 +19,7 @@ const useUserStore = create(
         },
         // 로그아웃 시 상태 초기화
         clearUserInfo: () => {
-          set({ user: null, isLoggedIn: false });
+          set({ ...initialState });
         },
       },
     })),
@@ -38,4 +38,4 @@ export const useUser = () =>
 export const useUserActions = () => useUserStore((state) => state.actions);
 
 // 3. employer/employee 구분용
-export const useUserType = () => useUserStore((state) => state.user?.userType);
+export const useUserType = () => useUserStore((state) => state.user?.userType ?? "employer");

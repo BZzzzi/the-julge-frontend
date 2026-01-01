@@ -3,30 +3,56 @@ import { NextResponse, type NextRequest } from "next/server";
 export function proxy(request: NextRequest) {
   // 주의! 미들웨어의 request.cookies는 비동기가 아님
   const token = request.cookies.get("token")?.value;
-  // const userInfoCookie = request.cookies.get("userInfo")?.value;
-
+  const userInfoCookie = request.cookies.get("userInfo")?.value;
   const { pathname } = request.nextUrl;
-  const publicPage = ["/", "/login", "/signup"];
+
+  const publicPages = ["/", "/login", "/signup", "/notice/notices-detail", "/notice/notices-list"];
 
   // 토큰이 없는데 publicPage가 아닌 곳에 접근하면 로그인 페이지로 리다이렉트
-  if (!token && !publicPage.includes(pathname)) {
-    return NextResponse.redirect(new URL("/login", request.url));
+  if (!token) {
+    const isPublic = publicPages.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+    if (!isPublic) return NextResponse.redirect(new URL("/login", request.url));
+    return NextResponse.next();
   }
 
-  // TODO: 라우트명 확정되면 접근 권한 처리하기 위해 주석 처리함
-  // if (userInfoCookie) {
-  //   // 쿠키가 JSON string이므로 파싱 필요했음
-  //   const userInfo = JSON.parse(userInfoCookie);
-  //   if (userInfo.type === "employer" && pathname.startsWith("/user")) {
-  //     return NextResponse.redirect(new URL("/notice", request.url));
-  //   } else if (userInfo.type === "employee" && pathname.startsWith("/notice")) {
-  //     return NextResponse.redirect(new URL("/user", request.url));
-  //   }
+  if (!userInfoCookie) return NextResponse.redirect(new URL("/login", request.url));
+
+  // TODO: 개발 환경에서 주석 처리
+  // TODO: 바로 리다이렉트 아니고 클라이언트에서 alert 띄우도록 바꾸기
+  // 쿠키가 JSON string이므로 파싱 필요했음
+  // let user: { id: string; type: "employee" | "employer" };
+  // try {
+  //   user = JSON.parse(userInfoCookie);
+  // } catch {
+  //   return NextResponse.redirect(new URL("/login", request.url));
+  // }
+  // employee 전용 페이지
+  // const employeeOnlyPaths = [
+  //   "/user",
+  //   "/notice/notices-list",
+  //   "/notice/notices-detail",
+  //   "/profile/profile-detail",
+  //   "/profile/profile-new",
+  // ];
+
+  // // employer 전용 페이지
+  // const employerOnlyPaths = ["/notice/notice-detail", "/notice/notice-new", "/shops/"];
+
+  // const isEmployeeOnly = employeeOnlyPaths.some((p) => pathname.startsWith(p));
+  // const isEmployerOnly = employerOnlyPaths.some((p) => pathname.startsWith(p));
+
+  // // employee가 employer 영역 접근 → 차단
+  // if (user.type === "employee" && isEmployerOnly) {
+  //   return NextResponse.redirect(new URL("/notice/notices-list", request.url));
+  // }
+
+  // // employer가 employee 영역 접근 → 차단
+  // if (user.type === "employer" && isEmployeeOnly) {
+  //   return NextResponse.redirect(new URL("/notice/notice-new", request.url));
   // }
 
   return NextResponse.next();
 }
-
 // 아래 경로를 제외한 모든 페이지에 미들웨어를 적용한다는 정규 표현식
 // _next/static/* (Next.js 정적 파일)
 // _next/image/* (Next.js 이미지 최적화)
