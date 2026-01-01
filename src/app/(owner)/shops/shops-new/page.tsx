@@ -2,6 +2,7 @@
 
 import { Button } from "@/components/common/button";
 import { Field, FieldInput, Select, } from "@/components/common/input";
+import Modal from "@/components/common/modal/Modal";
 import { apiClient } from "@/lib/api";
 import type { SeoulRegion, ShopCategory } from "@/types/shop";
 import Image from "next/image";
@@ -37,6 +38,9 @@ export default function ShopRegisterPage() {
   const [imageUrl, setImageUrl] = useState<string>("");     // 서버에 저장할 최종 URL(S3, 쿼리 제거)
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
+
+  const [successOpen, setSuccessOpen] = useState(false);
+  const [createdShopId, setCreatedShopId] = useState<string>("");
 
   const setValue = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -131,19 +135,26 @@ export default function ShopRegisterPage() {
 
       const created = await apiClient.shops.createShop(payload);
       alert(`등록 성공! shopId=${created.item.id}`);
+      setCreatedShopId(created.item.id);
+      setSuccessOpen(true);
 
       // ✅ 성공 처리
       // 1) 모달/토스트 띄우거나
       // 2) 상세 페이지로 이동 (라우팅은 팀 규칙에 맞게 수정)
       // created.item.id가 shop_id라고 가정
       console.log("✅ shop created:", created);
-      router.push(`/shops/${created.item.id}`);
+      // router.push(`/shops/${created.item.id}`);
     } catch (err) {
       console.error(err);
       alert(err instanceof Error ? err.message : "가게 등록 실패");
     } finally {
       setSubmitting(false);
     }
+  };
+
+  const onConfirmSuccess = () => {
+    setSuccessOpen(false);
+    if (createdShopId) router.push(`/shops/${createdShopId}`);
   };
 
   return (
@@ -316,6 +327,15 @@ export default function ShopRegisterPage() {
           </form>
         </div>
       </section>
+
+      <Modal
+        variant="basic"
+        open={successOpen}
+        onClose={() => setSuccessOpen(false)}
+        description={"가게 등록이 완료되었습니다."}
+        actionLabel="확인"
+        onAction={onConfirmSuccess}
+      />
     </main>
   );
 }
