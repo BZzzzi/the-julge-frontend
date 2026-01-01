@@ -13,7 +13,6 @@ type BaseProps = {
   open: boolean;
   onClose: () => void;
 
-  /** 모달 본문 문구 */
   description: string;
 
   className?: string;
@@ -84,7 +83,7 @@ export default function Modal(props: ModalProps) {
       );
     }
 
-    // icon: 1개 or 2개
+    // icon: 버튼 1개 or 2개
     const actions = props.actions;
 
     if (actions.length === 1) {
@@ -129,14 +128,12 @@ export default function Modal(props: ModalProps) {
   const panelClass =
     props.variant === "icon"
       ? [
-        // ✅ icon: 고정 사이즈 298x184
         "w-[298px] h-[184px]",
         "rounded-2xl bg-white shadow-[0_12px_32px_rgba(0,0,0,0.16)]",
         "relative",
         className ?? "",
       ].join(" ")
       : [
-        // ✅ basic: 기본 540x250, 화면 작아지면 w 줄어듦
         "w-[327px] h-[220px] md:w-full md:max-w-[540px] md:h-[250px]",
         "rounded-2xl bg-white shadow-[0_12px_32px_rgba(0,0,0,0.16)]",
         "relative",
@@ -173,7 +170,7 @@ export default function Modal(props: ModalProps) {
         ) : (
           // ================= basic layout =================
           <div className="h-full px-6">
-            <div className="h-full flex items-center justify-center text-center -translate-y-3">
+            <div className="h-full flex items-center justify-center text-center -translate-y-4">
               <p className="whitespace-pre-line leading-relaxed text-[18px] text-gray-900">
                 {description}
               </p>
