@@ -72,6 +72,10 @@ export default function ShopRegisterPage() {
                   />
                 </Field>
 
+                <Field label="기본 시급" required htmlFor="originalHourlyPay">
+                  <FieldInput id="originalHourlyPay" placeholder="입력" rightSlot="원"/>
+                </Field>
+
                 {/* 이미지 */}
                 <Field label="이미지">
                   <div className="flex h-60 md:min-w-105 w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-black/20 bg-gray-10">
@@ -118,13 +122,13 @@ export default function ShopRegisterPage() {
               <FieldInput
                 as="textarea"
                 rows={6}
-                placeholder="가게 상세 정보 입력"
+                placeholder="입력"
               />
             </Field>
 
             {/* 버튼 */}
             <div className="flex justify-center pt-2">
-              <Button size="lg" className="w-[300px]">
+              <Button size="lg" className="w-75">
                 등록하기
               </Button>
             </div>
