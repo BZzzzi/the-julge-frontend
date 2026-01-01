@@ -14,8 +14,8 @@ export default function ShopRegisterPage() {
       <section>
         <div className="mx-auto w-full max-w-241 rounded-2xl p-8">
           {/* 헤더 */}
-          <header className="mb-8 flex items-center justify-between">
-            <h1 className="text-[28px] font-extrabold text-gray-90">
+          <header className="mb-4 flex items-center justify-between">
+            <h1 className="text-[24px] font-extrabold text-gray-90">
               가게 정보
             </h1>
             <button
@@ -30,9 +30,9 @@ export default function ShopRegisterPage() {
           {/* 폼 */}
           <form className="flex flex-col gap-8">
             {/* 상단 2열 */}
-            <div className="grid grid-cols-2 gap-6">
+            <div className="grid gird-cols-1 md:grid-cols-2 gap-6">
               {/* 왼쪽 */}
-              <div className="flex flex-col gap-6">
+              <div className="flex flex-col gap-6" >
                 <Field label="가게 이름" required htmlFor="name">
                   <FieldInput id="name" placeholder="입력" />
                 </Field>
@@ -74,14 +74,14 @@ export default function ShopRegisterPage() {
 
                 {/* 이미지 */}
                 <Field label="이미지">
-                  <div className="flex h-[220px] w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-black/20 bg-[var(--color-gray-10)]">
+                  <div className="flex h-60 md:min-w-105 w-full flex-col items-center justify-center gap-3 rounded-xl border border-dashed border-black/20 bg-gray-10">
                     <Image
                       src="/icon/camera.svg"
                       alt="이미지 추가"
                       width={28}
                       height={28}
                     />
-                    <p className="text-[14px] text-[var(--color-gray-50)]">
+                    <p className="text-[14px] text-gray-50">
                       이미지 추가하기
                     </p>
                   </div>
