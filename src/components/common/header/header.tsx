@@ -187,7 +187,7 @@ export default function Header({ showSearchInput = true }: HeaderProps) {
         </div>
 
         {/* Mobile */}
-        <div className="flex w-full flex-col gap-4 p-2.5 md:hidden">
+        <div className="flex w-full flex-col gap-4 md:hidden">
           <div className="flex justify-between">
             <Link
               href="/"
