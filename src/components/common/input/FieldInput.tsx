@@ -9,10 +9,7 @@ type CommonProps = {
   rightSlot?: React.ReactNode;
 };
 
-type InputProps = Omit<
-  React.InputHTMLAttributes<HTMLInputElement>,
-  "size"
-> & {
+type InputProps = Omit<React.InputHTMLAttributes<HTMLInputElement>, "size"> & {
   as?: "input";
 };
 
@@ -22,22 +19,8 @@ type TextareaProps = React.TextareaHTMLAttributes<HTMLTextAreaElement> & {
 
 export type FieldInputProps = CommonProps & (InputProps | TextareaProps);
 
-const FieldInput = React.forwardRef<
-  HTMLInputElement | HTMLTextAreaElement,
-  FieldInputProps
->(
-  (
-    {
-      className,
-      error = false,
-      size = "md",
-      as = "input",
-      rightSlot,
-      id,
-      ...props
-    },
-    ref
-  ) => {
+const FieldInput = React.forwardRef<HTMLInputElement | HTMLTextAreaElement, FieldInputProps>(
+  ({ className, error = false, size = "md", as = "input", rightSlot, id, ...props }, ref) => {
     const autoId = React.useId();
     const inputId = id ?? autoId;
     const isTextarea = as === "textarea";
@@ -52,7 +35,7 @@ const FieldInput = React.forwardRef<
         : "border-gray-30 focus:border-gray-40 focus:ring-gray-20",
       props.disabled && "cursor-not-allowed bg-gray-10 text-gray-50",
       !isTextarea && rightSlot && "pr-12",
-      className
+      className,
     );
 
     return (
@@ -83,7 +66,7 @@ const FieldInput = React.forwardRef<
         )}
       </div>
     );
-  }
+  },
 );
 
 FieldInput.displayName = "FieldInput";

@@ -30,14 +30,44 @@ export default function CssTestPage() {
       <section>
         <h3 className="text-blue-20 mb-6 text-sm tracking-wider uppercase">2. Color Palette</h3>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-3 md:grid-cols-5">
-          <ColorCard name="Black" bg="bg-black" text="text-white" />
-          <ColorCard name="Gray 50" bg="bg-gray-50" text="text-white" />
-          <ColorCard name="Gray 30" bg="bg-gray-30" />
-          <ColorCard name="Gray 10" bg="bg-gray-10" />
-          <ColorCard name="Red 40" bg="bg-red-40" text="text-white" />
-          <ColorCard name="Blue 20" bg="bg-blue-20" text="text-white" />
-          <ColorCard name="Green 20" bg="bg-green-20" text="text-white" />
-          <ColorCard name="Kakao" bg="bg-kakao" text="text-black" />
+          <ColorCard
+            name="Black"
+            bg="bg-black"
+            text="text-white"
+          />
+          <ColorCard
+            name="Gray 50"
+            bg="bg-gray-50"
+            text="text-white"
+          />
+          <ColorCard
+            name="Gray 30"
+            bg="bg-gray-30"
+          />
+          <ColorCard
+            name="Gray 10"
+            bg="bg-gray-10"
+          />
+          <ColorCard
+            name="Red 40"
+            bg="bg-red-40"
+            text="text-white"
+          />
+          <ColorCard
+            name="Blue 20"
+            bg="bg-blue-20"
+            text="text-white"
+          />
+          <ColorCard
+            name="Green 20"
+            bg="bg-green-20"
+            text="text-white"
+          />
+          <ColorCard
+            name="Kakao"
+            bg="bg-kakao"
+            text="text-black"
+          />
         </div>
       </section>
 

@@ -154,7 +154,7 @@ export default function SignupForm() {
       >
         <div className="flex gap-3">
           {/* 알바님 선택지 */}
-          <label className="group flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border border-[#E5E7EB] py-4 transition-all has-[:checked]:border-[#EA580C] has-[:checked]:text-[#EA580C]">
+          <label className="group flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border-2 border-[#E5E7EB] py-4 transition-all has-checked:border-[#EA580C] has-checked:text-[#EA580C]">
             <input
               id="type-employee"
               type="radio"
@@ -164,7 +164,7 @@ export default function SignupForm() {
               className="peer hidden" // 실제 라디오 버튼은 숨김
             />
             {/* 커스텀 체크 아이콘 원형 */}
-            <div className="flex h-5 w-5 items-center justify-center rounded-full border border-[#E5E7EB] text-white transition-all peer-checked:border-[#EA580C] peer-checked:bg-[#EA580C]">
+            <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#E5E7EB] text-white transition-all peer-checked:border-[#EA3C12] peer-checked:bg-[#EA3C12]">
               <svg
                 width="12"
                 height="12"
@@ -178,13 +178,13 @@ export default function SignupForm() {
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
-            <span className="text-lg font-medium text-[#374151] group-has-[:checked]:text-[#EA580C]">
+            <span className="font-medium text-[#374151] group-has-checked:text-[#EA3C12]">
               알바님
             </span>
           </label>
 
           {/* 사장님 선택지 */}
-          <label className="group flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border border-[#E5E7EB] py-4 transition-all has-[:checked]:border-[#EA580C] has-[:checked]:text-[#EA580C]">
+          <label className="group flex flex-1 cursor-pointer items-center justify-center gap-2 rounded-full border-2 border-[#E5E7EB] py-4 transition-all has-checked:border-[#EA3C12] has-checked:text-[#EA3C12]">
             <input
               id="type-employer"
               type="radio"
@@ -192,7 +192,7 @@ export default function SignupForm() {
               value="employer"
               className="peer hidden"
             />
-            <div className="flex h-5 w-5 items-center justify-center rounded-full border border-[#E5E7EB] text-white transition-all peer-checked:border-[#EA580C] peer-checked:bg-[#EA580C]">
+            <div className="flex h-5 w-5 items-center justify-center rounded-full border-2 border-[#E5E7EB] text-white transition-all peer-checked:border-[#EA3C12] peer-checked:bg-[#EA3C12]">
               <svg
                 width="12"
                 height="12"
@@ -206,7 +206,7 @@ export default function SignupForm() {
                 <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
-            <span className="text-lg font-medium text-[#374151] group-has-[:checked]:text-[#EA580C]">
+            <span className="font-medium text-[#374151] group-has-checked:text-[#EA3C12]">
               사장님
             </span>
           </label>
