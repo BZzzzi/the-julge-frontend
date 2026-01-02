@@ -2,7 +2,6 @@
 
 import Image from "next/image";
 
-/* ===== 카드에서 사용할 데이터 타입 ===== */
 export type CardData = {
   id: string;
   name: string;
@@ -11,18 +10,17 @@ export type CardData = {
   address1: string;
   hourlyPay: number;
   imageUrl: string;
-  isPast: boolean; // ✅ page.tsx에서 미리 계산해서 내려줌
+  isPast: boolean; // page.tsx에서 계산해 내려줌
 };
 
 type CardProps = {
   cards: CardData[];
   selectedId: string | null;
-  onSelect: (id: string) => void;
+  onSelect: (payload: { id: string; isPast: boolean }) => void; // ✅ 변경
 };
 
 const BASE_HOURLY_PAY = 10320;
 
-// KST 기준 "YYYY-MM-DD HH:mm"
 function formatKSTDateTime(date: Date) {
   const parts = new Intl.DateTimeFormat("ko-KR", {
     timeZone: "Asia/Seoul",
@@ -38,7 +36,6 @@ function formatKSTDateTime(date: Date) {
   return `${get("year")}-${get("month")}-${get("day")} ${get("hour")}:${get("minute")}`;
 }
 
-// KST 기준 "HH:mm"
 function formatKSTTime(date: Date) {
   const parts = new Intl.DateTimeFormat("ko-KR", {
     timeZone: "Asia/Seoul",
@@ -68,22 +65,21 @@ export default function Card({ cards, selectedId, onSelect }: CardProps) {
           const start = new Date(c.startsAt);
           const end = new Date(start.getTime() + c.workhour * 60 * 60 * 1000);
 
-          // ✅ Date.now() 없음 / setNow 없음
           const isPast = c.isPast;
-
           const imgDim = isPast ? "opacity-70 grayscale" : "opacity-100";
           const isSelected = selectedId === c.id;
 
           return (
             <div
               key={c.id}
-              onClick={() => onSelect(c.id)}
+              onClick={() => onSelect({ id: c.id, isPast: c.isPast })} // ✅ 변경
               className={[
-                "relative h-full rounded-lg overflow-hidden cursor-pointer border border-[var(--color-gray-20)]",
+                "relative h-full rounded-lg overflow-hidden cursor-pointer border",
                 isSelected
+                  ? "border-purple-500 ring-2 ring-purple-200"
+                  : "border-[var(--color-gray-20)]",
               ].join(" ")}
             >
-              {/* 지난 공고 */}
               {isPast && (
                 <div className="absolute inset-0 z-20 pt-19.75 flex items-start justify-center bg-black/25 pointer-events-none">
                   <span className="text-[28px] text-white font-bold">
@@ -103,13 +99,13 @@ export default function Card({ cards, selectedId, onSelect }: CardProps) {
                 </div>
               </div>
 
-              {/* 내용 */}
               <div className="px-3 mt-3 lg:px-4 lg:mt-4 sm:px-3 sm:mt-3">
                 <p
-                  className={`font-bold md:text-[20px] sm:text-[16px] text-[16px] ${isPast
-                    ? "text-[var(--color-gray-30)]"
-                    : "text-[var(--color-black)]"
-                    }`}
+                  className={`font-bold md:text-[20px] sm:text-[16px] text-[16px] ${
+                    isPast
+                      ? "text-[var(--color-gray-30)]"
+                      : "text-[var(--color-black)]"
+                  }`}
                 >
                   {c.name}
                 </p>
@@ -123,12 +119,12 @@ export default function Card({ cards, selectedId, onSelect }: CardProps) {
                     className={`md:w-5 md:h-5 ${imgDim}`}
                   />
                   <div
-                    className={`text-xs md:text-sm font-regular ${isPast
-                      ? "text-[var(--color-gray-30)]"
-                      : "text-[var(--color-gray-50)]"
-                      }`}
+                    className={`text-xs md:text-sm font-regular ${
+                      isPast
+                        ? "text-[var(--color-gray-30)]"
+                        : "text-[var(--color-gray-50)]"
+                    }`}
                   >
-                    {/* 모바일(기본): 2줄 */}
                     <div className="md:hidden sm:block">
                       <div>{formatKSTDateTime(start).slice(0, 10)}</div>
                       <div>
@@ -137,7 +133,6 @@ export default function Card({ cards, selectedId, onSelect }: CardProps) {
                       </div>
                     </div>
 
-                    {/* md 이상: 1줄 */}
                     <div className="hidden md:block">
                       {formatKSTDateTime(start)} ~ {formatKSTTime(end)} (
                       {c.workhour}시간)
@@ -154,10 +149,11 @@ export default function Card({ cards, selectedId, onSelect }: CardProps) {
                     className={`md:w-4 md:h-5 ${imgDim}`}
                   />
                   <p
-                    className={`text-xs md:text-sm font-regular ${isPast
-                      ? "text-[var(--color-gray-30)]"
-                      : "text-[var(--color-gray-50)]"
-                      }`}
+                    className={`text-xs md:text-sm font-regular ${
+                      isPast
+                        ? "text-[var(--color-gray-30)]"
+                        : "text-[var(--color-gray-50)]"
+                    }`}
                   >
                     {c.address1}
                   </p>
@@ -165,10 +161,11 @@ export default function Card({ cards, selectedId, onSelect }: CardProps) {
 
                 <div className="flex flex-col md:flex-row items-left justify-between mt-4 mb-4">
                   <p
-                    className={`text-lg md:text-2xl font-bold ${isPast
-                      ? "text-[var(--color-gray-30)]"
-                      : "text-[var(--color-black)]"
-                      }`}
+                    className={`text-lg md:text-2xl font-bold ${
+                      isPast
+                        ? "text-[var(--color-gray-30)]"
+                        : "text-[var(--color-black)]"
+                    }`}
                   >
                     {c.hourlyPay.toLocaleString()}원
                   </p>
@@ -177,9 +174,10 @@ export default function Card({ cards, selectedId, onSelect }: CardProps) {
                     className={`
                       md:w-42 md:h-8 w-[123px] h-[18px] flex items-center justify-center rounded-[20px]
                       bg-transparent
-                      ${isPast
-                        ? "md:bg-[var(--color-gray-20)]"
-                        : isUp
+                      ${
+                        isPast
+                          ? "md:bg-[var(--color-gray-20)]"
+                          : isUp
                           ? "md:bg-[var(--color-red-40)] "
                           : "md:bg-blue-500"
                       }
@@ -187,10 +185,11 @@ export default function Card({ cards, selectedId, onSelect }: CardProps) {
                   >
                     <div className="flex items-center justify-start w-full gap-0.5 text-xs md:text-sm md:justify-center font-regular">
                       <span
-                        className={`md:text-[var(--color-white)] ${isPast
-                          ? "text-[var(--color-gray-30)]"
-                          : "text-[var(--color-red-40)]"
-                          }`}
+                        className={`md:text-[var(--color-white)] ${
+                          isPast
+                            ? "text-[var(--color-gray-30)]"
+                            : "text-[var(--color-red-40)]"
+                        }`}
                       >
                         기존 시급보다 {percentText}%
                       </span>
