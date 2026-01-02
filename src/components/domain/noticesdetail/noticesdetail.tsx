@@ -14,11 +14,17 @@ type NoticesResponse = {
       startsAt: string;
       workhour: number;
       description?: string;
+      closed?: boolean;
       shop: {
         item: {
+          id: string;
           name: string;
+          category?: string;
           address1: string;
+          address2?: string;
+          description?: string;
           imageUrl: string;
+          originalHourlyPay?: number;
         };
       };
     };
@@ -60,10 +66,8 @@ export default function NoticeListWithDetailPage() {
   const [items, setItems] = useState<NoticesResponse["items"]>([]);
   const [cards, setCards] = useState<CardData[]>([]);
 
-  // ✅ 신청 여부(버튼 토글용)
   const [applied, setApplied] = useState(false);
 
-  // ✅ 모달 상태 + 모드
   const [open, setOpen] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>("apply");
 
@@ -116,9 +120,7 @@ export default function NoticeListWithDetailPage() {
         }
       } catch (e) {
         if (!alive) return;
-        setErrorMsg(
-          e instanceof Error ? e.message : "리스트를 불러오지 못했습니다.",
-        );
+        setErrorMsg(e instanceof Error ? e.message : "리스트를 불러오지 못했습니다.");
       } finally {
         if (!alive) return;
         setLoading(false);
@@ -147,18 +149,35 @@ export default function NoticeListWithDetailPage() {
     const isUp = diffPercent >= 0;
     const percentText = Math.round(Math.abs(diffPercent));
 
+    const wageBadgeIcon = (
+      <Image
+        src="/icon/arrowfff.svg"
+        alt={isUp ? "up" : "down"}
+        width={16}
+        height={16}
+        className={isUp ? "" : "rotate-90"}
+      />
+    );
+
+    const shopDescription = selected.shop.item.description ?? "가게 설명이 없습니다.";
+    const noticeDescription = selected.description ?? "공고 설명이 없습니다.";
+
     return {
       imageUrl: selected.shop.item.imageUrl,
       imageAlt: selected.shop.item.name,
+
       wageText: `${selected.hourlyPay.toLocaleString()}원`,
-      wageBadgeText: `기존 시급보다 ${percentText}% ${isUp ? "↑" : "↓"}`,
+      wageBadgeText: `기존 시급보다 ${percentText}%`,
+      wageBadgeIcon,
+
       scheduleText: `${formatKSTDateTime(start)} ~ ${formatKSTTime(end)} (${selected.workhour}시간)`,
       address: selected.shop.item.address1,
-      description: selected.description ?? "설명이 없습니다.",
+
+      infoDescription: shopDescription,
+      detailDescription: noticeDescription,
     };
   }, [selected]);
 
-  // ✅ 버튼 클릭 핸들러
   const handlePrimaryButtonClick = () => {
     if (selectedIsPast) return;
 
@@ -171,7 +190,6 @@ export default function NoticeListWithDetailPage() {
     }
   };
 
-  // ✅ 모달 아이콘(모드별)
   const modalIcon = useMemo(() => {
     return modalMode === "apply" ? (
       <Image src="/icon/checked.svg" alt="확인" width={24} height={24} />
@@ -180,17 +198,12 @@ export default function NoticeListWithDetailPage() {
     );
   }, [modalMode]);
 
-  // ✅ 모달 actions (mode에 따라 바뀜)
   const modalProps = useMemo(() => {
     if (modalMode === "apply") {
       return {
         description: "지원하시겠어요?",
         actions: [
-          {
-            label: "취소",
-            onClick: () => setOpen(false),
-            variant: "outline" as const,
-          },
+          { label: "취소", onClick: () => setOpen(false), variant: "outline" as const },
           {
             label: "확인",
             onClick: () => {
@@ -206,11 +219,7 @@ export default function NoticeListWithDetailPage() {
     return {
       description: "신청을 취소하시겠습니까?",
       actions: [
-        {
-          label: "아니오",
-          onClick: () => setOpen(false),
-          variant: "outline" as const,
-        },
+        { label: "아니오", onClick: () => setOpen(false), variant: "outline" as const },
         {
           label: "취소하기",
           onClick: () => {
@@ -223,7 +232,12 @@ export default function NoticeListWithDetailPage() {
     };
   }, [modalMode]);
 
-  if (loading) return <div className="p-6">로딩중...</div>;
+  // ✅ 로딩: 스켈레톤 UI
+  if (loading) {
+    return <NoticeDetailSkeleton />;
+  }
+
+  // ✅ 에러는 기존처럼
   if (errorMsg) return <div className="p-6">에러: {errorMsg}</div>;
 
   return (
@@ -235,10 +249,10 @@ export default function NoticeListWithDetailPage() {
             imageUrl={derived.imageUrl}
             imageAlt={derived.imageAlt}
             wageText={derived.wageText}
-            wageBadge={{ text: derived.wageBadgeText }}
+            wageBadge={{ text: derived.wageBadgeText, icon: derived.wageBadgeIcon }}
             scheduleText={derived.scheduleText}
             address={derived.address}
-            description={derived.description}
+            description={derived.infoDescription}
             footer={
               selectedIsPast ? (
                 <button
@@ -260,6 +274,10 @@ export default function NoticeListWithDetailPage() {
                 </button>
               )
             }
+            detail={{
+              title: "공고 설명",
+              content: derived.detailDescription,
+            }}
           />
         ) : (
           <div className="p-6 text-sm text-neutral-500">
@@ -275,13 +293,11 @@ export default function NoticeListWithDetailPage() {
           onSelect={({ id, isPast }) => {
             setSelectedId(id);
             setSelectedIsPast(isPast);
-            // 공고 바뀌면 신청 상태 초기화 원하면 켜기
-            // setApplied(false);
+            // setApplied(false); // 공고 바뀌면 신청 상태 초기화 원하면 켜기
           }}
         />
       </div>
 
-      {/* ✅ 모달 */}
       <Modal
         variant="icon"
         open={open}
@@ -290,6 +306,111 @@ export default function NoticeListWithDetailPage() {
         icon={modalIcon}
         actions={[...modalProps.actions]}
       />
+    </div>
+  );
+}
+
+
+function Skeleton({ className }: { className: string }) {
+  return (
+    <div
+      className={[
+        "animate-pulse rounded-lg bg-gray-20/70",
+        className,
+      ].join(" ")}
+      aria-hidden="true"
+    />
+  );
+}
+
+function NoticeDetailSkeleton() {
+  return (
+    <div>
+      {/* ShopInfoCard 자리 */}
+      <div className="mt-15 flex items-start justify-center">
+        <div
+          className={[
+            "flex w-full flex-col rounded-2xl",
+            "h-112.5 gap-4 p-4 md:h-169.25",
+            "md:gap-6 md:p-6",
+            "lg:h-89 lg:w-241 lg:flex-row lg:gap-8 lg:p-6",
+            "bg-white",
+          ].join(" ")}
+        >
+          {/* image skeleton */}
+          <Skeleton className="h-44.5 w-full md:h-76.75 lg:h-77 lg:w-134.75 rounded-2xl" />
+
+          {/* content skeleton */}
+          <div className="flex flex-1 flex-col gap-3">
+            <Skeleton className="h-5 w-16 md:h-6" />        
+            <Skeleton className="h-8 w-40 md:h-10 md:w-56" /> 
+            <Skeleton className="h-6 w-56 md:w-72 rounded-full" /> 
+
+            <div className="mt-1 flex items-center gap-2">
+              <Skeleton className="h-5 w-5 rounded-md" />
+              <Skeleton className="h-4 w-64 md:h-5 md:w-80" />
+            </div>
+
+            <div className="mt-1 flex items-center gap-2">
+              <Skeleton className="h-5 w-5 rounded-md" />
+              <Skeleton className="h-4 w-48 md:h-5 md:w-72" />
+            </div>
+
+            <div className="mt-2 flex-1 space-y-2">
+              <Skeleton className="h-4 w-full" />
+              <Skeleton className="h-4 w-[92%]" />
+              <Skeleton className="h-4 w-[80%]" />
+            </div>
+
+            <Skeleton className="h-12 w-full rounded-xl" />
+          </div>
+        </div>
+      </div>
+
+      {/* detail(회색 카드) 자리 */}
+      <div className="mx-auto mt-4 w-full max-w-241 px-4 lg:px-0">
+        <div className="bg-gray-10 w-full rounded-2xl px-6 py-5 md:px-8 md:py-6">
+          <Skeleton className="h-5 w-24 md:h-6" />
+          <div className="mt-3 space-y-2">
+            <Skeleton className="h-4 w-full" />
+            <Skeleton className="h-4 w-[95%]" />
+            <Skeleton className="h-4 w-[85%]" />
+          </div>
+        </div>
+      </div>
+
+      {/* 카드 리스트 자리 */}
+      <div className="my-30 mx-auto max-w-87.5 sm:max-w-87.5 md:max-w-169.5 lg:max-w-241 px-0">
+        <div className="mb-4 md:mb-8">
+          <Skeleton className="h-7 w-40 md:h-9 md:w-56" />
+        </div>
+
+        <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-2 md:grid-cols-2 md:gap-3.5 lg:grid-cols-3">
+          {Array.from({ length: 6 }).map((_, i) => (
+            <div
+              key={i}
+              className="border-gray-20 relative h-full overflow-hidden rounded-lg border bg-white"
+            >
+              <div className="mx-3 mt-3 sm:mx-3 sm:mt-3 md:mx-4 md:mt-4">
+                <Skeleton className="h-21 w-full rounded-xl sm:h-21 lg:h-40" />
+              </div>
+
+              <div className="mt-3 px-3 sm:mt-3 sm:px-3 lg:mt-4 lg:px-4">
+                <Skeleton className="h-5 w-32 md:h-6 md:w-40" />
+                <div className="mt-2 space-y-2">
+                  <Skeleton className="h-4 w-56 md:w-64" />
+                  <Skeleton className="h-4 w-44 md:w-56" />
+                </div>
+
+                <div className="mt-4 mb-4 flex flex-col justify-between gap-2 md:flex-row md:items-center">
+                  <Skeleton className="h-7 w-24 md:h-8 md:w-28" />
+                  <Skeleton className="h-5 w-28 rounded-full md:h-8 md:w-42" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
