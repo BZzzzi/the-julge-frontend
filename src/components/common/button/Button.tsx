@@ -49,7 +49,7 @@ export default function Button({
         buttonVariantClassMap[variant],
         fullWidth && "w-full",
         isDisabled && buttonDisabledClass,
-        className
+        className,
       )}
       {...props}
     >

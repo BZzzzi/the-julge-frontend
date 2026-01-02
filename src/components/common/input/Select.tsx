@@ -52,9 +52,9 @@ export default function Select({
           error
             ? "border-red-500 focus:ring-red-200"
             : "border-gray-30 focus:border-gray-40 focus:ring-gray-20",
-          disabled && "cursor-not-allowed bg-gray-10",
+          disabled && "bg-gray-10 cursor-not-allowed",
           "text-gray-900, data-placeholder:text-gray-40",
-          className
+          className,
         )}
         aria-invalid={error || undefined}
       >
@@ -85,23 +85,24 @@ export default function Select({
           position="popper"
           sideOffset={8}
           className={cn(
-            "z-50 min-w-(--radix-select-trigger-width) overflow-hidden rounded-md border border-gray-300 bg-white shadow-md"
+            "z-50 min-w-(--radix-select-trigger-width) overflow-hidden rounded-md border border-gray-300 bg-white shadow-md",
           )}
         >
-          <SelectPrimitive.Viewport 
-          className={cn(
-              "p-1 max-h-47.5 overflow-y-auto",   // ✅ 기본값: 5개 정도 보이게
-              viewportClassName
-            )}>
+          <SelectPrimitive.Viewport
+            className={cn(
+              "max-h-47.5 overflow-y-auto p-1", // ✅ 기본값: 5개 정도 보이게
+              viewportClassName,
+            )}
+          >
             {options.map((opt) => (
               <SelectPrimitive.Item
                 key={opt.value}
                 value={opt.value}
                 disabled={opt.disabled}
                 className={cn(
-                  "relative flex cursor-pointer select-none items-center rounded-sm px-4 py-2 text-sm outline-none",
+                  "relative flex cursor-pointer items-center rounded-sm px-4 py-2 text-sm outline-none select-none",
                   "data-highlighted:bg-gray-100",
-                  "data-disabled:cursor-not-allowed data-disabled:opacity-50"
+                  "data-disabled:cursor-not-allowed data-disabled:opacity-50",
                 )}
               >
                 <SelectPrimitive.ItemText>{opt.label}</SelectPrimitive.ItemText>
