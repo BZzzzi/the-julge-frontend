@@ -1,3 +1,5 @@
+"use client";
+
 import { UserInfo } from "@/types/user";
 import { create } from "zustand";
 import { combine, devtools } from "zustand/middleware";
@@ -28,11 +30,11 @@ const useUserStore = create(
 );
 
 // 1. 유저 정보 및 로그인 여부 확인용
-export const useUser = () =>
-  useUserStore((state) => ({
-    user: state.user,
-    isLoggedIn: state.isLoggedIn,
-  }));
+export const useUser = () => {
+  const user = useUserStore((state) => state.user);
+  const isLoggedIn = useUserStore((state) => state.isLoggedIn);
+  return { user, isLoggedIn };
+};
 
 // 2. 액션만 따로 가져오기
 export const useUserActions = () => useUserStore((state) => state.actions);

@@ -38,7 +38,10 @@ export default async function RootLayout({
   }
 
   return (
-    <html lang="ko" className={`${spoqaHanSans.variable}`}>
+    <html
+      lang="ko"
+      className={`${spoqaHanSans.variable}`}
+    >
       <StoreInitializer userInfo={userInfo} />
       <body className="antialiased">{children}</body>
     </html>
