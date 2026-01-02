@@ -336,7 +336,7 @@ export default function ShopEditForm({ initialShop }: Props) {
         variant="basic"
         open={successOpen}
         onClose={() => setSuccessOpen(false)}
-        description="가게 정보가 수정되었습니다."
+        description="수정이 완료되었습니다."
         actionLabel="확인"
         onAction={onConfirmSuccess}
       />
@@ -352,3 +352,4 @@ export default function ShopEditForm({ initialShop }: Props) {
     </main>
   );
 }
+ 
