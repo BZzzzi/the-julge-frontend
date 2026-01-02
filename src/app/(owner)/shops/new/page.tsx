@@ -138,12 +138,8 @@ export default function ShopRegisterPage() {
       setCreatedShopId(created.item.id);
       setSuccessOpen(true);
 
-      // ✅ 성공 처리
-      // 1) 모달/토스트 띄우거나
-      // 2) 상세 페이지로 이동 (라우팅은 팀 규칙에 맞게 수정)
-      // created.item.id가 shop_id라고 가정
+      // 추후 삭제
       console.log("✅ shop created:", created);
-      // router.push(`/shops/${created.item.id}`);
     } catch (err) {
       console.error(err);
       alert(err instanceof Error ? err.message : "가게 등록 실패");
