@@ -15,7 +15,7 @@ export type PasswordInputProps = Omit<
 };
 
 const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
-  ({ className, error = false, allowToggle = true, size="md", id, ...props }, ref) => {
+  ({ className, error = false, allowToggle = true, size = "md", id, ...props }, ref) => {
     const autoId = React.useId();
     const inputId = id ?? autoId;
     const [visible, setVisible] = React.useState(false);
@@ -35,9 +35,9 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
             error
               ? "border-red-500 focus:ring-red-200"
               : "border-gray-30 focus:border-gray-40 focus:ring-gray-20",
-            props.disabled && "cursor-not-allowed bg-gray-10 text-gray-50",
+            props.disabled && "bg-gray-10 cursor-not-allowed text-gray-50",
             allowToggle && "pr-16",
-            className
+            className,
           )}
           {...props}
         />
@@ -55,7 +55,7 @@ const PasswordInput = React.forwardRef<HTMLInputElement, PasswordInputProps>(
         )}
       </div>
     );
-  }
+  },
 );
 
 PasswordInput.displayName = "PasswordInput";
