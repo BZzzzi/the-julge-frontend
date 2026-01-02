@@ -15,7 +15,7 @@ type FormState = {
   address1: SeoulRegion | ""
   address2: string;
   description: string;
-  originalHourlyPay: string; // 입력값은 string으로 받고, submit 때 number로 변환
+  originalHourlyPay: string; 
 };
 
 type FormErrors = Partial<Record<keyof FormState | "imageUrl", string>>;
@@ -34,13 +34,16 @@ export default function ShopRegisterPage() {
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
-  const [previewUrl, setPreviewUrl] = useState<string>(""); // 화면 미리보기(로컬)
-  const [imageUrl, setImageUrl] = useState<string>("");     // 서버에 저장할 최종 URL(S3, 쿼리 제거)
+  const [previewUrl, setPreviewUrl] = useState<string>(""); 
+  const [imageUrl, setImageUrl] = useState<string>("");     
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
   const [successOpen, setSuccessOpen] = useState(false);
-  const [createdShopId, setCreatedShopId] = useState<string>("");
+
+  const [errorOpen, setErrorOpen] = useState(false);
+  const [errorMessage, setErrorMessage] = useState("");
+  const [errorAction, setErrorAction] = useState<"goMyShop" | "close">("close");
 
   const setValue = <K extends keyof FormState>(key: K, value: FormState[K]) => {
     setForm((prev) => ({ ...prev, [key]: value }));
@@ -61,12 +64,11 @@ export default function ShopRegisterPage() {
     try {
       setUploading(true);
 
-      // 2) presigned URL 생성 (우리 API)
-      //    ImgReq가 { name: string }이면 아래처럼
+      // 2) presigned URL 생성 
       const { item } = await apiClient.images.createImg({ name: file.name });
       const presignedUrl = item.url;
 
-      // 3) S3로 PUT 업로드 (중요: fetcher/apiClient 사용 X)
+      // 3) S3로 PUT 업로드 
       const putRes = await fetch(presignedUrl, {
         method: "PUT",
         body: file,
@@ -84,12 +86,16 @@ export default function ShopRegisterPage() {
       setImageUrl(finalUrl);
     } catch (err) {
       console.error(err);
-      alert(err instanceof Error ? err.message : "이미지 업로드 오류");
+      const msg = err instanceof Error ? err.message : "이미지 업로드 오류";
+
+      setErrorMessage(msg);
+      setErrorAction("close");
+      setErrorOpen(true);
+
       setPreviewUrl("");
       setImageUrl("");
     } finally {
       setUploading(false);
-      // 같은 파일 다시 선택 가능하게 초기화
       if (fileRef.current) fileRef.current.value = "";
     }
   };
@@ -103,7 +109,6 @@ export default function ShopRegisterPage() {
     if (!form.category.trim()) next.category = "분류를 선택해 주세요.";
     if (!form.description.trim()) next.description = "가게 설명을 입력해 주세요.";
 
-    // 숫자 검증
     const pay = Number(form.originalHourlyPay);
     if (!form.originalHourlyPay.trim()) next.originalHourlyPay = "기존 시급을 입력해 주세요.";
     else if (Number.isNaN(pay) || pay <= 0) next.originalHourlyPay = "올바른 금액을 입력해 주세요.";
@@ -133,16 +138,22 @@ export default function ShopRegisterPage() {
         originalHourlyPay: Number(form.originalHourlyPay),
       };
 
-      const created = await apiClient.shops.createShop(payload);
-      alert(`등록 성공! shopId=${created.item.id}`);
-      setCreatedShopId(created.item.id);
-      setSuccessOpen(true);
+      await apiClient.shops.createShop(payload);
 
-      // 추후 삭제
-      console.log("✅ shop created:", created);
+      setSuccessOpen(true);
     } catch (err) {
       console.error(err);
-      alert(err instanceof Error ? err.message : "가게 등록 실패");
+
+      const message = err instanceof Error ? err.message : "가게 등록 실패";
+      setErrorMessage(message);
+
+      if (message.includes("이미 등록한 가게가 있습니다")) {
+        setErrorAction("goMyShop");
+      } else {
+        setErrorAction("close");
+      }
+
+      setErrorOpen(true);
     } finally {
       setSubmitting(false);
     }
@@ -150,7 +161,7 @@ export default function ShopRegisterPage() {
 
   const onConfirmSuccess = () => {
     setSuccessOpen(false);
-    if (createdShopId) router.push(`/shops/${createdShopId}`);
+    router.push("/shops/my-shop");
   };
 
   return (
@@ -261,11 +272,7 @@ export default function ShopRegisterPage() {
                     </>
                   )}
                 </button>
-
-                {/* 업로드 후 최종 URL 확인용(개발 중에만) */}
-                {imageUrl && (
-                  <p className="break-all text-xs text-gray-50">imageUrl: {imageUrl}</p>
-                )}
+                
               </Field>
               </div>
 
@@ -331,6 +338,20 @@ export default function ShopRegisterPage() {
         description={"가게 등록이 완료되었습니다."}
         actionLabel="확인"
         onAction={onConfirmSuccess}
+      />
+
+      <Modal
+        variant="basic"
+        open={errorOpen}
+        onClose={() => setErrorOpen(false)}
+        description={errorMessage}
+        actionLabel={errorAction === "goMyShop" ? "이동" : "확인"}
+        onAction={() => {
+          setErrorOpen(false);
+          if (errorAction === "goMyShop") {
+            router.push("/shops/my-shop");
+          }
+        }}
       />
     </main>
   );
