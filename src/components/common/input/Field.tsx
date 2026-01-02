@@ -5,7 +5,7 @@ export type FieldProps = {
   label?: string;
   required?: boolean;
   helperText?: string;
-  errorMessage?:string;
+  errorMessage?: string;
   error?: boolean;
   className?: string;
 
@@ -35,7 +35,7 @@ export default function Field({
           className="mb-2 block text-sm font-semibold text-gray-900"
         >
           {label}
-          {required && <span className="ml-0.5 text-red-40]">*</span>}
+          {required && <span className="text-red-40] ml-0.5">*</span>}
         </label>
       )}
 
@@ -44,10 +44,7 @@ export default function Field({
       {(helperText || isError) && (
         <p
           id={helperId}
-          className={cn(
-            "mt-2 text-xs",
-            isError ? "text-red-40" : "text-gray-50"
-          )}
+          className={cn("mt-2 text-xs", isError ? "text-red-40" : "text-gray-50")}
         >
           {isError ? errorMessage : helperText}
         </p>
