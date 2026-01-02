@@ -20,6 +20,7 @@ export type SelectProps = {
   disabled?: boolean;
   size?: InputSize;
   className?: string;
+  viewportClassName?: string;
 };
 
 export default function Select({
@@ -32,6 +33,7 @@ export default function Select({
   disabled = false,
   size = "md",
   className,
+  viewportClassName,
 }: SelectProps) {
   return (
     <SelectPrimitive.Root
@@ -86,7 +88,11 @@ export default function Select({
             "z-50 min-w-(--radix-select-trigger-width) overflow-hidden rounded-md border border-gray-300 bg-white shadow-md"
           )}
         >
-          <SelectPrimitive.Viewport className="p-1">
+          <SelectPrimitive.Viewport 
+          className={cn(
+              "p-1 max-h-47.5 overflow-y-auto",   // ✅ 기본값: 5개 정도 보이게
+              viewportClassName
+            )}>
             {options.map((opt) => (
               <SelectPrimitive.Item
                 key={opt.value}
