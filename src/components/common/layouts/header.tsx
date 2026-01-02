@@ -1,5 +1,5 @@
-import UserMenu from "@/components/common/header/header-user-menu";
-import SearchInput from "@/components/common/header/search-input";
+import UserMenu from "@/components/common/layouts/header-user-menu";
+import SearchInput from "@/components/common/layouts/search-input";
 import Image from "next/image";
 import Link from "next/link";
 

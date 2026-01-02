@@ -1,7 +1,7 @@
 "use client";
 
 import { logoutAction } from "@/app/(auth)/(logout)/actions";
-import Alert from "@/components/common/header/alert";
+import Alert from "@/components/common/layouts/alert";
 import { useUser, useUserActions } from "@/store/user";
 import Image from "next/image";
 import Link from "next/link";
