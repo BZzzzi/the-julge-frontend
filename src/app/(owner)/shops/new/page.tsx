@@ -174,7 +174,8 @@ export default function ShopRegisterPage() {
             <button
               type="button"
               aria-label="닫기"
-              className="rounded-md p-2 text-gray-90 hover:bg-black/5">
+              className="rounded-md p-2 text-gray-90 hover:bg-black/5"
+              onClick={() => router.push("/shops/my-shop")}>
               ✕
             </button>
           </header>
@@ -272,7 +273,7 @@ export default function ShopRegisterPage() {
                     </>
                   )}
                 </button>
-                
+
               </Field>
               </div>
 
