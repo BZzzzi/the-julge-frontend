@@ -1,6 +1,7 @@
 // src/app/(owner)/shops/my-shop/page.tsx
 import { Button } from "@/components/common/button";
 import ShopInfoCard from "@/components/common/shop-info/ShopInfoCard";
+import EmployerNoticesGrid from "@/components/domain/card";
 import { apiClient } from "@/lib/api";
 import { getUserIdFromToken } from "@/lib/auth";
 import { cookies } from "next/headers";
@@ -56,15 +57,14 @@ export default async function MyShopPage() {
       <section className="mx-auto max-w-5xl px-4 py-10">
         <h1 className="mb-6 text-2xl font-bold">내 가게</h1>
 
-        <div className="rounded-xl border p-10 text-center">
-          <p className="mb-6 text-sm text-gray-600">
+        <div className="rounded-xl border border-gray-20 p-14 text-center">
+          <p className="mb-6 text-lg text-black">
             내 가게를 소개하고 공고도 등록해 보세요.
           </p>
-          <Link
-            className="inline-flex h-12 items-center justify-center rounded-lg bg-red-500 px-6 text-white"
-            href="/owner/shops/new"
-          >
-            가게 등록하기
+          <Link href={"/shops/new"}>
+            <Button variant="primary" size="lg" className="w-86.5">
+              가게 등록하기
+            </Button>
           </Link>
         </div>
       </section>
@@ -78,47 +78,63 @@ export default async function MyShopPage() {
   const notices = noticesRes.items ?? [];
 
   return (
-    <section className="mx-auto max-w-5xl px-4 py-10">
-      <h1 className="mb-6 text-2xl font-bold">내 가게</h1>
-
-      {/* B) 가게 정보 컴포넌트 */}
-      <ShopInfoCard
-        variant="shop"
-        imageUrl={shop.imageUrl}
-        title={shop.name}
-        address={`${shop.address1} ${shop.address2}`}
-        description={shop.description}
-        footer={
-          <div className="flex gap-3">
-            <div className="w-full flex justify-between gap-4">
-              <Button variant="outline" size="lg" className="w-full">
-                편집하기
-              </Button>
-              <Button variant="primary" size="lg" className="w-full">
-                공고 등록하기
-              </Button>
-            </div>
-          </div>
-        }
-      />
-
-      <h2 className="mt-10 mb-4 text-xl font-bold">내가 등록한 공고</h2>
-
-      {/* C) 공고 없으면: 공고 등록하기 버튼 */}
-      {/* {notices.length === 0 ? (
-        <div className="rounded-xl border p-10 text-center">
-          <p className="mb-6 text-sm text-gray-600">공고를 등록해 보세요.</p>
-          <Link
-            className="inline-flex h-12 items-center justify-center rounded-lg bg-red-500 px-6 text-white"
-            href={`/owner/shops/${shop.id}/notices/new`}
-          >
-            공고 등록하기
-          </Link>
+    <>
+      <section className="mx-auto max-w-5xl px-4 py-14">
+        {/* B) 가게 정보 컴포넌트 */}
+        <div className="mx-auto lg:w-241 w-full">
+          <h1 className="mt-6 mb-6 text-2xl font-bold">내 가게</h1>
+          <ShopInfoCard
+            variant="shop"
+            imageUrl={shop.imageUrl}
+            title={shop.name}
+            address={`${shop.address1} ${shop.address2}`}
+            description={shop.description}
+            footer={
+              <div className="flex gap-3">
+                <div className="w-full flex justify-between gap-4">
+                  <Link href={`/shops/${shop.id}/edit`} className="block w-full">
+                    <Button variant="outline" size="lg" className="w-full">
+                      편집하기
+                    </Button>
+                  </Link>
+                  {/* 경로 맞는지 확인 */}
+                  <Link href={`/notice/${shop.id}/notice-new`} className="block w-full">
+                    <Button variant="primary" size="lg" className="w-full">
+                      공고 등록하기
+                    </Button>
+                  </Link>
+                </div>
+              </div>
+            }
+          />
         </div>
-      ) : (
-        // D) 공고 있으면: 공고 목록 컴포넌트
-        <EmployerNoticesGrid notices={notices} shopId={shop.id} />
-      )} */}
-    </section>
+      </section>
+
+      <section className="w-full bg-gray-5 mb-4">
+        <div className="mx-auto max-w-5xl px-4 py-14">
+          <div className="mx-auto w-full lg:w-241 ">
+
+          </div>
+          <h1 className="mt-6 mb-6 text-2xl font-bold">내가 등록한 공고</h1>
+
+          {/* C) 공고 없으면: 공고 등록하기 버튼 */}
+          {notices.length === 0 ? (
+            <div className="rounded-xl border border-gray-20 p-14 text-center">
+              <p className="mb-6 text-lg text-black">
+                공고를 등록해 보세요.
+              </p>
+              <Link href={`/notice/${shop.id}/notice-new`}>
+                <Button variant="primary" size="lg" className="inlinw-block w-full max-w-86.5">
+                  공고 등록하기
+                </Button>
+              </Link>
+            </div>
+          ) : (
+            // D) 공고 있으면: 공고 목록 컴포넌트
+            <EmployerNoticesGrid  />
+          )}
+        </div>
+      </section>
+    </>
   );
 }
