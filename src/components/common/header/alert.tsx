@@ -88,7 +88,6 @@ function AlertList({
   isLoadingMore: boolean;
   loadMore: () => void;
 }) {
-  // 하단 감지를 위한 Intersection Observer
   const { ref, inView } = useInView({
     rootMargin: "50px",
   });
@@ -117,12 +116,8 @@ function AlertList({
             alert={alert}
           />
         ))}
-      {/* 무한 스크롤 트리거 및 로딩 인디케이터 */}
       {!error && alertsData && alertsData.items.length > 0 && (
-        <div
-          ref={ref}
-          className="py-4"
-        >
+        <div ref={ref}>
           {isLoadingMore && <p className="text-center text-gray-500">로딩 중...</p>}
         </div>
       )}
@@ -157,20 +152,30 @@ export default function Alert({ isOpen, onClose }: AlertProps) {
   return (
     <>
       {/* PC, Tablet */}
-      <div className={pcClasses}>
-        <AlertHeader
-          isLoading={isLoading}
-          count={alertsData?.count}
-          onClose={onClose}
+      <div className="hidden md:block">
+        <div
+          className="fixed inset-0 z-40 bg-black/30"
+          onClick={onClose}
+          aria-hidden="true"
         />
-        {!isLoading && (
-          <AlertList
-            alertsData={alertsData}
-            error={error}
-            isLoadingMore={isLoadingMore}
-            loadMore={loadMore}
+        <div
+          className={pcClasses}
+          onClick={(e) => e.stopPropagation()}
+        >
+          <AlertHeader
+            isLoading={isLoading}
+            count={alertsData?.count}
+            onClose={onClose}
           />
-        )}
+          {!isLoading && (
+            <AlertList
+              alertsData={alertsData}
+              error={error}
+              isLoadingMore={isLoadingMore}
+              loadMore={loadMore}
+            />
+          )}
+        </div>
       </div>
       {/* Mobile */}
       <div className={mobileClasses}>
