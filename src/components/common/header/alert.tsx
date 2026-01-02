@@ -12,8 +12,8 @@ type AlertProps = {
   onClose: () => void;
 };
 
-// 알림 메시지 포맷팅 함수
-function formatAlertMessage(alert: UserAlertItem): string {
+// 알림 메시지 포맷팅 컴포넌트
+function formatAlertMessage(alert: UserAlertItem) {
   const shopName = alert.item.shop?.item.name || "알 수 없는 가게";
   const notice = alert.item.notice?.item;
   const timeRange =
@@ -21,15 +21,41 @@ function formatAlertMessage(alert: UserAlertItem): string {
       ? `(${formatNoticeTimeRange(notice.startsAt, notice.workhour)})`
       : "";
 
-  return `${shopName}${timeRange} 공고 지원이 ${
-    alert.item.result === "accepted" ? "승인" : "거절"
-  }되었어요.`;
+  return (
+    <>
+      {shopName}
+      {timeRange} 공고 지원이{" "}
+      {alert.item.result === "accepted" ? (
+        <span className="text-blue-500">승인</span>
+      ) : (
+        <span className="text-red-500">거절</span>
+      )}
+      되었어요.
+    </>
+  );
 }
 
 // 알림 아이템 컴포넌트
-function AlertItem({ alert }: { alert: UserAlertItem }) {
+function AlertItem({
+  alert,
+  onMarkAsRead,
+}: {
+  alert: UserAlertItem;
+  onMarkAsRead: (alertId: string) => void;
+}) {
+  const handleClick = () => {
+    if (!alert.item.read) {
+      onMarkAsRead(alert.item.id);
+    }
+  };
+
   return (
-    <div className="border-gray-20 flex flex-col gap-1 rounded-lg border bg-white p-4">
+    <div
+      onClick={handleClick}
+      className={`border-gray-20 flex flex-col gap-1 rounded-lg border bg-white p-4 transition-opacity ${
+        alert.item.read ? "cursor-not-allowed opacity-50" : "cursor-pointer opacity-100"
+      }`}
+    >
       <div
         className={`h-1.5 w-1.5 rounded-full ${
           alert.item.result === "accepted" ? "bg-blue-500" : "bg-red-500"
@@ -82,11 +108,13 @@ function AlertList({
   error,
   isLoadingMore,
   loadMore,
+  onMarkAsRead,
 }: {
   alertsData: { items: UserAlertItem[]; hasNext: boolean } | null;
   error: Error | null;
   isLoadingMore: boolean;
   loadMore: () => void;
+  onMarkAsRead: (alertId: string) => void;
 }) {
   const { ref, inView } = useInView({
     rootMargin: "50px",
@@ -114,6 +142,7 @@ function AlertList({
           <AlertItem
             key={alert.item.id}
             alert={alert}
+            onMarkAsRead={onMarkAsRead}
           />
         ))}
       {!error && alertsData && alertsData.items.length > 0 && (
@@ -126,7 +155,8 @@ function AlertList({
 }
 
 export default function Alert({ isOpen, onClose }: AlertProps) {
-  const { alertsData, isLoading, isLoadingMore, error, loadMore } = useUserAlerts(isOpen);
+  const { alertsData, isLoading, isLoadingMore, error, loadMore, markAsRead } =
+    useUserAlerts(isOpen);
 
   // 알림창이 열려있을 때 body 스크롤 막기
   useEffect(() => {
@@ -173,6 +203,7 @@ export default function Alert({ isOpen, onClose }: AlertProps) {
               error={error}
               isLoadingMore={isLoadingMore}
               loadMore={loadMore}
+              onMarkAsRead={markAsRead}
             />
           )}
         </div>
@@ -190,6 +221,7 @@ export default function Alert({ isOpen, onClose }: AlertProps) {
             error={error}
             isLoadingMore={isLoadingMore}
             loadMore={loadMore}
+            onMarkAsRead={markAsRead}
           />
         )}
       </div>

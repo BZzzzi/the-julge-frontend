@@ -78,5 +78,27 @@ export function useUserAlerts(isOpen: boolean) {
     }
   }, [isOpen, isLoggedIn, user?.userId, alertsData, isLoadingMore]);
 
-  return { alertsData, isLoading, isLoadingMore, error, loadMore };
+  // 알림 읽음 처리
+  const markAsRead = useCallback(
+    async (alertId: string) => {
+      if (!isLoggedIn || !user?.userId || !alertsData) {
+        return;
+      }
+
+      try {
+        await apiClient.alert.updateUserAlertStatus(user.userId, alertId);
+        setAlertsData({
+          ...alertsData,
+          items: alertsData.items.map((item) =>
+            item.item.id === alertId ? { ...item, item: { ...item.item, read: true } } : item,
+          ),
+        });
+      } catch (err) {
+        console.error("알림 읽음 처리 오류:", err);
+      }
+    },
+    [isLoggedIn, user?.userId, alertsData],
+  );
+
+  return { alertsData, isLoading, isLoadingMore, error, loadMore, markAsRead };
 }
