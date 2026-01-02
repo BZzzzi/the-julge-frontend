@@ -1,4 +1,3 @@
-// src/lib/auth.ts
 type JwtPayload = {
   userId?: string;
   id?: string;
