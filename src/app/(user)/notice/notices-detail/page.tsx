@@ -1,5 +1,6 @@
 "use client";
 
+import Header from "@/components/common/header/header";
 import ShopInfoCard from "@/components/common/shop-info/ShopInfoCard";
 import Card, { CardData } from "@/components/domain/card";
 import Footer from "@/components/domain/footer";
@@ -58,7 +59,7 @@ export default function NoticeListWithDetailPage() {
   const [cards, setCards] = useState<CardData[]>([]);
 
   const [selectedId, setSelectedId] = useState<string | null>(null);
-  const [selectedIsPast, setSelectedIsPast] = useState<boolean>(false); 
+  const [selectedIsPast, setSelectedIsPast] = useState<boolean>(false);
 
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
@@ -102,7 +103,7 @@ export default function NoticeListWithDetailPage() {
 
         setCards(mapped);
 
-        // 첫 카드 자동 선택 
+        // 첫 카드 자동 선택
         if (mapped.length > 0) {
           setSelectedId(mapped[0].id);
           setSelectedIsPast(mapped[0].isPast);
@@ -154,7 +155,8 @@ export default function NoticeListWithDetailPage() {
 
   return (
     <div>
-      <div className="flex items-start justify-center">
+      <Header />
+      <div className="mt-15 flex items-start justify-center">
         {/* ✅ ShopInfoCard */}
         {selected && derived ? (
           <ShopInfoCard
@@ -170,21 +172,19 @@ export default function NoticeListWithDetailPage() {
               selectedIsPast ? (
                 <button
                   disabled
-                  className="w-full rounded-xl bg-[var(--color-gray-40)] py-3 text-white font-bold cursor-not-allowed"
+                  className="bg-gray-40 w-full cursor-not-allowed rounded-xl py-3 font-bold text-white"
                 >
                   신청 불가
                 </button>
               ) : (
-                <button className="w-full rounded-xl bg-orange-600 py-3 text-white font-bold cursor-pointer">
+                <button className="w-full cursor-pointer rounded-xl bg-orange-600 py-3 font-bold text-white">
                   지원하기
                 </button>
               )
             }
           />
         ) : (
-          <div className="p-6 text-sm text-neutral-500">
-            공고를 선택하면 상세가 표시됩니다.
-          </div>
+          <div className="p-6 text-sm text-neutral-500">공고를 선택하면 상세가 표시됩니다.</div>
         )}
       </div>
       <div className="my-30">
