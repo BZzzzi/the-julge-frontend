@@ -4,7 +4,14 @@
  * 클라이언트 컴포넌틑 API 요청은 Next.js 프록시 서버로 보냄(BFF 패턴)
  *
  */
-export async function fetcher(endpoint: string, options: RequestInit = {}) {
+export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
+
+interface Option extends Omit<RequestInit, "method"> {
+  method?: HttpMethod;
+  params?: Record<string, unknown> | object;
+}
+
+export async function fetcher(endpoint: string, options: Option = {}) {
   const isServer = typeof window === "undefined";
 
   // URL 설정
@@ -15,6 +22,21 @@ export async function fetcher(endpoint: string, options: RequestInit = {}) {
     "Content-Type": "application/json",
     ...(options.headers as HeadersInit),
   };
+
+  let queryString = "";
+
+  //객체를 쿼리 스트링으로 변환하는 헬퍼 함수
+  // 있으면 쿼리 스트링을 붙인다.
+  if (options.params) {
+    const searchParams = new URLSearchParams();
+    Object.entries(options.params).forEach(([key, value]) => {
+      if (value !== undefined && value !== null) {
+        searchParams.append(key, String(value));
+      }
+    });
+
+    queryString = "?" + searchParams.toString();
+  }
 
   // 토큰 추출 및 Authorization 헤더 추가
   // 있으면 넣어서 보내고 없으면 그냥 기본 헤더를 보낸다.
@@ -33,7 +55,7 @@ export async function fetcher(endpoint: string, options: RequestInit = {}) {
   }
 
   // API 요청
-  const response = await fetch(url, {
+  const response = await fetch(url + queryString, {
     ...options,
     headers,
   });
