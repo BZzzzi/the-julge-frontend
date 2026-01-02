@@ -29,7 +29,6 @@ export default function ShopEditForm({ initialShop }: Props) {
   const router = useRouter();
   const fileRef = useRef<HTMLInputElement | null>(null);
 
-  // ✅ 초기값 (등록 페이지와 동일한 폼 구조)
   const [form, setForm] = useState<FormState>({
     name: initialShop.name ?? "",
     address1: (initialShop.address1 as SeoulRegion) ?? "",
@@ -41,7 +40,6 @@ export default function ShopEditForm({ initialShop }: Props) {
 
   const [errors, setErrors] = useState<FormErrors>({});
 
-  // ✅ 이미지도 초기값 넣기
   const [previewUrl, setPreviewUrl] = useState<string>(initialShop.imageUrl ?? "");
   const [imageUrl, setImageUrl] = useState<string>(initialShop.imageUrl ?? "");
 
@@ -63,7 +61,6 @@ export default function ShopEditForm({ initialShop }: Props) {
     const file = e.target.files?.[0];
     if (!file) return;
 
-    // 로컬 미리보기
     const localPreview = URL.createObjectURL(file);
     setPreviewUrl(localPreview);
     setErrors((prev) => ({ ...prev, imageUrl: undefined }));
@@ -71,11 +68,9 @@ export default function ShopEditForm({ initialShop }: Props) {
     try {
       setUploading(true);
 
-      // presigned url
       const { item } = await apiClient.images.createImg({ name: file.name });
       const presignedUrl = item.url;
 
-      // S3 PUT 업로드
       const putRes = await fetch(presignedUrl, {
         method: "PUT",
         body: file,
@@ -84,7 +79,6 @@ export default function ShopEditForm({ initialShop }: Props) {
 
       if (!putRes.ok) throw new Error("이미지 업로드에 실패했습니다.");
 
-      // 쿼리 제거
       const finalUrl = presignedUrl.split("?")[0];
       setImageUrl(finalUrl);
     } catch (err) {
@@ -92,7 +86,6 @@ export default function ShopEditForm({ initialShop }: Props) {
       setErrorMessage(msg);
       setErrorOpen(true);
 
-      // 실패하면 기존 이미지로 복구
       setPreviewUrl(initialShop.imageUrl ?? "");
       setImageUrl(initialShop.imageUrl ?? "");
     } finally {
@@ -140,7 +133,6 @@ export default function ShopEditForm({ initialShop }: Props) {
         originalHourlyPay: Number(form.originalHourlyPay),
       };
 
-      // ✅ 핵심: putShop 사용
       await apiClient.shops.putShop(initialShop.id, payload);
 
       setSuccessOpen(true);
