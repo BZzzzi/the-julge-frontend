@@ -92,12 +92,12 @@ export default async function MyShopPage() {
             footer={
               <div className="flex gap-3">
                 <div className="w-full flex justify-between gap-4">
-                  <Link href={`/shops/${shop.id}/edit`} className="block w-full">
+                  <Link href={`/shops/edit`} className="block w-full">
                     <Button variant="outline" size="lg" className="w-full">
                       편집하기
                     </Button>
                   </Link>
-                  {/* 경로 맞는지 확인 */}
+                  {/* 경로 맞는지 확인!!! */}
                   <Link href={`/notice/${shop.id}/notice-new`} className="block w-full">
                     <Button variant="primary" size="lg" className="w-full">
                       공고 등록하기
