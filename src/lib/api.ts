@@ -17,19 +17,6 @@ import { ShopItem, UpsertShopReq } from "@/types/shop";
 import { SignupUserReq, SignupUserRes, UserInfoPutReq, UserInfoRes } from "@/types/user";
 import { fetcher } from "./api-client";
 
-//객체를 쿼리 스트링으로 변환하는 헬퍼 함수
-const buildQueryString = (params: Record<string, unknown> | object): string => {
-  const searchParams = new URLSearchParams();
-
-  Object.entries(params as Record<string, unknown>).forEach(([key, value]) => {
-    if (value !== undefined && value !== null) {
-      searchParams.append(key, String(value));
-    }
-  });
-
-  return searchParams.toString();
-};
-
 /**
  *
  * 팀원들이 가져다 쓸 API 모듈
@@ -48,14 +35,12 @@ export const apiClient = {
    * notice
    */
   notices: {
-    getNotices: (params: NoticeReq = {}): Promise<NoticesRes> => {
-      const queryString = buildQueryString(params);
-      return fetcher(`/notices?${queryString}`, { method: "GET" });
+    getNotices: (params?: NoticeReq): Promise<NoticesRes> => {
+      return fetcher(`/notices`, { method: "GET", params });
     },
 
-    getShopNotices: (shopId: string, params: ShopNoticeReq = {}): Promise<NoticesRes> => {
-      const queryString = buildQueryString(params);
-      return fetcher(`/shops/${shopId}/notices?${queryString}`, { method: "GET" });
+    getShopNotices: (shopId: string, params?: ShopNoticeReq): Promise<NoticesRes> => {
+      return fetcher(`/shops/${shopId}/notices`, { method: "GET", params });
     },
 
     getShopOnlyNotice: (shopId: string, noticeId: string): Promise<NoticeItem> => {
@@ -65,7 +50,7 @@ export const apiClient = {
     createShopNotice: (shopId: string, data: UpsertShopNoticeReq): Promise<NoticeItem> =>
       fetcher(`/shops/${shopId}/notices`, { method: "POST", body: JSON.stringify(data) }),
 
-    putShopOnlyNotice: (
+    updateShopOnlyNotice: (
       shopId: string,
       noticeId: string,
       data: UpsertShopNoticeReq,
@@ -86,7 +71,7 @@ export const apiClient = {
     createShop: (data: UpsertShopReq): Promise<ShopItem> =>
       fetcher("/shops", { method: "POST", body: JSON.stringify(data) }),
 
-    putShop: (shopId: string, data: UpsertShopReq): Promise<ShopItem> =>
+    updateShopInfo: (shopId: string, data: UpsertShopReq): Promise<ShopItem> =>
       fetcher(`/shops/${shopId}`, { method: "PUT", body: JSON.stringify(data) }),
   },
 
@@ -97,20 +82,19 @@ export const apiClient = {
     getShopNoticeApplications: (
       shopId: string,
       noticeId: string,
-      params: NoticeApplicationsReq = {},
+      params?: NoticeApplicationsReq,
     ): Promise<NoticeApplicationsRes> => {
-      const queryString = buildQueryString(params);
-      return fetcher(`/shops/${shopId}/notices/${noticeId}/applications?${queryString}`, {
+      return fetcher(`/shops/${shopId}/notices/${noticeId}/applications`, {
         method: "GET",
+        params,
       });
     },
 
     getShopNoticeUserApplications: (
       userId: string,
-      params: NoticeApplicationsReq = {},
+      params?: NoticeApplicationsReq,
     ): Promise<NoticeApplicationsRes> => {
-      const queryString = buildQueryString(params);
-      return fetcher(`/users/${userId}/applications?${queryString}`, { method: "GET" });
+      return fetcher(`/users/${userId}/applications`, { method: "GET", params });
     },
 
     createShopNoticeApplication: (
@@ -119,7 +103,7 @@ export const apiClient = {
     ): Promise<NoticeApplicationItem> =>
       fetcher(`/shops/${shopId}/notices/${noticeId}/applications`, { method: "POST" }),
 
-    putShopNoticeApplicationStatus: (
+    updateShopNoticeApplicationStatus: (
       shopId: string,
       noticeId: string,
       applicationId: string,
@@ -141,7 +125,7 @@ export const apiClient = {
     createUser: (data: SignupUserReq): Promise<SignupUserRes> =>
       fetcher("/users", { method: "POST", body: JSON.stringify(data) }),
 
-    putUser: (userId: string, data: UserInfoPutReq): Promise<UserInfoRes> =>
+    updateUserInfo: (userId: string, data: UserInfoPutReq): Promise<UserInfoRes> =>
       fetcher(`/users/${userId}`, { method: "PUT", body: JSON.stringify(data) }),
   },
 
@@ -149,12 +133,11 @@ export const apiClient = {
    * alert
    */
   alert: {
-    getUserAlerts: (userId: string, params: AlertReq = {}): Promise<UserAlertsRes> => {
-      const queryString = buildQueryString(params);
-      return fetcher(`/users/${userId}/alerts?${queryString}`, { method: "GET" });
+    getUserAlerts: (userId: string, params?: AlertReq): Promise<UserAlertsRes> => {
+      return fetcher(`/users/${userId}/alerts`, { method: "GET", params });
     },
 
-    putUserAlertStatus: (userId: string, alertId: string): Promise<UserAlertStatusRes> =>
+    updateUserAlertStatus: (userId: string, alertId: string): Promise<UserAlertStatusRes> =>
       fetcher(`/users/${userId}/alerts/${alertId}`, { method: "PUT" }),
   },
 };
