@@ -4,7 +4,7 @@ import { getUserIdFromToken } from "@/lib/auth";
 import { cookies } from "next/headers";
 import Image from "next/image";
 import Link from "next/link";
-import ShopEditForm from "./shopEditForm";
+import ShopEditForm from "./shop-edit-form";
 
 export default async function ShopEditPage() {
   const cookieStore = await cookies();
