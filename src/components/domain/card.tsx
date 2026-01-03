@@ -3,8 +3,8 @@
 import Image from "next/image";
 
 export type CardData = {
-  noticeId: string; 
-  shopId: string; 
+  noticeId: string;
+  shopId: string;
   name: string;
   startsAt: string;
   workhour: number;
@@ -18,6 +18,7 @@ type CardProps = {
   cards: CardData[];
   selectedNoticeId: string | null;
   onSelect: (payload: { noticeId: string; shopId: string; isPast: boolean }) => void;
+  pastLabel?: string;
 };
 
 const BASE_HOURLY_PAY = 10320;
@@ -49,7 +50,12 @@ function formatKSTTime(date: Date) {
   return `${get("hour")}:${get("minute")}`;
 }
 
-export default function Card({ cards, selectedNoticeId, onSelect }: CardProps) {
+export default function Card({
+  cards,
+  selectedNoticeId,
+  onSelect,
+  pastLabel = "지난 공고", // ✅ 기본값
+}: CardProps) {
   return (
     <div className="mx-auto max-w-87.5 sm:max-w-87.5 md:max-w-169.5 lg:max-w-241">
       <p className="mb-4 text-xl font-bold text-black md:mb-8 md:text-[28px]">최근에 본 공고</p>
@@ -73,12 +79,12 @@ export default function Card({ cards, selectedNoticeId, onSelect }: CardProps) {
               onClick={() => onSelect({ noticeId: c.noticeId, shopId: c.shopId, isPast: c.isPast })}
               className={[
                 "border-gray-20 relative h-full cursor-pointer overflow-hidden rounded-lg border",
-                isSelected ,
+                isSelected,
               ].join(" ")}
             >
               {isPast && (
                 <div className="pointer-events-none absolute inset-0 z-20 flex items-start justify-center bg-black/25 pt-19.75">
-                  <span className="text-[28px] font-bold text-white">지난 공고</span>
+                  <span className="text-[28px] font-bold text-white">{pastLabel}</span>
                 </div>
               )}
 
