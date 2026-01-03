@@ -59,7 +59,10 @@ export default function Table({
                 const userItem = item.user?.item;
 
                 return (
-                  <tr key={item.id} className="group hover:bg-gray-5 transition-colors">
+                  <tr
+                    key={item.id}
+                    className="group hover:bg-gray-5 transition-colors"
+                  >
                     <td className="group-hover:bg-gray-5 sticky left-0 z-10 bg-white px-[12px] py-[16px] align-middle text-base text-black transition-colors after:absolute after:top-0 after:right-0 after:h-full after:w-[1px] after:bg-gray-100 after:content-[''] min-[964px]:after:hidden">
                       <div className="truncate">{userItem?.name || "이름 없음"}</div>
                     </td>
@@ -84,7 +87,11 @@ export default function Table({
 
         {totalCount > 0 && (
           <div className="border-gray-20 flex h-[64px] items-center justify-center border-t px-[12px] py-[8px]">
-            <Pagination totalPage={totalPage} currentPage={page} onPageChange={onPageChange} />
+            <Pagination
+              totalPage={totalPage}
+              currentPage={page}
+              onPageChange={onPageChange}
+            />
           </div>
         )}
       </div>
