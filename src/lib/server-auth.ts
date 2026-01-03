@@ -1,4 +1,3 @@
-// src/lib/server-auth.ts
 import { getUserIdFromToken } from "@/lib/auth";
 import { cookies } from "next/headers";
 
