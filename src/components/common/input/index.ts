@@ -1,13 +1,13 @@
-export { default as Field } from "./Field";
-export type { FieldProps } from "./Field";
+export { default as Field } from "./field";
+export type { FieldProps } from "./field";
 
-export { default as FieldInput } from "./FieldInput";
-export type { FieldInputProps } from "./FieldInput";
+export { default as FieldInput } from "./fieldInput";
+export type { FieldInputProps } from "./fieldInput";
 
-export { default as PasswordInput } from "./PasswordInput";
-export type { PasswordInputProps } from "./PasswordInput";
+export { default as PasswordInput } from "./passwordInput";
+export type { PasswordInputProps } from "./passwordInput";
 
-export { default as Select } from "./Select";
-export type { SelectOption, SelectProps } from "./Select";
+export { default as Select } from "./select";
+export type { SelectOption, SelectProps } from "./select";
 
 export type { InputSize } from "./inputStyles";

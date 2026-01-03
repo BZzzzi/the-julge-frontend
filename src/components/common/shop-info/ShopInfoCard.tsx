@@ -47,10 +47,10 @@ export default function ShopInfoCard(props: ShopInfoCardProps) {
   const { imageUrl, imageAlt, className, detail } = props;
 
   return (
-    <div className="flex flex-col gap-4">
+    <div className="flex w-full max-w-241 flex-col gap-4">
       <section
         className={[
-          "flex w-full flex-col rounded-2xl",
+          "flex w-full flex-col rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.1)]",
           "h-112.5 gap-4 p-4 md:h-169.25",
           "md:gap-6 md:p-6",
           "lg:h-89 lg:w-241 lg:flex-row lg:gap-8 lg:p-6",
