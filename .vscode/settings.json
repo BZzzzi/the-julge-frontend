@@ -24,5 +24,11 @@
   "editor.inlineSuggest.enabled": true,
   "[typescriptreact]": {
     "editor.defaultFormatter": "esbenp.prettier-vscode"
+  },
+
+  // 6. CSS 린터 설정 (Tailwind 디렉티브 인식)
+  "css.lint.unknownAtRules": "ignore",
+  "[css]": {
+    "editor.defaultFormatter": "esbenp.prettier-vscode"
   }
 }

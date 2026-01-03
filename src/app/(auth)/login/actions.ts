@@ -37,5 +37,5 @@ export async function login(
   });
 
   // TODO: 로그인 후, 페이지 이동
-  redirect("/notice-list");
+  redirect("/notice/notices-list");
 }
