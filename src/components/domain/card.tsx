@@ -3,20 +3,21 @@
 import Image from "next/image";
 
 export type CardData = {
-  id: string;
+  noticeId: string; 
+  shopId: string; 
   name: string;
   startsAt: string;
   workhour: number;
   address1: string;
   hourlyPay: number;
   imageUrl: string;
-  isPast: boolean; // page.tsx에서 계산해 내려줌
+  isPast: boolean;
 };
 
 type CardProps = {
   cards: CardData[];
-  selectedId: string | null;
-  onSelect: (payload: { id: string; isPast: boolean }) => void; // ✅ 변경
+  selectedNoticeId: string | null;
+  onSelect: (payload: { noticeId: string; shopId: string; isPast: boolean }) => void;
 };
 
 const BASE_HOURLY_PAY = 10320;
@@ -48,7 +49,7 @@ function formatKSTTime(date: Date) {
   return `${get("hour")}:${get("minute")}`;
 }
 
-export default function Card({ cards, selectedId, onSelect }: CardProps) {
+export default function Card({ cards, selectedNoticeId, onSelect }: CardProps) {
   return (
     <div className="mx-auto max-w-87.5 sm:max-w-87.5 md:max-w-169.5 lg:max-w-241">
       <p className="mb-4 text-xl font-bold text-black md:mb-8 md:text-[28px]">최근에 본 공고</p>
@@ -64,15 +65,15 @@ export default function Card({ cards, selectedId, onSelect }: CardProps) {
 
           const isPast = c.isPast;
           const imgDim = isPast ? "opacity-70 grayscale" : "opacity-100";
-          const isSelected = selectedId === c.id;
+          const isSelected = selectedNoticeId === c.noticeId;
 
           return (
             <div
-              key={c.id}
-              onClick={() => onSelect({ id: c.id, isPast: c.isPast })} // ✅ 변경
+              key={c.noticeId}
+              onClick={() => onSelect({ noticeId: c.noticeId, shopId: c.shopId, isPast: c.isPast })}
               className={[
                 "border-gray-20 relative h-full cursor-pointer overflow-hidden rounded-lg border",
-                isSelected,
+                isSelected ,
               ].join(" ")}
             >
               {isPast && (
@@ -83,12 +84,7 @@ export default function Card({ cards, selectedId, onSelect }: CardProps) {
 
               <div className="mx-3 mt-3 sm:mx-3 sm:mt-3 md:mx-4 md:mt-4">
                 <div className="bg-gray-30 relative h-21 w-full overflow-hidden rounded-xl sm:h-21 lg:h-40">
-                  <Image
-                    src={c.imageUrl}
-                    alt={c.name}
-                    fill
-                    className={`object-cover ${imgDim}`}
-                  />
+                  <Image src={c.imageUrl} alt={c.name} fill className={`object-cover ${imgDim}`} />
                 </div>
               </div>
 
@@ -145,18 +141,14 @@ export default function Card({ cards, selectedId, onSelect }: CardProps) {
                 </div>
 
                 <div className="items-left mt-4 mb-4 flex flex-col justify-between md:flex-row">
-                  <p
-                    className={`text-lg font-bold md:text-2xl ${
-                      isPast ? "text-gray-30" : "text-black"
-                    }`}
-                  >
+                  <p className={`text-lg font-bold md:text-2xl ${isPast ? "text-gray-30" : "text-black"}`}>
                     {c.hourlyPay.toLocaleString()}원
                   </p>
 
                   <div
                     className={`flex h-4.5 w-30.75 items-center justify-center rounded-[20px] bg-transparent md:h-8 md:w-42 ${
                       isPast ? "md:bg-gray-20" : isUp ? "md:bg-red-40" : "md:bg-blue-500"
-                    } `}
+                    }`}
                   >
                     <div className="font-regular flex w-full items-center justify-start gap-0.5 text-xs md:justify-center md:text-sm">
                       <span className={`md:text-white ${isPast ? "text-gray-30" : "text-red-40"}`}>
@@ -183,10 +175,7 @@ export default function Card({ cards, selectedId, onSelect }: CardProps) {
                 </div>
               </div>
 
-              <div
-                className="absolute inset-0 z-10 cursor-pointer"
-                aria-hidden
-              />
+              <div className="absolute inset-0 z-10 cursor-pointer" aria-hidden />
             </div>
           );
         })}

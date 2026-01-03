@@ -3,14 +3,14 @@
 import Modal from "@/components/common/modal/Modal";
 import ShopInfoCard from "@/components/common/shop-info/ShopInfoCard";
 import Card, { CardData } from "@/components/domain/card";
-import { apiClient } from "@/lib/api"; // ✅ apiClient 경로는 너 프로젝트에 맞게 수정!
+import { apiClient } from "@/lib/api";
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
 type NoticesResponse = {
   items: Array<{
     item: {
-      id: string;
+      id: string; 
       hourlyPay: number;
       startsAt: string;
       workhour: number;
@@ -18,7 +18,7 @@ type NoticesResponse = {
       closed?: boolean;
       shop: {
         item: {
-          id: string;
+          id: string; 
           name: string;
           category?: string;
           address1: string;
@@ -72,7 +72,7 @@ export default function NoticeListWithDetailPage() {
   const [open, setOpen] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>("apply");
 
-  const [selectedId, setSelectedId] = useState<string | null>(null);
+  const [selectedNoticeId, setSelectedNoticeId] = useState<string | null>(null);
   const [selectedIsPast, setSelectedIsPast] = useState<boolean>(false);
 
   const [loading, setLoading] = useState(true);
@@ -85,7 +85,7 @@ export default function NoticeListWithDetailPage() {
       try {
         setLoading(true);
         setErrorMsg(null);
-        
+
         const data = (await apiClient.notices.getNotices({
           limit: 6,
           sort: "time",
@@ -96,12 +96,16 @@ export default function NoticeListWithDetailPage() {
         setItems(data.items);
 
         const now = Date.now();
+
+        // ✅ CardData 구조에 맞게 noticeId / shopId를 넣어준다
         const mapped: CardData[] = data.items.map((n) => {
           const startsAt = n.item.startsAt;
           const isPast = new Date(startsAt).getTime() < now;
 
           return {
-            id: n.item.id,
+            noticeId: n.item.id,
+            shopId: n.item.shop.item.id,
+
             name: n.item.shop.item.name,
             startsAt,
             address1: n.item.shop.item.address1,
@@ -115,7 +119,7 @@ export default function NoticeListWithDetailPage() {
         setCards(mapped);
 
         if (mapped.length > 0) {
-          setSelectedId(mapped[0].id);
+          setSelectedNoticeId(mapped[0].noticeId);
           setSelectedIsPast(mapped[0].isPast);
         }
       } catch (e) {
@@ -134,9 +138,9 @@ export default function NoticeListWithDetailPage() {
   }, []);
 
   const selected = useMemo(() => {
-    if (!selectedId) return null;
-    return items.find((n) => n.item.id === selectedId)?.item ?? null;
-  }, [items, selectedId]);
+    if (!selectedNoticeId) return null;
+    return items.find((n) => n.item.id === selectedNoticeId)?.item ?? null;
+  }, [items, selectedNoticeId]);
 
   const derived = useMemo(() => {
     if (!selected) return null;
@@ -274,20 +278,17 @@ export default function NoticeListWithDetailPage() {
             }}
           />
         ) : (
-          <div className="p-6 text-sm text-neutral-500">
-            공고를 선택하면 상세가 표시됩니다.
-          </div>
+          <div className="p-6 text-sm text-neutral-500">공고를 선택하면 상세가 표시됩니다.</div>
         )}
       </div>
 
       <div className="my-30">
         <Card
           cards={cards}
-          selectedId={selectedId}
-          onSelect={({ id, isPast }) => {
-            setSelectedId(id);
+          selectedNoticeId={selectedNoticeId} 
+          onSelect={({ noticeId, isPast }) => {
+            setSelectedNoticeId(noticeId); 
             setSelectedIsPast(isPast);
-            // setApplied(false);
           }}
         />
       </div>
@@ -304,9 +305,16 @@ export default function NoticeListWithDetailPage() {
   );
 }
 
+/* =========================
+   Skeleton UI
+========================= */
+
 function Skeleton({ className }: { className: string }) {
   return (
-    <div className={["animate-pulse rounded-lg bg-gray-20/70", className].join(" ")} aria-hidden="true" />
+    <div
+      className={["animate-pulse rounded-lg bg-gray-20/70", className].join(" ")}
+      aria-hidden="true"
+    />
   );
 }
 
