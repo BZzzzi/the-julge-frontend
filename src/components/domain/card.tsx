@@ -25,7 +25,7 @@ type CardProps = {
   title?: string; // 기본: "최근에 본 공고"
 
   // ✅ 추가: 오버레이 문구 커스텀
-  pastLabel?: string;   // 기본: "지난 공고"
+  pastLabel?: string; // 기본: "지난 공고"
   closedLabel?: string; // 기본: "마감 공고"
 };
 
@@ -62,9 +62,9 @@ export default function Card({
   cards,
   selectedNoticeId,
   onSelect,
-  title = "최근에 본 공고",   // ✅ 기본값
-  pastLabel = "지난 공고",    // ✅ 기본값
-  closedLabel = "마감 공고",  // ✅ 기본값
+  title = "최근에 본 공고", // ✅ 기본값
+  pastLabel = "지난 공고", // ✅ 기본값
+  closedLabel = "마감 공고", // ✅ 기본값
 }: CardProps) {
   return (
     <div className="mx-auto max-w-87.5 sm:max-w-87.5 md:max-w-169.5 lg:max-w-241">
@@ -93,9 +93,7 @@ export default function Card({
           return (
             <div
               key={c.noticeId}
-              onClick={() =>
-                onSelect({ noticeId: c.noticeId, shopId: c.shopId, isPast: c.isPast })
-              }
+              onClick={() => onSelect({ noticeId: c.noticeId, shopId: c.shopId, isPast: c.isPast })}
               className={[
                 "border-gray-20 relative h-full cursor-pointer overflow-hidden rounded-lg border",
                 isSelected,
@@ -110,7 +108,12 @@ export default function Card({
 
               <div className="mx-3 mt-3 sm:mx-3 sm:mt-3 md:mx-4 md:mt-4">
                 <div className="bg-gray-30 relative h-21 w-full overflow-hidden rounded-xl sm:h-21 lg:h-40">
-                  <Image src={c.imageUrl} alt={c.name} fill className={`object-cover ${imgDim}`} />
+                  <Image
+                    src={c.imageUrl}
+                    alt={c.name}
+                    fill
+                    className={`object-cover ${imgDim}`}
+                  />
                 </div>
               </div>
 
@@ -167,7 +170,9 @@ export default function Card({
                 </div>
 
                 <div className="items-left mt-4 mb-4 flex flex-col justify-between md:flex-row">
-                  <p className={`text-lg font-bold md:text-2xl ${isBlocked ? "text-gray-30" : "text-black"}`}>
+                  <p
+                    className={`text-lg font-bold md:text-2xl ${isBlocked ? "text-gray-30" : "text-black"}`}
+                  >
                     {c.hourlyPay.toLocaleString()}원
                   </p>
 
@@ -177,7 +182,9 @@ export default function Card({
                     }`}
                   >
                     <div className="font-regular flex w-full items-center justify-start gap-0.5 text-xs md:justify-center md:text-sm">
-                      <span className={`md:text-white ${isBlocked ? "text-gray-30" : "text-red-40"}`}>
+                      <span
+                        className={`md:text-white ${isBlocked ? "text-gray-30" : "text-red-40"}`}
+                      >
                         기존 시급보다 {percentText}%
                       </span>
 
@@ -201,7 +208,10 @@ export default function Card({
                 </div>
               </div>
 
-              <div className="absolute inset-0 z-10 cursor-pointer" aria-hidden />
+              <div
+                className="absolute inset-0 z-10 cursor-pointer"
+                aria-hidden
+              />
             </div>
           );
         })}

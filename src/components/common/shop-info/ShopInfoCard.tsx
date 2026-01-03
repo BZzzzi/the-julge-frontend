@@ -107,7 +107,7 @@ function DetailCardView({
     <div
       className={[
         "bg-gray-10 mt-4 w-full rounded-2xl",
-        "px-6 py-5 md:px-8 md:py-6 ",
+        "px-6 py-5 md:px-8 md:py-6",
         className ?? "",
       ].join(" ")}
       aria-label="공고 설명"

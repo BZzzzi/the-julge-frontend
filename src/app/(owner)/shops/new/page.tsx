@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/common/button";
-import { Field, FieldInput, Select, } from "@/components/common/input";
+import { Field, FieldInput, Select } from "@/components/common/input";
 import Modal from "@/components/common/modal/Modal";
 import { apiClient } from "@/lib/api";
 import type { SeoulRegion, ShopCategory } from "@/types/shop";
@@ -12,10 +12,10 @@ import { useRef, useState } from "react";
 type FormState = {
   name: string;
   category: ShopCategory | "";
-  address1: SeoulRegion | ""
+  address1: SeoulRegion | "";
   address2: string;
   description: string;
-  originalHourlyPay: string; 
+  originalHourlyPay: string;
 };
 
 type FormErrors = Partial<Record<keyof FormState | "imageUrl", string>>;
@@ -34,8 +34,8 @@ export default function ShopRegisterPage() {
   });
 
   const [errors, setErrors] = useState<FormErrors>({});
-  const [previewUrl, setPreviewUrl] = useState<string>(""); 
-  const [imageUrl, setImageUrl] = useState<string>("");     
+  const [previewUrl, setPreviewUrl] = useState<string>("");
+  const [imageUrl, setImageUrl] = useState<string>("");
   const [uploading, setUploading] = useState(false);
   const [submitting, setSubmitting] = useState(false);
 
@@ -64,11 +64,11 @@ export default function ShopRegisterPage() {
     try {
       setUploading(true);
 
-      // 2) presigned URL 생성 
+      // 2) presigned URL 생성
       const { item } = await apiClient.images.createImg({ name: file.name });
       const presignedUrl = item.url;
 
-      // 3) S3로 PUT 업로드 
+      // 3) S3로 PUT 업로드
       const putRes = await fetch(presignedUrl, {
         method: "PUT",
         body: file,
@@ -130,7 +130,7 @@ export default function ShopRegisterPage() {
 
       const payload = {
         name: form.name.trim(),
-        category: form.category as ShopCategory,  
+        category: form.category as ShopCategory,
         address1: form.address1 as SeoulRegion,
         address2: form.address2.trim(),
         description: form.description.trim(),
@@ -165,28 +165,36 @@ export default function ShopRegisterPage() {
   };
 
   return (
-    <main className="min-h-screen bg-gray-5 py-10">
+    <main className="bg-gray-5 min-h-screen py-10">
       <section>
         <div className="mx-auto w-full max-w-241 rounded-2xl p-8">
           {/* 헤더 */}
           <header className="mb-4 flex items-center justify-between">
-            <h1 className="text-[24px] font-extrabold text-gray-90">가게 정보</h1>
+            <h1 className="text-gray-90 text-[24px] font-extrabold">가게 정보</h1>
             <button
               type="button"
               aria-label="닫기"
-              className="rounded-md p-2 text-gray-90 hover:bg-black/5"
-              onClick={() => router.push("/shops/my-shop")}>
+              className="text-gray-90 rounded-md p-2 hover:bg-black/5"
+              onClick={() => router.push("/shops/my-shop")}
+            >
               ✕
             </button>
           </header>
 
           {/* 폼 */}
-          <form className="flex flex-col gap-8" onSubmit={onSubmit}>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-              <div className="flex flex-col gap-6" >
-                <Field label="가게 이름" required htmlFor="name">
-                  <FieldInput 
-                    id="name" 
+          <form
+            className="flex flex-col gap-8"
+            onSubmit={onSubmit}
+          >
+            <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
+              <div className="flex flex-col gap-6">
+                <Field
+                  label="가게 이름"
+                  required
+                  htmlFor="name"
+                >
+                  <FieldInput
+                    id="name"
                     placeholder="입력"
                     value={form.name}
                     onChange={(e) => setValue("name", e.target.value)}
@@ -194,7 +202,12 @@ export default function ShopRegisterPage() {
                   />
                 </Field>
 
-                <Field label="주소" required htmlFor="address1" errorMessage={errors.address1}>
+                <Field
+                  label="주소"
+                  required
+                  htmlFor="address1"
+                  errorMessage={errors.address1}
+                >
                   <Select
                     className="max-h-60 overflow-y-auto"
                     placeholder="선택"
@@ -231,10 +244,15 @@ export default function ShopRegisterPage() {
                   />
                 </Field>
 
-                <Field label="기본 시급" required htmlFor="originalHourlyPay" errorMessage={errors.originalHourlyPay}>
-                  <FieldInput 
-                    id="originalHourlyPay" 
-                    placeholder="입력" 
+                <Field
+                  label="기본 시급"
+                  required
+                  htmlFor="originalHourlyPay"
+                  errorMessage={errors.originalHourlyPay}
+                >
+                  <FieldInput
+                    id="originalHourlyPay"
+                    placeholder="입력"
                     rightSlot="원"
                     value={form.originalHourlyPay}
                     onChange={(e) => setValue("originalHourlyPay", e.target.value)}
@@ -243,43 +261,60 @@ export default function ShopRegisterPage() {
                 </Field>
 
                 {/* 이미지 */}
-                <Field label="이미지" errorMessage={errors.imageUrl}>
-                <input
-                  ref={fileRef}
-                  type="file"
-                  accept="image/*"
-                  className="hidden"
-                  onChange={onChangeFile}
-                />
-
-                <button
-                  type="button"
-                  onClick={onPickImage}
-                  className={[
-                    "relative flex h-60 w-full flex-col items-center justify-center gap-3 rounded-xl", 
-                    "border border-dashed border-black/20 bg-gray-10",
-                    errors.imageUrl ? "ring-2 ring-red-200" : ""
-                  ].join(" ")}
-                  disabled={uploading}
+                <Field
+                  label="이미지"
+                  errorMessage={errors.imageUrl}
                 >
-                  {previewUrl ? (
-                    <Image src={previewUrl} alt="미리보기" fill className="rounded-xl object-cover" />
-                  ) : (
-                    <>
-                      <Image src="/icon/cameraicon.svg" alt="이미지 추가" width={28} height={28} />
-                      <p className="text-[14px] text-gray-50">
-                        {uploading ? "업로드 중..." : "이미지 추가하기"}
-                      </p>
-                    </>
-                  )}
-                </button>
+                  <input
+                    ref={fileRef}
+                    type="file"
+                    accept="image/*"
+                    className="hidden"
+                    onChange={onChangeFile}
+                  />
 
-              </Field>
+                  <button
+                    type="button"
+                    onClick={onPickImage}
+                    className={[
+                      "relative flex h-60 w-full flex-col items-center justify-center gap-3 rounded-xl",
+                      "bg-gray-10 border border-dashed border-black/20",
+                      errors.imageUrl ? "ring-2 ring-red-200" : "",
+                    ].join(" ")}
+                    disabled={uploading}
+                  >
+                    {previewUrl ? (
+                      <Image
+                        src={previewUrl}
+                        alt="미리보기"
+                        fill
+                        className="rounded-xl object-cover"
+                      />
+                    ) : (
+                      <>
+                        <Image
+                          src="/icon/cameraicon.svg"
+                          alt="이미지 추가"
+                          width={28}
+                          height={28}
+                        />
+                        <p className="text-[14px] text-gray-50">
+                          {uploading ? "업로드 중..." : "이미지 추가하기"}
+                        </p>
+                      </>
+                    )}
+                  </button>
+                </Field>
               </div>
 
               {/* 오른쪽 */}
               <div className="flex flex-col gap-6">
-                <Field label="분류" required htmlFor="category" errorMessage={errors.category}>
+                <Field
+                  label="분류"
+                  required
+                  htmlFor="category"
+                  errorMessage={errors.category}
+                >
                   <Select
                     placeholder="선택"
                     options={[
@@ -298,9 +333,14 @@ export default function ShopRegisterPage() {
                   />
                 </Field>
 
-                <Field label="상세 주소" required htmlFor="address2" errorMessage={errors.address2}>
-                  <FieldInput 
-                    id="address2" 
+                <Field
+                  label="상세 주소"
+                  required
+                  htmlFor="address2"
+                  errorMessage={errors.address2}
+                >
+                  <FieldInput
+                    id="address2"
                     placeholder="입력"
                     value={form.address2}
                     onChange={(e) => setValue("address2", e.target.value)}
@@ -311,7 +351,11 @@ export default function ShopRegisterPage() {
             </div>
 
             {/* 가게 설명 */}
-            <Field label="가게 설명" htmlFor="description" errorMessage={errors.description}>
+            <Field
+              label="가게 설명"
+              htmlFor="description"
+              errorMessage={errors.description}
+            >
               <FieldInput
                 as="textarea"
                 rows={6}
@@ -324,7 +368,12 @@ export default function ShopRegisterPage() {
 
             {/* 버튼 */}
             <div className="flex justify-center pt-2">
-              <Button type="submit" size="lg" className="w-75" disabled={uploading || submitting}>
+              <Button
+                type="submit"
+                size="lg"
+                className="w-75"
+                disabled={uploading || submitting}
+              >
                 {submitting ? "등록 중..." : uploading ? "업로드 중..." : "등록하기"}
               </Button>
             </div>

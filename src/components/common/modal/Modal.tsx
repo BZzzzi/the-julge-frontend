@@ -76,7 +76,12 @@ export default function Modal(props: ModalProps) {
 
       return (
         <div className="flex w-full max-w-[320px] justify-center">
-          <Button className="w-30" variant="primary" size="lg" onClick={onAction}>
+          <Button
+            className="w-30"
+            variant="primary"
+            size="lg"
+            onClick={onAction}
+          >
             {label}
           </Button>
         </div>
@@ -104,7 +109,7 @@ export default function Modal(props: ModalProps) {
 
     const [left, right] = actions;
     return (
-      <div className="flex max-w-50 gap-3 justify-center">
+      <div className="flex max-w-50 justify-center gap-3">
         <Button
           className="w-20"
           variant={left.variant ?? "outline"}
@@ -128,17 +133,17 @@ export default function Modal(props: ModalProps) {
   const panelClass =
     props.variant === "icon"
       ? [
-        "w-[298px] h-[184px]",
-        "rounded-2xl bg-white shadow-[0_12px_32px_rgba(0,0,0,0.16)]",
-        "relative",
-        className ?? "",
-      ].join(" ")
+          "w-[298px] h-[184px]",
+          "rounded-2xl bg-white shadow-[0_12px_32px_rgba(0,0,0,0.16)]",
+          "relative",
+          className ?? "",
+        ].join(" ")
       : [
-        "w-[327px] h-[220px] md:w-full md:max-w-[540px] md:h-[250px]",
-        "rounded-2xl bg-white shadow-[0_12px_32px_rgba(0,0,0,0.16)]",
-        "relative",
-        className ?? "",
-      ].join(" ");
+          "w-[327px] h-[220px] md:w-full md:max-w-[540px] md:h-[250px]",
+          "rounded-2xl bg-white shadow-[0_12px_32px_rgba(0,0,0,0.16)]",
+          "relative",
+          className ?? "",
+        ].join(" ");
 
   return (
     <div
@@ -158,10 +163,10 @@ export default function Modal(props: ModalProps) {
       <div className={panelClass}>
         {props.variant === "icon" ? (
           // ================= icon layout =================
-          <div className="h-full p-6 flex flex-col justify-between items-center">
-            <div className="flex flex-col items-center gap-3 text-center justify-center">
+          <div className="flex h-full flex-col items-center justify-between p-6">
+            <div className="flex flex-col items-center justify-center gap-3 text-center">
               <div className="flex h-10 w-10 items-center justify-center">{props.icon}</div>
-              <p className="whitespace-pre-line text-[16px] leading-relaxed text-gray-900">
+              <p className="text-[16px] leading-relaxed whitespace-pre-line text-gray-900">
                 {description}
               </p>
             </div>
@@ -170,13 +175,13 @@ export default function Modal(props: ModalProps) {
         ) : (
           // ================= basic layout =================
           <div className="h-full px-6">
-            <div className="h-full flex items-center justify-center text-center -translate-y-4">
-              <p className="whitespace-pre-line leading-relaxed text-[18px] text-gray-900">
+            <div className="flex h-full -translate-y-4 items-center justify-center text-center">
+              <p className="text-[18px] leading-relaxed whitespace-pre-line text-gray-900">
                 {description}
               </p>
             </div>
 
-            <div className="absolute left-0 right-0 bottom-6 flex justify-center">{footer}</div>
+            <div className="absolute right-0 bottom-6 left-0 flex justify-center">{footer}</div>
           </div>
         )}
       </div>
