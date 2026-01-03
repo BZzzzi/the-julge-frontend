@@ -113,6 +113,7 @@ export default function NoticeListWithDetailPage() {
             workhour: n.item.workhour,
             imageUrl: n.item.shop.item.imageUrl,
             isPast,
+            isClosed: Boolean(n.item.closed),
           };
         });
 
