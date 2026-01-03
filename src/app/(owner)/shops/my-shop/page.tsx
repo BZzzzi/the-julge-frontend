@@ -1,12 +1,14 @@
 // src/app/(owner)/shops/my-shop/page.tsx
 import { Button } from "@/components/common/button";
 import ShopInfoCard from "@/components/common/shop-info/ShopInfoCard";
-import EmployerNoticesGrid from "@/components/domain/card";
 import { apiClient } from "@/lib/api";
 import { getUserIdFromToken } from "@/lib/auth";
 import { cookies } from "next/headers";
 import Link from "next/link";
 
+import EmployerNoticesSection from "@/app/(owner)/shops/my-shop/employer-notices-section";
+
+import type { CardData } from "@/components/domain/card";
 
 export default async function MyShopPage() {
   /**
@@ -77,6 +79,23 @@ export default async function MyShopPage() {
   const noticesRes = await apiClient.notices.getShopNotices(shop.id, { offset: 0, limit: 6 });
   const notices = noticesRes.items ?? [];
 
+  // ✅ Card 컴포넌트에 내려줄 데이터로 매핑
+  const cards: CardData[] = notices.map((n) => {
+    const notice = n.item;
+
+    return {
+      noticeId: notice.id,
+      shopId: shop.id,
+      name: shop.name,
+      startsAt: notice.startsAt,
+      workhour: notice.workhour,
+      address1: shop.address1,
+      hourlyPay: notice.hourlyPay,
+      imageUrl: shop.imageUrl,
+      isPast: false,
+    };
+  });
+
   return (
     <>
       <section className="mx-auto max-w-5xl px-4 py-14">
@@ -114,7 +133,7 @@ export default async function MyShopPage() {
         <div className="mx-auto max-w-5xl px-4 py-14">
           <div className="mx-auto w-full lg:w-241 ">
 
-          </div>
+          
           <h1 className="mt-6 mb-6 text-2xl font-bold">내가 등록한 공고</h1>
 
           {/* C) 공고 없으면: 공고 등록하기 버튼 */}
@@ -124,15 +143,16 @@ export default async function MyShopPage() {
                 공고를 등록해 보세요.
               </p>
               <Link href={`/notice/${shop.id}/notice-new`}>
-                <Button variant="primary" size="lg" className="inlinw-block w-full max-w-86.5">
+                <Button variant="primary" size="lg" className="inline-block w-full max-w-86.5">
                   공고 등록하기
                 </Button>
               </Link>
             </div>
           ) : (
             // D) 공고 있으면: 공고 목록 컴포넌트
-            <EmployerNoticesGrid  />
+            <EmployerNoticesSection cards={cards}  />
           )}
+          </div>
         </div>
       </section>
     </>
