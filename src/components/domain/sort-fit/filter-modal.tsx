@@ -262,7 +262,10 @@ const FilterModal = ({ onClose, onApply }: FilterModalProps) => {
                   {draft.locations.length > 0 && (
                     <div className="mt-2 flex flex-wrap gap-2">
                       {draft.locations.map((loc) => (
-                        <div key={loc} className="flex-none">
+                        <div
+                          key={loc}
+                          className="flex-none"
+                        >
                           <div className="flex h-8 items-center justify-between rounded-full bg-red-100 px-3 text-[12px] leading-[22px] font-bold text-red-600">
                             <span className="min-w-0 flex-1 truncate">{loc}</span>
                             <button
