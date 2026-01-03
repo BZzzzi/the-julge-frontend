@@ -11,14 +11,22 @@ export type CardData = {
   address1: string;
   hourlyPay: number;
   imageUrl: string;
+
   isPast: boolean;
+  isClosed: boolean; // ✅ 추가: 마감 여부
 };
 
 type CardProps = {
   cards: CardData[];
   selectedNoticeId: string | null;
   onSelect: (payload: { noticeId: string; shopId: string; isPast: boolean }) => void;
-  pastLabel?: string;
+
+  // ✅ 추가: 카드리스트 타이틀 커스텀
+  title?: string; // 기본: "최근에 본 공고"
+
+  // ✅ 추가: 오버레이 문구 커스텀
+  pastLabel?: string;   // 기본: "지난 공고"
+  closedLabel?: string; // 기본: "마감 공고"
 };
 
 const BASE_HOURLY_PAY = 10320;
@@ -54,11 +62,13 @@ export default function Card({
   cards,
   selectedNoticeId,
   onSelect,
-  pastLabel = "지난 공고", // ✅ 기본값
+  title = "최근에 본 공고",   // ✅ 기본값
+  pastLabel = "지난 공고",    // ✅ 기본값
+  closedLabel = "마감 공고",  // ✅ 기본값
 }: CardProps) {
   return (
     <div className="mx-auto max-w-87.5 sm:max-w-87.5 md:max-w-169.5 lg:max-w-241">
-      <p className="mb-4 text-xl font-bold text-black md:mb-8 md:text-[28px]">최근에 본 공고</p>
+      <p className="mb-4 text-xl font-bold text-black md:mb-8 md:text-[28px]">{title}</p>
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-2 md:grid-cols-2 md:gap-3.5 lg:grid-cols-3">
         {cards.map((c) => {
@@ -69,22 +79,32 @@ export default function Card({
           const start = new Date(c.startsAt);
           const end = new Date(start.getTime() + c.workhour * 60 * 60 * 1000);
 
-          const isPast = c.isPast;
-          const imgDim = isPast ? "opacity-70 grayscale" : "opacity-100";
           const isSelected = selectedNoticeId === c.noticeId;
+
+          // ✅ 마감/지난공고 표시 우선순위(마감이 더 강한 상태라 우선)
+          const isBlocked = c.isClosed || c.isPast;
+
+          // ✅ 오버레이 텍스트 결정
+          const overlayText = c.isClosed ? closedLabel : pastLabel;
+
+          // ✅ 시각 처리(마감/지난공고면 흐리게)
+          const imgDim = isBlocked ? "opacity-70 grayscale" : "opacity-100";
 
           return (
             <div
               key={c.noticeId}
-              onClick={() => onSelect({ noticeId: c.noticeId, shopId: c.shopId, isPast: c.isPast })}
+              onClick={() =>
+                onSelect({ noticeId: c.noticeId, shopId: c.shopId, isPast: c.isPast })
+              }
               className={[
                 "border-gray-20 relative h-full cursor-pointer overflow-hidden rounded-lg border",
                 isSelected,
               ].join(" ")}
             >
-              {isPast && (
+              {/* ✅ 마감/지난 공고 오버레이 */}
+              {isBlocked && (
                 <div className="pointer-events-none absolute inset-0 z-20 flex items-start justify-center bg-black/25 pt-19.75">
-                  <span className="text-[28px] font-bold text-white">{pastLabel}</span>
+                  <span className="text-[28px] font-bold text-white">{overlayText}</span>
                 </div>
               )}
 
@@ -97,7 +117,7 @@ export default function Card({
               <div className="mt-3 px-3 sm:mt-3 sm:px-3 lg:mt-4 lg:px-4">
                 <p
                   className={`text-[16px] font-bold sm:text-[16px] md:text-[20px] ${
-                    isPast ? "text-gray-30" : "text-black"
+                    isBlocked ? "text-gray-30" : "text-black"
                   }`}
                 >
                   {c.name}
@@ -113,7 +133,7 @@ export default function Card({
                   />
                   <div
                     className={`font-regular text-xs md:text-sm ${
-                      isPast ? "text-gray-30" : "text-gray-50"
+                      isBlocked ? "text-gray-30" : "text-gray-50"
                     }`}
                   >
                     <div className="sm:block md:hidden">
@@ -139,7 +159,7 @@ export default function Card({
                   />
                   <p
                     className={`font-regular text-xs md:text-sm ${
-                      isPast ? "text-gray-30" : "text-gray-50"
+                      isBlocked ? "text-gray-30" : "text-gray-50"
                     }`}
                   >
                     {c.address1}
@@ -147,17 +167,17 @@ export default function Card({
                 </div>
 
                 <div className="items-left mt-4 mb-4 flex flex-col justify-between md:flex-row">
-                  <p className={`text-lg font-bold md:text-2xl ${isPast ? "text-gray-30" : "text-black"}`}>
+                  <p className={`text-lg font-bold md:text-2xl ${isBlocked ? "text-gray-30" : "text-black"}`}>
                     {c.hourlyPay.toLocaleString()}원
                   </p>
 
                   <div
                     className={`flex h-4.5 w-30.75 items-center justify-center rounded-[20px] bg-transparent md:h-8 md:w-42 ${
-                      isPast ? "md:bg-gray-20" : isUp ? "md:bg-red-40" : "md:bg-blue-500"
+                      isBlocked ? "md:bg-gray-20" : isUp ? "md:bg-red-40" : "md:bg-blue-500"
                     }`}
                   >
                     <div className="font-regular flex w-full items-center justify-start gap-0.5 text-xs md:justify-center md:text-sm">
-                      <span className={`md:text-white ${isPast ? "text-gray-30" : "text-red-40"}`}>
+                      <span className={`md:text-white ${isBlocked ? "text-gray-30" : "text-red-40"}`}>
                         기존 시급보다 {percentText}%
                       </span>
 
