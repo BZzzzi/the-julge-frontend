@@ -3,6 +3,7 @@
 import Modal from "@/components/common/modal/Modal";
 import ShopInfoCard from "@/components/common/shop-info/ShopInfoCard";
 import Card, { CardData } from "@/components/domain/card";
+import { apiClient } from "@/lib/api"; // ✅ apiClient 경로는 너 프로젝트에 맞게 수정!
 import Image from "next/image";
 import { useEffect, useMemo, useState } from "react";
 
@@ -84,13 +85,12 @@ export default function NoticeListWithDetailPage() {
       try {
         setLoading(true);
         setErrorMsg(null);
+        
+        const data = (await apiClient.notices.getNotices({
+          limit: 6,
+          sort: "time",
+        })) as unknown as NoticesResponse;
 
-        const res = await fetch(`/api/notices?limit=6&sort=time`, {
-          cache: "no-store",
-        });
-        if (!res.ok) throw new Error(`리스트 fetch 실패 (status: ${res.status})`);
-
-        const data: NoticesResponse = await res.json();
         if (!alive) return;
 
         setItems(data.items);
@@ -144,8 +144,7 @@ export default function NoticeListWithDetailPage() {
     const start = new Date(selected.startsAt);
     const end = new Date(start.getTime() + selected.workhour * 60 * 60 * 1000);
 
-    const diffPercent =
-      ((selected.hourlyPay - BASE_HOURLY_PAY) / BASE_HOURLY_PAY) * 100;
+    const diffPercent = ((selected.hourlyPay - BASE_HOURLY_PAY) / BASE_HOURLY_PAY) * 100;
     const isUp = diffPercent >= 0;
     const percentText = Math.round(Math.abs(diffPercent));
 
@@ -232,12 +231,7 @@ export default function NoticeListWithDetailPage() {
     };
   }, [modalMode]);
 
-  // ✅ 로딩: 스켈레톤 UI
-  if (loading) {
-    return <NoticeDetailSkeleton />;
-  }
-
-  // ✅ 에러는 기존처럼
+  if (loading) return <NoticeDetailSkeleton />;
   if (errorMsg) return <div className="p-6">에러: {errorMsg}</div>;
 
   return (
@@ -293,7 +287,7 @@ export default function NoticeListWithDetailPage() {
           onSelect={({ id, isPast }) => {
             setSelectedId(id);
             setSelectedIsPast(isPast);
-            // setApplied(false); // 공고 바뀌면 신청 상태 초기화 원하면 켜기
+            // setApplied(false);
           }}
         />
       </div>
@@ -310,23 +304,15 @@ export default function NoticeListWithDetailPage() {
   );
 }
 
-
 function Skeleton({ className }: { className: string }) {
   return (
-    <div
-      className={[
-        "animate-pulse rounded-lg bg-gray-20/70",
-        className,
-      ].join(" ")}
-      aria-hidden="true"
-    />
+    <div className={["animate-pulse rounded-lg bg-gray-20/70", className].join(" ")} aria-hidden="true" />
   );
 }
 
 function NoticeDetailSkeleton() {
   return (
     <div>
-      {/* ShopInfoCard 자리 */}
       <div className="mt-15 flex items-start justify-center">
         <div
           className={[
@@ -337,14 +323,12 @@ function NoticeDetailSkeleton() {
             "bg-white",
           ].join(" ")}
         >
-          {/* image skeleton */}
-          <Skeleton className="h-44.5 w-full md:h-76.75 lg:h-77 lg:w-134.75 rounded-2xl" />
+          <Skeleton className="h-44.5 w-full rounded-2xl md:h-76.75 lg:h-77 lg:w-134.75" />
 
-          {/* content skeleton */}
           <div className="flex flex-1 flex-col gap-3">
-            <Skeleton className="h-5 w-16 md:h-6" />        
-            <Skeleton className="h-8 w-40 md:h-10 md:w-56" /> 
-            <Skeleton className="h-6 w-56 md:w-72 rounded-full" /> 
+            <Skeleton className="h-5 w-16 md:h-6" />
+            <Skeleton className="h-8 w-40 md:h-10 md:w-56" />
+            <Skeleton className="h-6 w-56 rounded-full md:w-72" />
 
             <div className="mt-1 flex items-center gap-2">
               <Skeleton className="h-5 w-5 rounded-md" />
@@ -367,7 +351,6 @@ function NoticeDetailSkeleton() {
         </div>
       </div>
 
-      {/* detail(회색 카드) 자리 */}
       <div className="mx-auto mt-4 w-full max-w-241 px-4 lg:px-0">
         <div className="bg-gray-10 w-full rounded-2xl px-6 py-5 md:px-8 md:py-6">
           <Skeleton className="h-5 w-24 md:h-6" />
@@ -379,7 +362,6 @@ function NoticeDetailSkeleton() {
         </div>
       </div>
 
-      {/* 카드 리스트 자리 */}
       <div className="my-30 mx-auto max-w-87.5 sm:max-w-87.5 md:max-w-169.5 lg:max-w-241 px-0">
         <div className="mb-4 md:mb-8">
           <Skeleton className="h-7 w-40 md:h-9 md:w-56" />
@@ -387,10 +369,7 @@ function NoticeDetailSkeleton() {
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-2 md:grid-cols-2 md:gap-3.5 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="border-gray-20 relative h-full overflow-hidden rounded-lg border bg-white"
-            >
+            <div key={i} className="border-gray-20 relative h-full overflow-hidden rounded-lg border bg-white">
               <div className="mx-3 mt-3 sm:mx-3 sm:mt-3 md:mx-4 md:mt-4">
                 <Skeleton className="h-21 w-full rounded-xl sm:h-21 lg:h-40" />
               </div>
