@@ -129,7 +129,6 @@ export default function NoticeListWithDetailPage({ userId }: Props) {
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
   const scrollYRef = useRef(0);
-  
 
   useEffect(() => {
     let alive = true;
@@ -250,9 +249,19 @@ export default function NoticeListWithDetailPage({ userId }: Props) {
 
   const modalIcon = useMemo(() => {
     return modalMode === "apply" ? (
-      <Image src="/icon/checked.svg" alt="확인" width={24} height={24} />
+      <Image
+        src="/icon/checked.svg"
+        alt="확인"
+        width={24}
+        height={24}
+      />
     ) : (
-      <Image src="/icon/caution.svg" alt="주의" width={24} height={24} />
+      <Image
+        src="/icon/caution.svg"
+        alt="주의"
+        width={24}
+        height={24}
+      />
     );
   }, [modalMode]);
 
@@ -292,7 +301,7 @@ export default function NoticeListWithDetailPage({ userId }: Props) {
 
   if (loading) return <NoticeDetailSkeleton />;
   if (errorMsg) return <div className="p-6">에러: {errorMsg}</div>;
-  
+
   return (
     <div>
       <div className="mt-15 flex items-start justify-center">
@@ -381,7 +390,7 @@ export default function NoticeListWithDetailPage({ userId }: Props) {
 function Skeleton({ className }: { className: string }) {
   return (
     <div
-      className={["animate-pulse rounded-lg bg-gray-20/70", className].join(" ")}
+      className={["bg-gray-20/70 animate-pulse rounded-lg", className].join(" ")}
       aria-hidden="true"
     />
   );
@@ -439,14 +448,17 @@ function NoticeDetailSkeleton() {
         </div>
       </div>
 
-      <div className="my-30 mx-auto max-w-87.5 sm:max-w-87.5 md:max-w-169.5 lg:max-w-241 px-0">
+      <div className="mx-auto my-30 max-w-87.5 px-0 sm:max-w-87.5 md:max-w-169.5 lg:max-w-241">
         <div className="mb-4 md:mb-8">
           <Skeleton className="h-7 w-40 md:h-9 md:w-56" />
         </div>
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-2 md:grid-cols-2 md:gap-3.5 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="border-gray-20 relative h-full overflow-hidden rounded-lg border bg-white">
+            <div
+              key={i}
+              className="border-gray-20 relative h-full overflow-hidden rounded-lg border bg-white"
+            >
               <div className="mx-3 mt-3 sm:mx-3 sm:mt-3 md:mx-4 md:mt-4">
                 <Skeleton className="h-21 w-full rounded-xl sm:h-21 lg:h-40" />
               </div>
