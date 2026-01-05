@@ -109,7 +109,7 @@ export default async function MyShopPage() {
   return (
     <>
       <section className="mx-auto max-w-5xl px-4 py-14">
-        <div className="mx-auto lg:w-241 w-full">
+        <div className="mx-auto w-[351px] md:w-[680px] lg:w-[964px]">
           <h1 className="mt-6 mb-6 text-xl md:text-[28px] font-bold">내 가게</h1>
           <ShopInfoCard
             variant="shop"
@@ -140,7 +140,7 @@ export default async function MyShopPage() {
 
       <section className="w-full bg-gray-5 mb-4">
         <div className="mx-auto max-w-5xl px-4 py-14">
-          <div className="mx-auto w-full lg:w-241 ">
+          <div className="mx-auto w-[351px] md:w-[680px] lg:w-[964px]">
 
           {notices.length === 0 ? (
             <div className="rounded-xl border border-gray-20 p-14 text-center">
