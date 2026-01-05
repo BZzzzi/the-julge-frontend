@@ -150,23 +150,13 @@ function NoticeContent({
 
       {scheduleText && (
         <div className="mt-1 flex items-center gap-2 text-neutral-500 md:mt-2">
-          <Image
-            src="/icon/clock.svg"
-            alt="근무 시간"
-            width={20}
-            height={20}
-          />
+          <Image src="/icon/clock.svg" alt="근무 시간" width={20} height={20} />
           <span className="text-sm md:text-base">{scheduleText}</span>
         </div>
       )}
 
       <div className="mt-1 flex items-center gap-2 text-neutral-500 md:mt-2">
-        <Image
-          src="/icon/location.svg"
-          alt="근무 지역"
-          width={20}
-          height={20}
-        />
+        <Image src="/icon/location.svg" alt="근무 지역" width={20} height={20} />
         <span className="text-sm font-normal md:text-base">{address}</span>
       </div>
 
@@ -195,12 +185,7 @@ function ShopContent({
       <h3 className="mt-2 text-xl font-extrabold text-neutral-900 md:text-[28px]">{title}</h3>
 
       <div className="mt-1 flex items-center gap-2 text-neutral-500 md:mt-2">
-        <Image
-          src="/icon/pin.svg"
-          alt="근무 지역"
-          width={20}
-          height={20}
-        />
+        <Image src="/icon/pin.svg" alt="근무 지역" width={20} height={20} />
         <span className="text-sm font-normal md:text-base">{address}</span>
       </div>
 
