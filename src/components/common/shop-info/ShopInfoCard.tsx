@@ -48,7 +48,7 @@ export default function ShopInfoCard(props: ShopInfoCardProps) {
 
   return (
     <div className="w-full">
-      <div className="mx-auto flex w-[351px] flex-col gap-4 md:w-[680px] lg:w-[964px]">
+      <div className="mx-auto flex w-87.75 flex-col gap-4 md:w-170 lg:w-241">
         <section
           className={[
             "flex flex-col rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.1)]",
