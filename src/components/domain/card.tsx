@@ -19,7 +19,6 @@ type CardProps = {
   cards: CardData[];
   selectedNoticeId: string | null;
 
-  // isClosed까지 전달
   onSelect: (payload: {
     noticeId: string;
     shopId: string;
@@ -27,11 +26,18 @@ type CardProps = {
     isClosed: boolean;
   }) => void;
 
-  // 타이틀/라벨 커스텀
-  title?: string; // 기본: "최근에 본 공고"
-  pastLabel?: string; // 기본: "지난 공고"
-  closedLabel?: string; // 기본: "마감 공고"
+  onCardClick?: (payload: {
+    noticeId: string;
+    shopId: string;
+    isPast: boolean;
+    isClosed: boolean;
+  }) => void;
+
+  title?: string;
+  pastLabel?: string;
+  closedLabel?: string;
 };
+
 
 const BASE_HOURLY_PAY = 10320;
 
@@ -66,6 +72,7 @@ export default function Card({
   cards,
   selectedNoticeId,
   onSelect,
+  onCardClick,
   title = "최근에 본 공고",
   pastLabel = "지난 공고",
   closedLabel = "마감 공고",
@@ -96,14 +103,17 @@ export default function Card({
           return (
             <div
               key={c.noticeId}
-              onClick={() =>
-                onSelect({
+              onClick={() => {
+                const payload = {
                   noticeId: c.noticeId,
                   shopId: c.shopId,
                   isPast: c.isPast,
                   isClosed: c.isClosed,
-                })
-              }
+                };
+
+                onSelect(payload);
+                onCardClick?.(payload); // ✅ 있으면 이동까지
+              }}
               className={[
                 "border-gray-20 relative h-full cursor-pointer overflow-hidden rounded-lg border",
                 isSelected ? "border-orange-600 ring-2 ring-orange-200" : "",
