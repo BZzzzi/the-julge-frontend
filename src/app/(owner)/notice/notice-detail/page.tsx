@@ -1,11 +1,18 @@
 "use client";
 
-import Table from "@/components/common/table";
-import { NoticeApplicationItem } from "@/types/application";
+import Link from "next/link";
 import { useState } from "react";
 
+import { Button } from "@/components/common/button";
+import Footer from "@/components/common/layouts/footer";
+import Header from "@/components/common/layouts/header";
+import ShopInfoCard from "@/components/common/shop-info/ShopInfoCard";
+import Table from "@/components/common/table";
+
+import { NoticeApplicationItem } from "@/types/application";
+
 // [샘플 데이터]
-const MOCK_DATA: NoticeApplicationItem[] = [
+const MOCK_APPLICANTS: NoticeApplicationItem[] = [
   {
     item: {
       id: "app-1",
@@ -114,42 +121,6 @@ const MOCK_DATA: NoticeApplicationItem[] = [
       },
     },
   },
-  {
-    item: {
-      id: "app-7",
-      status: "rejected",
-      createdAt: "2023-12-04T09:00:00Z",
-      user: {
-        item: {
-          id: "user-7",
-          email: "employee-test-07@test.com",
-          type: "employee",
-          name: "박철수",
-          phone: "010-7777-7777",
-          bio: "안녕하세요! 열심히 하겠습니다.",
-        },
-        href: "",
-      },
-    },
-  },
-  {
-    item: {
-      id: "app-8",
-      status: "pending",
-      createdAt: "2023-12-04T15:00:00Z",
-      user: {
-        item: {
-          id: "user-8",
-          email: "employee-test-08@test.com",
-          type: "employee",
-          name: "정수민",
-          phone: "010-8888-8888",
-          bio: "시간 약속 철저히 지킵니다. 믿고 맡겨주세요.",
-        },
-        href: "",
-      },
-    },
-  },
 ];
 
 const ITEMS_PER_PAGE = 5;
@@ -158,26 +129,69 @@ export default function NoticeDetailPage() {
   const [page, setPage] = useState(1);
 
   const offset = (page - 1) * ITEMS_PER_PAGE;
-  const applications = MOCK_DATA.slice(offset, offset + ITEMS_PER_PAGE);
-  const totalCount = MOCK_DATA.length;
+  const applications = MOCK_APPLICANTS.slice(offset, offset + ITEMS_PER_PAGE);
+  const totalCount = MOCK_APPLICANTS.length;
 
   return (
-    <div className="flex min-h-screen flex-col items-center py-10">
-      <div className="w-full max-w-[964px]">
-        <h1 className="mb-10 text-3xl font-bold">공고 상세 페이지</h1>
+    <div className="bg-gray-5 flex min-h-screen flex-col">
+      <Header />
+      <div className="flex w-full flex-1 flex-col items-center py-10 md:py-[60px]">
+        <main className="flex w-full max-w-[964px] flex-col gap-8 px-4 md:gap-12">
+          {/* 상단: 가게 이름 및 공고 정보 */}
+          <div className="flex flex-col gap-6">
+            <div>
+              <span className="mb-2 block text-lg font-bold text-orange-600">식당</span>
+              <h1 className="text-3xl font-bold text-black">도토리 식당</h1>
+            </div>
 
-        <div className="mb-10 rounded-lg border border-gray-200 bg-white p-6">
-          <p className="text-gray-500">공고 상세 정보 영역</p>
-        </div>
-
-        <Table
-          applications={applications}
-          totalCount={totalCount}
-          page={page}
-          itemsPerPage={ITEMS_PER_PAGE}
-          onPageChange={setPage}
-        />
+            <ShopInfoCard
+              variant="notice"
+              imageUrl="https://plus.unsplash.com/premium_photo-1663852297267-827c73e7529e?q=80&w=2940&auto=format&fit=crop"
+              wageText="15,000원"
+              wageBadge={{
+                text: "기존 시급보다 50% ↑",
+                icon: (
+                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="ml-1">
+                    <path
+                      d="M6 2L6 10M6 2L2 6M6 2L10 6"
+                      stroke="white"
+                      strokeWidth="1.5"
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                    />
+                  </svg>
+                ),
+              }}
+              scheduleText="2023-01-02 15:00~18:00 (3시간)"
+              address="서울시 송파구"
+              description={`알바하기 편한 너구리네 라면집!
+              라면 올려두고 끓이기만 하면 되어서 쉬운 편에 속하는 가게입니다.`}
+              detail={{
+                content: `기존 알바 친구가 그만둬서 새로운 친구를 구했는데, 그 사이에 하루가 비네요.
+                급해서 시급도 높였고 그렇게 바쁜 날이 아니라서 괜찮을거예요.`,
+              }}
+              footer={
+                <Link href="/notice/notice-edit" passHref className="w-full">
+                  <Button variant="outline" size="lg" className="w-full bg-white">
+                    공고 편집하기
+                  </Button>
+                </Link>
+              }
+            />
+          </div>
+          <div className="flex flex-col gap-6">
+            <Table
+              applications={applications}
+              totalCount={totalCount}
+              page={page}
+              itemsPerPage={ITEMS_PER_PAGE}
+              onPageChange={setPage}
+            />
+          </div>
+        </main>
       </div>
+
+      <Footer />
     </div>
   );
 }

@@ -249,19 +249,9 @@ export default function NoticeListWithDetailPage({ userId }: Props) {
 
   const modalIcon = useMemo(() => {
     return modalMode === "apply" ? (
-      <Image
-        src="/icon/checked.svg"
-        alt="확인"
-        width={24}
-        height={24}
-      />
+      <Image src="/icon/checked.svg" alt="확인" width={24} height={24} />
     ) : (
-      <Image
-        src="/icon/caution.svg"
-        alt="주의"
-        width={24}
-        height={24}
-      />
+      <Image src="/icon/caution.svg" alt="주의" width={24} height={24} />
     );
   }, [modalMode]);
 
