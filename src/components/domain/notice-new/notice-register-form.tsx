@@ -115,9 +115,13 @@ export default function NoticeRegisterForm() {
       }
 
       setIsModalOpen(true);
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error(error);
-      alert(error.message || "알 수 없는 에러가 발생했습니다.");
+      if (error instanceof Error) {
+        alert(error.message || "알 수 없는 에러가 발생했습니다.");
+      } else {
+        alert(String(error) || "알 수 없는 에러가 발생했습니다.");
+      }
     } finally {
       setIsLoading(false);
     }
