@@ -47,49 +47,50 @@ export default function ShopInfoCard(props: ShopInfoCardProps) {
   const { imageUrl, imageAlt, className, detail } = props;
 
   return (
-    <div className="flex w-full max-w-241 flex-col gap-4">
-      <section
-        className={[
-          "flex w-full flex-col rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.1)]",
-          "h-112.5 gap-4 p-4 md:h-169.25",
-          "md:gap-6 md:p-6",
-          "lg:h-89 lg:w-241 lg:flex-row lg:gap-8 lg:p-6",
-          props.variant === "shop" ? "bg-[#FDE9E4]" : "bg-white",
-          className ?? "",
-        ].join(" ")}
-        aria-label="가게/공고 카드"
-      >
-        {/* image */}
-        <div
+    <div className= "w-full px-4 md:px-6 lg:px-0">
+      <div className="mx-auto flex flex-col gap-4 w-[351px] md:w-[680px] lg:w-[964px]">
+        <section
           className={[
-            "relative w-full overflow-hidden rounded-2xl bg-neutral-100",
-            "h-44.5 md:h-76.75",
-            "lg:h-77 lg:w-134.75",
+            "flex flex-col rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.1)]",
+            "h-112.5 gap-4 p-4 md:h-169.25 md:gap-6 md:p-6",
+            "lg:h-89 lg:w-241 lg:flex-row lg:gap-8 lg:p-6",
+            props.variant === "shop" ? "bg-[#FDE9E4]" : "bg-white",
+            className ?? "",
           ].join(" ")}
+          aria-label="가게/공고 카드"
         >
-          <Image
-            src={imageUrl}
-            alt={imageAlt || "대표 이미지"}
-            fill
-            className="object-cover"
-            sizes="(min-width: 1440px) 539px, 100vw"
+          {/* image */}
+          <div
+            className={[
+              "relative overflow-hidden rounded-2xl bg-neutral-100",
+              "h-44.5 md:h-76.75",
+              "lg:h-77 lg:w-134.75",
+            ].join(" ")}
+          >
+            <Image
+              src={imageUrl}
+              alt={imageAlt || "대표 이미지"}
+              fill
+              className="object-cover"
+              sizes="(min-width: 1440px) 539px, (min-width: 768px) 680px, 351px"
+            />
+          </div>
+
+          {/* content */}
+          <div className="flex flex-1 flex-col">
+            {props.variant === "notice" ? <NoticeContent {...props} /> : <ShopContent {...props} />}
+          </div>
+        </section>
+
+        {/* 회색 카드(옵션) */}
+        {detail ? (
+          <DetailCardView
+            title={detail.title}
+            content={detail.content}
+            className={detail.className}
           />
-        </div>
-
-        {/* content */}
-        <div className="flex flex-1 flex-col">
-          {props.variant === "notice" ? <NoticeContent {...props} /> : <ShopContent {...props} />}
-        </div>
-      </section>
-
-      {/* 회색 카드(옵션) */}
-      {detail ? (
-        <DetailCardView
-          title={detail.title}
-          content={detail.content}
-          className={detail.className}
-        />
-      ) : null}
+        ) : null}
+      </div>
     </div>
   );
 }
