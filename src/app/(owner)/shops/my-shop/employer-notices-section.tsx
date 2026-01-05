@@ -19,7 +19,7 @@ export default function EmployerNoticesSection({ cards }: Props) {
     if (isBlocked) return;
 
     setSelectedNoticeId(payload.noticeId);
-    router.push(`/notices/notice-detail/${payload.noticeId}`);
+    router.push(`/notices/notice-detail/${payload.shopId}/${payload.noticeId}`);
   };
 
   return (
