@@ -5,7 +5,7 @@ import ShopInfoCard from "@/components/common/shop-info/ShopInfoCard";
 import Card, { CardData } from "@/components/domain/card";
 import { apiClient } from "@/lib/api";
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 
 type NoticesResponse = {
   items: Array<{
@@ -63,20 +63,72 @@ function formatKSTTime(date: Date) {
 
 type ModalMode = "apply" | "cancel";
 
-export default function NoticeListWithDetailPage() {
+type Props = {
+  userId: string | null;
+};
+
+/** =========================
+ *  최근 클릭 기록 (로그인/비로그인 분리)
+========================= */
+type RecentKey = string;
+
+function getRecentStorageKey(userId: string | null) {
+  return userId ? `recentNotices:${userId}` : "recentNotices:guest";
+}
+
+function loadRecent(key: string): RecentKey[] {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as RecentKey[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecent(key: string, list: RecentKey[]) {
+  localStorage.setItem(key, JSON.stringify(list));
+}
+
+function makeKey(shopId: string, noticeId: string) {
+  return `${shopId}:${noticeId}`;
+}
+
+function pushToFrontRecent(list: RecentKey[], key: RecentKey, limit = 6) {
+  return [key, ...list.filter((k) => k !== key)].slice(0, limit);
+}
+
+function reorderByRecent(cards: CardData[], recent: RecentKey[]) {
+  const rank = new Map<RecentKey, number>();
+  recent.forEach((k, idx) => rank.set(k, idx));
+
+  return cards
+    .map((c, idx) => ({ c, idx }))
+    .sort((a, b) => {
+      const ka = makeKey(a.c.shopId, a.c.noticeId);
+      const kb = makeKey(b.c.shopId, b.c.noticeId);
+      const ra = rank.has(ka) ? (rank.get(ka) as number) : 1_000_000;
+      const rb = rank.has(kb) ? (rank.get(kb) as number) : 1_000_000;
+
+      if (ra !== rb) return ra - rb; // recent 앞쪽이 먼저
+      return a.idx - b.idx; // recent에 없으면 기존 순서 유지
+    })
+    .map((x) => x.c);
+}
+
+export default function NoticeListWithDetailPage({ userId }: Props) {
   const [items, setItems] = useState<NoticesResponse["items"]>([]);
   const [cards, setCards] = useState<CardData[]>([]);
-
   const [applied, setApplied] = useState(false);
-
   const [open, setOpen] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>("apply");
-
   const [selectedNoticeId, setSelectedNoticeId] = useState<string | null>(null);
-  const [selectedIsPast, setSelectedIsPast] = useState<boolean>(false);
-
+  const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
+  const [selectedIsPast, setSelectedIsPast] = useState(false);
+  const [selectedIsClosed, setSelectedIsClosed] = useState(false);
+  const selectedIsBlocked = selectedIsPast || selectedIsClosed;
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
+  const scrollYRef = useRef(0);
 
   useEffect(() => {
     let alive = true;
@@ -97,15 +149,14 @@ export default function NoticeListWithDetailPage() {
 
         const now = Date.now();
 
-        // ✅ CardData 구조에 맞게 noticeId / shopId를 넣어준다
         const mapped: CardData[] = data.items.map((n) => {
           const startsAt = n.item.startsAt;
           const isPast = new Date(startsAt).getTime() < now;
+          const isClosed = Boolean(n.item.closed);
 
           return {
             noticeId: n.item.id,
             shopId: n.item.shop.item.id,
-
             name: n.item.shop.item.name,
             startsAt,
             address1: n.item.shop.item.address1,
@@ -113,15 +164,23 @@ export default function NoticeListWithDetailPage() {
             workhour: n.item.workhour,
             imageUrl: n.item.shop.item.imageUrl,
             isPast,
-            isClosed: Boolean(n.item.closed),
+            isClosed,
           };
         });
 
-        setCards(mapped);
+        // 최근 클릭 기록 기반으로 카드 순서 재정렬
+        const storageKey = getRecentStorageKey(userId);
+        const recent = loadRecent(storageKey);
+        const reordered = reorderByRecent(mapped, recent);
 
-        if (mapped.length > 0) {
-          setSelectedNoticeId(mapped[0].noticeId);
-          setSelectedIsPast(mapped[0].isPast);
+        setCards(reordered);
+
+        // 기본 선택 = 맨 앞 카드
+        if (reordered.length > 0) {
+          setSelectedNoticeId(reordered[0].noticeId);
+          setSelectedShopId(reordered[0].shopId);
+          setSelectedIsPast(reordered[0].isPast);
+          setSelectedIsClosed(Boolean(reordered[0].isClosed));
         }
       } catch (e) {
         if (!alive) return;
@@ -136,7 +195,7 @@ export default function NoticeListWithDetailPage() {
     return () => {
       alive = false;
     };
-  }, []);
+  }, [userId]);
 
   const selected = useMemo(() => {
     if (!selectedNoticeId) return null;
@@ -163,27 +222,21 @@ export default function NoticeListWithDetailPage() {
       />
     );
 
-    const shopDescription = selected.shop.item.description ?? "가게 설명이 없습니다.";
-    const noticeDescription = selected.description ?? "공고 설명이 없습니다.";
-
     return {
       imageUrl: selected.shop.item.imageUrl,
       imageAlt: selected.shop.item.name,
-
       wageText: `${selected.hourlyPay.toLocaleString()}원`,
       wageBadgeText: `기존 시급보다 ${percentText}%`,
       wageBadgeIcon,
-
       scheduleText: `${formatKSTDateTime(start)} ~ ${formatKSTTime(end)} (${selected.workhour}시간)`,
       address: selected.shop.item.address1,
-
-      infoDescription: shopDescription,
-      detailDescription: noticeDescription,
+      infoDescription: selected.shop.item.description ?? "가게 설명이 없습니다.",
+      detailDescription: selected.description ?? "공고 설명이 없습니다.",
     };
   }, [selected]);
 
   const handlePrimaryButtonClick = () => {
-    if (selectedIsPast) return;
+    if (selectedIsBlocked) return;
 
     if (!applied) {
       setModalMode("apply");
@@ -196,19 +249,9 @@ export default function NoticeListWithDetailPage() {
 
   const modalIcon = useMemo(() => {
     return modalMode === "apply" ? (
-      <Image
-        src="/icon/checked.svg"
-        alt="확인"
-        width={24}
-        height={24}
-      />
+      <Image src="/icon/checked.svg" alt="확인" width={24} height={24} />
     ) : (
-      <Image
-        src="/icon/caution.svg"
-        alt="주의"
-        width={24}
-        height={24}
-      />
+      <Image src="/icon/caution.svg" alt="주의" width={24} height={24} />
     );
   }, [modalMode]);
 
@@ -263,7 +306,7 @@ export default function NoticeListWithDetailPage() {
             address={derived.address}
             description={derived.infoDescription}
             footer={
-              selectedIsPast ? (
+              selectedIsBlocked ? (
                 <button
                   disabled
                   className="bg-gray-40 w-full cursor-not-allowed rounded-xl py-3 font-bold text-white"
@@ -283,10 +326,7 @@ export default function NoticeListWithDetailPage() {
                 </button>
               )
             }
-            detail={{
-              title: "공고 설명",
-              content: derived.detailDescription,
-            }}
+            detail={{ title: "공고 설명", content: derived.detailDescription }}
           />
         ) : (
           <div className="p-6 text-sm text-neutral-500">공고를 선택하면 상세가 표시됩니다.</div>
@@ -297,9 +337,26 @@ export default function NoticeListWithDetailPage() {
         <Card
           cards={cards}
           selectedNoticeId={selectedNoticeId}
-          onSelect={({ noticeId, isPast }) => {
+          title="최근에 본 공고"
+          pastLabel="지난 공고"
+          closedLabel="마감 공고"
+          onSelect={({ noticeId, shopId, isPast, isClosed }) => {
+            scrollYRef.current = window.scrollY;
             setSelectedNoticeId(noticeId);
+            setSelectedShopId(shopId);
             setSelectedIsPast(isPast);
+            setSelectedIsClosed(isClosed);
+
+            // 클릭한 공고를 맨 앞으로: localStorage + cards 재정렬
+            const storageKey = getRecentStorageKey(userId);
+            const key = makeKey(shopId, noticeId);
+            const prev = loadRecent(storageKey);
+            const next = pushToFrontRecent(prev, key, 6);
+            saveRecent(storageKey, next);
+            setCards((prevCards) => reorderByRecent(prevCards, next));
+            requestAnimationFrame(() => {
+              window.scrollTo({ top: scrollYRef.current });
+            });
           }}
         />
       </div>
@@ -317,7 +374,7 @@ export default function NoticeListWithDetailPage() {
 }
 
 /* =========================
-   Skeleton UI
+  Skeleton UI
 ========================= */
 
 function Skeleton({ className }: { className: string }) {
