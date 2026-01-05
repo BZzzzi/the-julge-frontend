@@ -19,7 +19,6 @@ export default function EmployerNoticesSection({ cards }: Props) {
     if (isBlocked) return;
 
     setSelectedNoticeId(payload.noticeId);
-    // 공고 상세 경로 확인!!!
     router.push(`/notices/notice-detail/${payload.noticeId}`);
   };
 
