@@ -3,26 +3,12 @@ import Footer from "@/components/common/layouts/footer";
 import Header from "@/components/common/layouts/header";
 import ShopInfoCard from "@/components/common/shop-info/ShopInfoCard";
 import { apiClient } from "@/lib/api";
+import { getUserIdFromUserInfoCookie } from "@/lib/auth";
 import { cookies } from "next/headers";
-import Image from "next/image";
 import Link from "next/link";
 
 import EmployerNoticesSection from "@/app/(owner)/shops/my-shop/employer-notices-section";
 import type { CardData } from "@/components/domain/card";
-
-function getUserIdFromUserInfoCookie(cookieValue?: string): string | null {
-  if (!cookieValue) return null;
-
-  try {
-    const decoded = decodeURIComponent(cookieValue);
-    const parsed = JSON.parse(decoded) as { id?: string | number };
-
-    if (parsed?.id === undefined || parsed?.id === null) return null;
-    return String(parsed.id);
-  } catch {
-    return null;
-  }
-}
 
 export default async function MyShopPage() {
   const cookieStore = await cookies();
@@ -30,35 +16,7 @@ export default async function MyShopPage() {
   const userInfoCookie = cookieStore.get("userInfo")?.value;
   const userId = getUserIdFromUserInfoCookie(userInfoCookie);
 
-  if (!userId) {
-    return (
-      <>
-        <Header />
-        <main>
-          <section className="flex min-h-screen items-center justify-center bg-gray-10 px-4">
-            <div className="w-full max-w-md rounded-xl border border-gray-20 bg-white p-14 text-center">
-              <Image
-                src="/icon/caution.svg"
-                alt="로그인 필요"
-                width={48}
-                height={48}
-                className="mx-auto mb-6"
-              />
-              <p className="mb-6 text-lg text-black">로그인이 필요합니다.</p>
-              <Link href={"/login"}>
-                <Button variant="primary" size="lg" className="w-86.5">
-                  로그인하러 가기
-                </Button>
-              </Link>
-            </div>
-          </section>
-        </main>
-        <Footer />
-      </>
-    );
-  }
-
-  const userRes = await apiClient.user.getUser(userId);
+  const userRes = await apiClient.user.getUser(userId as string);
   const shop = userRes.item.shop?.item ?? null;
 
   if (!shop) {
