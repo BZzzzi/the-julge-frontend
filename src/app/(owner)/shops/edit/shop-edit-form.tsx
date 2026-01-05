@@ -133,7 +133,7 @@ export default function ShopEditForm({ initialShop }: Props) {
         originalHourlyPay: Number(form.originalHourlyPay),
       };
 
-      await apiClient.shops.putShop(initialShop.id, payload);
+      await apiClient.shops.updateShopInfo(initialShop.id, payload);
 
       setSuccessOpen(true);
     } catch (err) {

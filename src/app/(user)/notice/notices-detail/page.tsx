@@ -1,13 +1,16 @@
-import Card from "@/components/domain/card";
-import Footer from "@/components/domain/footer";
+"use client";
+import Footer from "@/components/common/layouts/footer";
+import Header from "@/components/common/layouts/header";
+import NoticeListWithDetailPage from "@/components/domain/noticesdetail/noticesdetail";
 
-function NoticesDetail() {
+export default function Notices_detail() {
+
   return (
     <div>
-      <Card />
+      <Header />
+      <NoticeListWithDetailPage />
       <Footer />
+
     </div>
   );
 }
-
-export default NoticesDetail;
