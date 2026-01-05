@@ -60,5 +60,5 @@ export interface NoticeApplicationsRes {
 
 // 특정 가게 지원 공고 승인, 거절
 export interface ApplicationStatusReq {
-  status: "accepted | rejected | canceled";
+  status: "accepted" | "rejected" | "canceled";
 }
