@@ -190,7 +190,6 @@ const FilterModal = ({ onClose, onApply }: FilterModalProps) => {
   };
 
   const LOCATION_ITEM_H = 36;
-  const CHIP_H = 30;
 
   return (
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-hidden md:items-center">

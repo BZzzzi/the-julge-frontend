@@ -32,7 +32,6 @@ export default function NoticeRegisterForm() {
     register,
     handleSubmit,
     watch,
-    formState: { errors },
   } = useForm<NoticeFormInputs>({
     mode: "onBlur",
   });
