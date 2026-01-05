@@ -15,27 +15,30 @@ export default async function ShopEditPage() {
     return (
       <>
         <Header />
-        <main>
-          <section className="bg-gray-10 flex min-h-screen items-center justify-center px-4">
-            <div className="border-gray-20 w-full max-w-md rounded-xl border bg-white p-14 text-center">
-              <Image
-                src="/icon/caution.svg"
-                alt="가게 없음"
-                width={48}
-                height={48}
-                className="mx-auto mb-6"
-              />
-              <p className="mb-6 text-lg text-black">로그인이 필요합니다</p>
-              <Link href={"/login"}>
-                <Button
-                  variant="primary"
-                  size="lg"
-                  className="w-86.5"
-                >
-                  로그인 하기
-                </Button>
-              </Link>
+        <main className="bg-gray-10 min-h-screen">
+          <section className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4">
+            <div className="mx-auto w-87.75 md:w-170 lg:w-241">
+              <div className="border-gray-20 w-full rounded-xl border bg-white p-14 text-center">
+                <Image
+                  src="/icon/caution.svg"
+                  alt="가게 없음"
+                  width={48}
+                  height={48}
+                  className="mx-auto mb-6"
+                />
+                <p className="mb-6 text-lg text-black">로그인이 필요합니다</p>
+                <Link href={"/login"}>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="w-86.5"
+                  >
+                    로그인 하기
+                  </Button>
+                </Link>
             </div>
+            </div>
+            
           </section>
         </main>
       </>
@@ -47,8 +50,8 @@ export default async function ShopEditPage() {
     return (
       <>
         <Header />
-        <main>
-          <section className="bg-gray-10 flex min-h-screen items-center justify-center px-4">
+        <main className="bg-gray-5 min-h-screen">
+          <section className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4">
             <div className="border-gray-20 w-full max-w-md rounded-xl border bg-white p-14 text-center">
               <Image
                 src="/icon/caution.svg"
@@ -81,8 +84,8 @@ export default async function ShopEditPage() {
     return (
       <>
         <Header />
-        <main>
-          <section className="bg-gray-10 flex min-h-screen items-center justify-center px-4">
+        <main className="bg-gray-5 min-h-screen">
+          <section className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4">
             <div className="border-gray-20 w-full max-w-md rounded-xl border bg-white p-14 text-center">
               <Image
                 src="/icon/caution.svg"
@@ -111,8 +114,12 @@ export default async function ShopEditPage() {
   return (
     <>
       <Header />
-      <main>
-        <ShopEditForm initialShop={shop} />
+      <main className="bg-gray-5 min-h-screen">
+        <div className="mx-auto max-w-5xl px-4 py-10">
+          <div className="mx-auto w-87.75 md:w-170 lg:w-241">
+            <ShopEditForm initialShop={shop} />
+          </div>
+        </div>
       </main>
     </>
   );
