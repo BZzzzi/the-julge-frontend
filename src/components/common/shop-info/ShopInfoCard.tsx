@@ -47,8 +47,8 @@ export default function ShopInfoCard(props: ShopInfoCardProps) {
   const { imageUrl, imageAlt, className, detail } = props;
 
   return (
-    <div className= "w-full px-4 md:px-6 lg:px-0">
-      <div className="mx-auto flex flex-col gap-4 w-[351px] md:w-[680px] lg:w-[964px]">
+    <div className="w-full px-4 md:px-6 lg:px-0">
+      <div className="mx-auto flex w-[351px] flex-col gap-4 md:w-[680px] lg:w-[964px]">
         <section
           className={[
             "flex flex-col rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.1)]",
@@ -108,7 +108,7 @@ function DetailCardView({
     <div
       className={[
         "bg-gray-10 mt-4 w-full rounded-2xl",
-        "px-6 py-5 md:px-8 md:py-6 ",
+        "px-6 py-5 md:px-8 md:py-6",
         className ?? "",
       ].join(" ")}
       aria-label="공고 설명"
