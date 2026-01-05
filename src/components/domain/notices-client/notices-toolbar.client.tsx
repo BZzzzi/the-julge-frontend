@@ -42,7 +42,7 @@ export default function NoticesToolbar({ sortValue, onChangeSort, onOpenFilter }
         <button
           type="button"
           onClick={() => setSortOpen((v) => !v)}
-          className="flex h-[30px] w-[105px] items-center justify-between rounded-md bg-[var(--color-gray-10)] px-2 text-[14px] font-bold text-[var(--color-black)]"
+          className="flex h-[30px] w-[105px] cursor-pointer items-center justify-between rounded-md bg-[var(--color-gray-10)] px-2 text-[14px] font-bold text-[var(--color-black)]"
         >
           <span className="truncate">{selectedSortLabel}</span>
 
@@ -92,7 +92,7 @@ export default function NoticesToolbar({ sortValue, onChangeSort, onOpenFilter }
       <button
         type="button"
         onClick={onOpenFilter}
-        className="h-[30px] w-[79px] rounded-md bg-[var(--color-red-30)] text-[14px] font-bold text-[var(--color-white)]"
+        className="h-[30px] w-[79px] cursor-pointer rounded-md bg-[var(--color-red-30)] text-[14px] font-bold text-[var(--color-white)]"
       >
         상세필터
       </button>

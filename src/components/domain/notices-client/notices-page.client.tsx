@@ -432,14 +432,14 @@ export default function NoticesPageClient() {
     <>
       {isLoggedIn && (
         <section className="bg-[var(--color-red-10)]">
-          <div className="mx-auto w-full max-w-87.5 px-3 py-6 md:max-w-169.5 md:px-5 lg:max-w-241 lg:py-10">
+          <div className="mx-auto w-full max-w-87.5 py-6 md:max-w-169.5 lg:max-w-241 lg:py-10">
             <h3 className="text-[var(--color-black)]">맞춤 공고</h3>
             <FitCards cards={fitCards} />
           </div>
         </section>
       )}
 
-      <main className="mx-auto w-full max-w-87.5 px-3 pb-10 md:max-w-169.5 md:px-5 lg:max-w-241">
+      <main className="mx-auto w-full max-w-87.5 pb-10 md:max-w-169.5 lg:max-w-241">
         <section className={isLoggedIn ? "mt-10" : "mt-6"}>
           <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <TitleBlock keyword={keyword} />
