@@ -47,13 +47,13 @@ export default function ShopInfoCard(props: ShopInfoCardProps) {
   const { imageUrl, imageAlt, className, detail } = props;
 
   return (
-    <div className="w-full px-4 md:px-6 lg:px-0">
+    <div className="w-full">
       <div className="mx-auto flex w-[351px] flex-col gap-4 md:w-[680px] lg:w-[964px]">
         <section
           className={[
             "flex flex-col rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.1)]",
             "h-112.5 gap-4 p-4 md:h-169.25 md:gap-6 md:p-6",
-            "lg:h-89 lg:w-241 lg:flex-row lg:gap-8 lg:p-6",
+            "lg:h-89 lg:flex-row lg:gap-8 lg:p-6",
             props.variant === "shop" ? "bg-[#FDE9E4]" : "bg-white",
             className ?? "",
           ].join(" ")}
