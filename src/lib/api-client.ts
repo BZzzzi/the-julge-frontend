@@ -6,12 +6,15 @@
  */
 export type HttpMethod = "GET" | "POST" | "PUT" | "DELETE" | "PATCH";
 
-interface Option extends Omit<RequestInit, "method"> {
+interface Option<TParams = Record<string, unknown>> extends Omit<RequestInit, "method"> {
   method?: HttpMethod;
-  params?: Record<string, unknown> | object;
+  params?: TParams;
 }
 
-export async function fetcher(endpoint: string, options: Option = {}) {
+export async function fetcher<TParams = Record<string, unknown>>(
+  endpoint: string,
+  options: Option<TParams> = {},
+) {
   const isServer = typeof window === "undefined";
 
   // URL 설정
@@ -23,13 +26,12 @@ export async function fetcher(endpoint: string, options: Option = {}) {
     ...(options.headers as HeadersInit),
   };
 
-  let queryString = "";
-
   //객체를 쿼리 스트링으로 변환하는 헬퍼 함수
   // 있으면 쿼리 스트링을 붙인다.
+  let queryString = "";
   if (options.params) {
     const searchParams = new URLSearchParams();
-    Object.entries(options.params).forEach(([key, value]) => {
+    Object.entries(options.params as Record<string, unknown>).forEach(([key, value]) => {
       if (value !== undefined && value !== null) {
         searchParams.append(key, String(value));
       }
