@@ -1,4 +1,5 @@
 "use client";
+
 import { useEffect, useMemo } from "react";
 import { create } from "zustand";
 
@@ -42,7 +43,7 @@ const EMPTY_FILTER: NoticeFilter = {
   minPay: "",
 };
 
-const toStartsAtGte = (dateYYYYMMDD: string) => {
+export const toStartsAtGte = (dateYYYYMMDD: string) => {
   const now = new Date();
   const selected = new Date(`${dateYYYYMMDD}T00:00:00`);
   const gte = selected < now ? now : selected;
@@ -195,7 +196,7 @@ const FilterModal = ({ onClose, onApply }: FilterModalProps) => {
     <div className="fixed inset-0 z-50 flex items-start justify-center overflow-hidden md:items-center">
       <div className="absolute inset-0 bg-black/30" />
 
-      <div className="relative flex h-[100dvh] w-screen flex-col overflow-hidden rounded-none bg-white shadow-none md:h-auto md:max-h-[min(845px,100dvh)] md:w-[390px] md:rounded-2xl md:shadow-xl">
+      <div className="relative flex h-dvh w-screen flex-col overflow-hidden rounded-none bg-white shadow-none md:h-auto md:max-h-[min(845px,100dvh)] md:w-[390px] md:rounded-2xl md:shadow-xl">
         <div className="flex min-h-0 flex-1 flex-col">
           <div className="flex min-h-0 flex-1 flex-col px-3 md:px-5">
             <div className="pt-4 md:pt-6">
@@ -343,7 +344,7 @@ const FilterModal = ({ onClose, onApply }: FilterModalProps) => {
                     <button
                       type="button"
                       onClick={handleResetClick}
-                      className="h-12 flex-[82] rounded-lg border border-red-600 text-[14px] leading-[20px] font-semibold text-red-600"
+                      className="h-12 flex-82 rounded-lg border border-red-600 text-[14px] leading-[20px] font-semibold text-red-600"
                     >
                       초기화
                     </button>
@@ -351,7 +352,7 @@ const FilterModal = ({ onClose, onApply }: FilterModalProps) => {
                     <button
                       type="button"
                       onClick={handleApplyClick}
-                      className="h-12 flex-[260] rounded-lg bg-red-600 text-[14px] leading-[20px] font-semibold text-white hover:bg-red-700"
+                      className="h-12 flex-260 rounded-lg bg-red-600 text-[14px] leading-[20px] font-semibold text-white hover:bg-red-700"
                     >
                       적용하기
                     </button>
@@ -382,7 +383,6 @@ const FilterModal = ({ onClose, onApply }: FilterModalProps) => {
               </div>
             </div>
           </div>
-          {/* /footer */}
         </div>
       </div>
     </div>

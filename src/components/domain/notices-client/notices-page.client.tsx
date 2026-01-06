@@ -10,38 +10,25 @@ import { Swiper, SwiperSlide } from "swiper/react";
 
 import { Pagination } from "@/components/common/pagination";
 import FilterModal, {
-  buildNoticesFilterQueryString,
+  toStartsAtGte,
   type NoticeFilter,
 } from "@/components/domain/notices-client/notices-filter-modal";
+import { ApiLink } from "@/types/common";
 
 import NoticesToolbar, {
   type SortValue,
 } from "@/components/domain/notices-client/notices-toolbar.client";
 
 import Card, { type CardData } from "@/components/domain/card";
+import { apiClient } from "@/lib/api";
+import { NoticeReq, NoticesRes } from "@/types/notice";
 
-type NoticesResponse = {
-  items: Array<{
-    item: {
-      id: string;
-      hourlyPay: number;
-      startsAt: string;
-      workhour: number;
-      closed?: boolean;
-      shop: {
-        item: {
-          id?: string;
-          name: string;
-          address1: string;
-          imageUrl: string;
-        };
-      };
-    };
-  }>;
+// 하위 호환성을 위한 확장 타입
+type NoticesResponse = NoticesRes & {
+  // 하위 호환성을 위한 필드들
   totalPage?: number | string;
   totalPages?: number | string;
   totalCount?: number | string;
-  count?: number | string;
   total?: number | string;
 };
 
@@ -53,6 +40,8 @@ type CardClickPayload = {
 };
 
 const LIST_LIMIT = 6;
+const FIT_CARDS_LIMIT = 6;
+const FIT_CARDS_DISPLAY_LIMIT = 3;
 
 const parsePositiveInt = (v: unknown) => {
   if (typeof v === "number" && Number.isFinite(v) && v > 0) return Math.floor(v);
@@ -61,13 +50,15 @@ const parsePositiveInt = (v: unknown) => {
 };
 
 const getTotalPage = (data: NoticesResponse) => {
-  const tp =
+  // 하위 호환성을 위한 totalPage 체크
+  const totalPage =
     parsePositiveInt(data.totalPage) ??
     parsePositiveInt(data.totalPages) ??
     parsePositiveInt((data as { total_page?: unknown }).total_page);
 
-  if (tp) return tp;
+  if (totalPage) return totalPage;
 
+  // count를 기반으로 계산
   const totalCount =
     parsePositiveInt(data.totalCount) ??
     parsePositiveInt(data.count) ??
@@ -78,7 +69,7 @@ const getTotalPage = (data: NoticesResponse) => {
   return Math.max(1, Math.ceil(totalCount / LIST_LIMIT));
 };
 
-const getServerSort = (sortValue: SortValue) => {
+const getServerSort = (sortValue: SortValue): "time" | "pay" | "hour" | "shop" => {
   if (sortValue === "workhour" || sortValue === "name") return "time";
   return sortValue;
 };
@@ -95,59 +86,75 @@ const applyClientSort = (cards: CardData[], sortValue: SortValue) => {
   return next;
 };
 
-const buildListQuery = ({
+const buildListParams = ({
   limit,
   offset,
   sort,
   keyword,
-  filterQueryString,
+  filter,
 }: {
   limit: number;
   offset: number;
-  sort: string;
+  sort: "time" | "pay" | "hour" | "shop";
   keyword: string;
-  filterQueryString: string;
-}) => {
-  const qs = new URLSearchParams();
-  qs.set("limit", String(limit));
-  qs.set("offset", String(offset));
-  qs.set("sort", sort);
-  if (keyword) qs.set("keyword", keyword);
+  filter: NoticeFilter;
+}): NoticeReq => {
+  const params: NoticeReq = {
+    limit,
+    offset,
+    sort,
+  };
 
-  if (filterQueryString) {
-    const extra = new URLSearchParams(filterQueryString);
-    extra.forEach((value, key) => qs.append(key, value));
+  if (keyword) {
+    params.keyword = keyword;
   }
 
-  return qs.toString();
+  // 필터 파라미터 추가
+  if (filter.locations.length > 0) {
+    params.address = filter.locations;
+  }
+
+  if (filter.startDate && filter.startDate.trim()) {
+    params.startsAtGte = toStartsAtGte(filter.startDate);
+  }
+
+  if (filter.minPay && filter.minPay.trim()) {
+    const minPayNum = Number(filter.minPay);
+    if (!isNaN(minPayNum) && minPayNum > 0) {
+      params.hourlyPayGte = minPayNum;
+    }
+  }
+
+  return params;
 };
 
-const fetchNotices = async (queryString: string) => {
-  const res = await fetch(`/api/notices?${queryString}`);
-  if (!res.ok) throw new Error("fetch failed");
-  return (await res.json()) as NoticesResponse;
+const fetchNotices = async (params: NoticeReq): Promise<NoticesResponse> => {
+  return await apiClient.notices.getNotices(params);
 };
 
 const mapToCardData = (data: NoticesResponse): CardData[] => {
   const now = Date.now();
 
-  return data.items.map((n) => {
-    const startsAt = n.item.startsAt;
-    const isPast = new Date(startsAt).getTime() < now;
+  return data.items
+    .filter((n) => n.item.shop) // shop이 없는 항목은 필터링
+    .map((n) => {
+      const startsAt = n.item.startsAt;
+      const isPast = new Date(startsAt).getTime() < now;
+      const shop = n.item.shop!; // 위에서 필터링했으므로 non-null assertion 가능
 
-    return {
-      noticeId: n.item.id,
-      shopId: n.item.shop.item.id ?? "",
-      name: n.item.shop.item.name,
-      startsAt,
-      workhour: n.item.workhour,
-      address1: n.item.shop.item.address1,
-      hourlyPay: n.item.hourlyPay,
-      imageUrl: n.item.shop.item.imageUrl,
-      isPast,
-      isClosed: Boolean(n.item.closed),
-    };
-  });
+      return {
+        noticeId: n.item.id,
+        shopId: shop.item.id ?? "",
+        name: shop.item.name,
+        startsAt,
+        workhour: n.item.workhour,
+        address1: shop.item.address1,
+        hourlyPay: n.item.hourlyPay,
+        imageUrl: shop.item.imageUrl,
+        isPast,
+        isClosed: Boolean(n.item.closed),
+      };
+    });
 };
 
 const TitleBlock = ({ keyword }: { keyword: string }) => {
@@ -207,7 +214,7 @@ const FitCards = ({
               },
             }}
           >
-            {cards.slice(0, 6).map((c) => (
+            {cards.slice(0, FIT_CARDS_LIMIT).map((c) => (
               <SwiperSlide
                 key={c.noticeId}
                 className="h-auto!"
@@ -231,7 +238,7 @@ const FitCards = ({
       <div className="hidden lg:block">
         <Card
           title=""
-          cards={cards.slice(0, 3)}
+          cards={cards.slice(0, FIT_CARDS_DISPLAY_LIMIT)}
           selectedNoticeId={null}
           onSelect={onSelect}
           onCardClick={onCardClick}
@@ -261,42 +268,76 @@ export default function NoticesPageClient() {
 
   const [fitCards, setFitCards] = useState<CardData[]>([]);
   const [cards, setCards] = useState<CardData[]>([]);
-  const [totalPage, setTotalPage] = useState(1);
+  const [paginationData, setPaginationData] = useState<{
+    links: ApiLink[];
+    offset: number;
+    limit: number;
+    count: number;
+  }>({
+    links: [],
+    offset: 0,
+    limit: LIST_LIMIT,
+    count: 0,
+  });
 
-  const filterQueryString = useMemo(
-    () => buildNoticesFilterQueryString(appliedFilter),
-    [appliedFilter],
-  );
-
-  const listQueryString = useMemo(() => {
+  const listParams = useMemo(() => {
     const offset = (pageParam - 1) * LIST_LIMIT;
     const serverSort = getServerSort(sortValue);
 
-    return buildListQuery({
+    return buildListParams({
       limit: LIST_LIMIT,
       offset,
       sort: serverSort,
       keyword,
-      filterQueryString,
+      filter: appliedFilter,
     });
-  }, [filterQueryString, keyword, pageParam, sortValue]);
+  }, [appliedFilter, keyword, pageParam, sortValue]);
+
+  // URL 파라미터 업데이트 헬퍼 함수
+  const updateUrlParams = (updater: (params: URLSearchParams) => void, replace = false) => {
+    const params = new URLSearchParams(searchParams.toString());
+    updater(params);
+    const qs = params.toString();
+    const url = qs ? `${pathname}?${qs}` : pathname;
+    if (replace) {
+      router.replace(url);
+    } else {
+      router.push(url);
+    }
+  };
 
   const setUrlPage = (nextPage: number) => {
-    const params = new URLSearchParams(searchParams.toString());
-    if (nextPage <= 1) params.delete("page");
-    else params.set("page", String(nextPage));
-    const qs = params.toString();
-    router.push(qs ? `${pathname}?${qs}` : pathname);
+    updateUrlParams((params) => {
+      if (nextPage <= 1) {
+        params.delete("page");
+      } else {
+        params.set("page", String(nextPage));
+      }
+    });
   };
 
   const resetToFirstPage = () => {
-    const params = new URLSearchParams(searchParams.toString());
-    params.delete("page");
-    const qs = params.toString();
-    router.replace(qs ? `${pathname}?${qs}` : pathname);
+    updateUrlParams((params) => params.delete("page"), true);
   };
 
-  const handleSelect = (_payload: CardClickPayload) => {};
+  // href에서 offset을 파싱해서 페이지 번호로 변환하고 URL 업데이트
+  const handlePageChange = (href: string) => {
+    try {
+      const url = new URL(href, window.location.origin);
+      const offsetParam = url.searchParams.get("offset");
+      if (offsetParam) {
+        const offset = parseInt(offsetParam, 10);
+        const page = Math.floor(offset / LIST_LIMIT) + 1;
+        setUrlPage(page);
+      }
+    } catch {
+      // href 파싱 실패 시 무시
+    }
+  };
+
+  const handleSelect = () => {
+    // 현재 사용하지 않음
+  };
 
   const handleCardClick = (payload: CardClickPayload) => {
     const qs = new URLSearchParams({ noticeId: payload.noticeId });
@@ -308,12 +349,12 @@ export default function NoticesPageClient() {
     if (!isLoggedIn) return;
 
     fetchNotices(
-      buildListQuery({
-        limit: 6,
+      buildListParams({
+        limit: FIT_CARDS_LIMIT,
         offset: 0,
         sort: "time",
         keyword: "",
-        filterQueryString: "",
+        filter: { locations: [], startDate: "", minPay: "" },
       }),
     )
       .then((data) => setFitCards(mapToCardData(data)))
@@ -321,23 +362,41 @@ export default function NoticesPageClient() {
   }, [isLoggedIn]);
 
   useEffect(() => {
-    fetchNotices(listQueryString)
+    fetchNotices(listParams)
       .then((data) => {
         const mapped = mapToCardData(data);
         const sorted = applyClientSort(mapped, sortValue);
         setCards(sorted);
 
-        const nextTotalPage = getTotalPage(data);
-        setTotalPage(nextTotalPage);
+        const offset = data.offset ?? (pageParam - 1) * LIST_LIMIT;
+        const limit = data.limit ?? LIST_LIMIT;
+        const count =
+          data.count ?? parsePositiveInt(data.totalCount) ?? parsePositiveInt(data.total) ?? 0;
+        const links = data.links ?? [];
 
-        if (pageParam > nextTotalPage) setUrlPage(nextTotalPage);
+        setPaginationData({
+          links,
+          offset,
+          limit,
+          count,
+        });
+
+        const nextTotalPage = getTotalPage(data);
+        if (pageParam > nextTotalPage && nextTotalPage > 0) {
+          setUrlPage(nextTotalPage);
+        }
       })
       .catch(() => {
         setCards([]);
-        setTotalPage(1);
+        setPaginationData({
+          links: [],
+          offset: 0,
+          limit: LIST_LIMIT,
+          count: 0,
+        });
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [listQueryString, sortValue]);
+  }, [listParams, sortValue]);
 
   return (
     <>
@@ -378,12 +437,11 @@ export default function NoticesPageClient() {
 
           <div className="mt-8 flex justify-center">
             <Pagination
-              totalPage={totalPage}
-              currentPage={pageParam}
-              onPageChange={(p) => {
-                if (p < 1 || p > totalPage) return;
-                setUrlPage(p);
-              }}
+              links={paginationData.links}
+              offset={paginationData.offset}
+              limit={paginationData.limit}
+              count={paginationData.count}
+              onPageChange={handlePageChange}
             />
           </div>
         </section>
