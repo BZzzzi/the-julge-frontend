@@ -177,7 +177,7 @@ export default function Card({
                   </p>
                 </div>
 
-                <div className="items-left mt-4 mb-4 flex flex-col justify-between md:flex-row">
+                <div className="items-left mt-4 mb-4 flex flex-col justify-between whitespace-nowrap shrink-0 md:flex-row">
                   <p className={`text-lg font-bold md:text-2xl ${isBlocked ? "text-gray-30" : "text-black"}`}>
                     {c.hourlyPay.toLocaleString()}원
                   </p>

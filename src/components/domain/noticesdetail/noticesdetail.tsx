@@ -208,7 +208,8 @@ export default function NoticeListWithDetailPage() {
     return () => {
       alive = false;
     };
-  }, [userId, selectedKey]);
+    
+  }, [userId, selected, selectedKey]);
 
   /** ✅ 선택된 공고 상세 (선택 없으면 null -> 빈 화면) */
   const detail = useMemo(() => {
