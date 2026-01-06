@@ -83,7 +83,6 @@ const getServerSort = (sortValue: SortValue) => {
   return sortValue;
 };
 
-// ✅ any 없이, 런타임 안전하게
 const applyClientSort = (cards: CardData[], sortValue: SortValue) => {
   const next = [...cards];
 
@@ -181,7 +180,6 @@ const FitCards = ({
 
   return (
     <>
-      {/* ✅ 모바일 + 태블릿: Swiper 하나로 통합 */}
       <div className="lg:hidden">
         <div className="-mr-3 w-full min-w-0 overflow-hidden md:-mr-8">
           <Swiper
@@ -203,7 +201,6 @@ const FitCards = ({
             onSlideChangeTransitionEnd={handleAfterSlideChange}
             className="[&_.swiper-slide]:h-auto [&_.swiper-wrapper]:items-stretch"
             breakpoints={{
-              // ✅ md(태블릿)부터 값 변경
               768: {
                 slidesPerView: 2.15,
                 spaceBetween: 12,
