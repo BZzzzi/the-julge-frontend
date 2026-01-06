@@ -211,8 +211,8 @@ const FitCards = ({
             }}
           >
             {cards.slice(0, 6).map((c) => (
-              <SwiperSlide key={c.noticeId} className="!h-auto">
-                <div className="[&_.grid]:!grid-cols-1">
+              <SwiperSlide key={c.noticeId} className="h-auto!">
+                <div className="[&_.grid]:grid-cols-1!">
                   <Card
                     title=""
                     cards={[c]}
