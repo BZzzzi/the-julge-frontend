@@ -38,7 +38,6 @@ type CardProps = {
   closedLabel?: string;
 };
 
-
 const BASE_HOURLY_PAY = 10320;
 
 function formatKSTDateTime(date: Date) {
