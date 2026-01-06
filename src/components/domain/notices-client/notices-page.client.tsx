@@ -1,4 +1,3 @@
-// components/domain/notices-client/notices-page.client.tsx
 "use client";
 
 import { useUser } from "@/store/user";
