@@ -47,13 +47,13 @@ export default function ShopInfoCard(props: ShopInfoCardProps) {
   const { imageUrl, imageAlt, className, detail } = props;
 
   return (
-    <div className="w-full px-4 md:px-6 lg:px-0">
-      <div className="mx-auto flex w-[351px] flex-col gap-4 md:w-[680px] lg:w-[964px]">
+    <div className="w-full">
+      <div className="mx-auto flex w-87.75 flex-col gap-4 md:w-170 lg:w-241">
         <section
           className={[
             "flex flex-col rounded-2xl shadow-[0_8px_24px_rgba(0,0,0,0.1)]",
             "h-112.5 gap-4 p-4 md:h-169.25 md:gap-6 md:p-6",
-            "lg:h-89 lg:w-241 lg:flex-row lg:gap-8 lg:p-6",
+            "lg:h-89 lg:flex-row lg:gap-8 lg:p-6",
             props.variant === "shop" ? "bg-[#FDE9E4]" : "bg-white",
             className ?? "",
           ].join(" ")}
@@ -151,23 +151,13 @@ function NoticeContent({
 
       {scheduleText && (
         <div className="mt-1 flex items-center gap-2 text-neutral-500 md:mt-2">
-          <Image
-            src="/icon/clock.svg"
-            alt="근무 시간"
-            width={20}
-            height={20}
-          />
+          <Image src="/icon/clock.svg" alt="근무 시간" width={20} height={20} />
           <span className="text-sm md:text-base">{scheduleText}</span>
         </div>
       )}
 
       <div className="mt-1 flex items-center gap-2 text-neutral-500 md:mt-2">
-        <Image
-          src="/icon/location.svg"
-          alt="근무 지역"
-          width={20}
-          height={20}
-        />
+        <Image src="/icon/location.svg" alt="근무 지역" width={20} height={20} />
         <span className="text-sm font-normal md:text-base">{address}</span>
       </div>
 
@@ -196,12 +186,7 @@ function ShopContent({
       <h3 className="mt-2 text-xl font-extrabold text-neutral-900 md:text-[28px]">{title}</h3>
 
       <div className="mt-1 flex items-center gap-2 text-neutral-500 md:mt-2">
-        <Image
-          src="/icon/pin.svg"
-          alt="근무 지역"
-          width={20}
-          height={20}
-        />
+        <Image src="/icon/pin.svg" alt="근무 지역" width={20} height={20} />
         <span className="text-sm font-normal md:text-base">{address}</span>
       </div>
 

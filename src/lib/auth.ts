@@ -32,3 +32,19 @@ export function getUserIdFromToken(token: string): string | null {
     return null;
   }
 }
+
+export function getUserIdFromUserInfoCookie(
+  cookieValue?: string
+): string | null {
+  if (!cookieValue) return null;
+
+  try {
+    const decoded = decodeURIComponent(cookieValue);
+    const parsed = JSON.parse(decoded) as { id?: string | number };
+
+    if (parsed?.id === undefined || parsed?.id === null) return null;
+    return String(parsed.id);
+  } catch {
+    return null;
+  }
+}

@@ -122,7 +122,6 @@ export default function NoticeListWithDetailPage({ userId }: Props) {
   const [open, setOpen] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>("apply");
   const [selectedNoticeId, setSelectedNoticeId] = useState<string | null>(null);
-  const [selectedShopId, setSelectedShopId] = useState<string | null>(null);
   const [selectedIsPast, setSelectedIsPast] = useState(false);
   const [selectedIsClosed, setSelectedIsClosed] = useState(false);
   const selectedIsBlocked = selectedIsPast || selectedIsClosed;
@@ -178,7 +177,6 @@ export default function NoticeListWithDetailPage({ userId }: Props) {
         // 기본 선택 = 맨 앞 카드
         if (reordered.length > 0) {
           setSelectedNoticeId(reordered[0].noticeId);
-          setSelectedShopId(reordered[0].shopId);
           setSelectedIsPast(reordered[0].isPast);
           setSelectedIsClosed(Boolean(reordered[0].isClosed));
         }
@@ -249,19 +247,9 @@ export default function NoticeListWithDetailPage({ userId }: Props) {
 
   const modalIcon = useMemo(() => {
     return modalMode === "apply" ? (
-      <Image
-        src="/icon/checked.svg"
-        alt="확인"
-        width={24}
-        height={24}
-      />
+      <Image src="/icon/checked.svg" alt="확인" width={24} height={24} />
     ) : (
-      <Image
-        src="/icon/caution.svg"
-        alt="주의"
-        width={24}
-        height={24}
-      />
+      <Image src="/icon/caution.svg" alt="주의" width={24} height={24} />
     );
   }, [modalMode]);
 
@@ -353,7 +341,6 @@ export default function NoticeListWithDetailPage({ userId }: Props) {
           onSelect={({ noticeId, shopId, isPast, isClosed }) => {
             scrollYRef.current = window.scrollY;
             setSelectedNoticeId(noticeId);
-            setSelectedShopId(shopId);
             setSelectedIsPast(isPast);
             setSelectedIsClosed(isClosed);
 
