@@ -1,7 +1,7 @@
 "use client";
 
 import { Button } from "@/components/common/button";
-import ShopInfoCard from "@/components/common/shop-info/ShopInfoCard";
+import ShopInfoCard from "@/components/common/shop-info/shop-info-card";
 import { NoticeItem } from "@/types/notice";
 import Image from "next/image";
 import Link from "next/link";

@@ -168,6 +168,7 @@ export default function OwnerTable({
               {applications.map((app) => {
                 const item = app.item;
                 const userItem = item.user?.item;
+                const noticeItem = item.notice?.item;
                 const status = item.status;
 
                 const handleStatusButtonClick = async (newStatus: ApplicationStatus) => {
@@ -176,38 +177,57 @@ export default function OwnerTable({
 
                 const renderStatusCell = () => {
                   if (status === "pending") {
+                    if (noticeItem?.closed) {
+                      return (
+                        <div className="bg-gray-20 flex h-8 w-30 items-center justify-center rounded-2xl text-xs font-medium text-gray-500 md:text-sm md:font-semibold">
+                          마감 되었습니다.
+                        </div>
+                      );
+                    }
                     return (
                       <div className="flex gap-2">
-                        <Button
-                          variant="primary"
-                          size="md"
-                          onClick={() => handleStatusButtonClick("accepted")}
-                          className="h-8 px-3 text-xs"
-                        >
-                          승인하기
-                        </Button>
                         <Button
                           variant="outline"
                           size="md"
                           onClick={() => handleStatusButtonClick("rejected")}
-                          className="h-8 px-3 text-xs"
+                          className="h-8 w-17 border px-1 text-xs font-medium md:h-10 md:w-24 md:px-5 md:text-sm md:font-semibold"
                         >
                           거절하기
+                        </Button>
+                        <Button
+                          variant="outline"
+                          size="md"
+                          onClick={() => handleStatusButtonClick("accepted")}
+                          className="border-blue-20 text-blue-20 h-8 w-17 border px-1 text-xs font-medium md:h-10 md:w-24 md:px-5 md:text-sm md:font-semibold"
+                        >
+                          승인하기
                         </Button>
                       </div>
                     );
                   }
 
                   if (status === "accepted") {
-                    return <span className="text-sm text-gray-700">승인 완료</span>;
+                    return (
+                      <div className="bg-blue-10 text-blue-20 flex h-8 w-19 items-center justify-center rounded-2xl text-xs font-medium md:text-sm md:font-semibold">
+                        승인 완료
+                      </div>
+                    );
                   }
 
                   if (status === "rejected") {
-                    return <span className="text-sm text-gray-700">거절</span>;
+                    return (
+                      <div className="bg-red-10 text-red-40 flex h-8 w-19 items-center justify-center rounded-2xl text-xs font-medium md:text-sm md:font-semibold">
+                        거절
+                      </div>
+                    );
                   }
 
                   if (status === "canceled") {
-                    return <span className="text-sm text-gray-500">취소됨</span>;
+                    return (
+                      <div className="flex h-8 w-19 items-center justify-center rounded-2xl bg-yellow-100 text-xs font-medium text-yellow-600 md:text-sm md:font-semibold">
+                        취소됨
+                      </div>
+                    );
                   }
 
                   return null;
