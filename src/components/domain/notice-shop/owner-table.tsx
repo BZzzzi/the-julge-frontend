@@ -1,6 +1,7 @@
 "use client";
 
 import { Button } from "@/components/common/button";
+import Modal from "@/components/common/modal/Modal";
 import { Pagination } from "@/components/common/pagination";
 import { apiClient } from "@/lib/api";
 import {
@@ -8,6 +9,7 @@ import {
   NoticeApplicationItem,
   NoticeApplicationsRes,
 } from "@/types/application";
+import Image from "next/image";
 import { useEffect, useState } from "react";
 
 interface OwnerTableProps {
@@ -39,6 +41,12 @@ export default function OwnerTable({
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+  const [modalOpen, setModalOpen] = useState(false);
+  const [pendingAction, setPendingAction] = useState<{
+    applicationId: string;
+    status: ApplicationStatus;
+    userName: string;
+  } | null>(null);
 
   // href에서 offset 파싱
   const parseOffsetFromHref = (href: string): number => {
@@ -112,6 +120,28 @@ export default function OwnerTable({
     }
   };
 
+  const handleStatusButtonClick = (
+    applicationId: string,
+    status: ApplicationStatus,
+    userName: string,
+  ) => {
+    setPendingAction({ applicationId, status, userName });
+    setModalOpen(true);
+  };
+
+  const handleModalConfirm = async () => {
+    if (!pendingAction) return;
+
+    setModalOpen(false);
+    await handleStatusChange(pendingAction.applicationId, pendingAction.status);
+    setPendingAction(null);
+  };
+
+  const handleModalCancel = () => {
+    setModalOpen(false);
+    setPendingAction(null);
+  };
+
   if (loading) {
     return <p className="text-gray-500">신청자 목록을 불러오는 중...</p>;
   }
@@ -171,10 +201,6 @@ export default function OwnerTable({
                 const noticeItem = item.notice?.item;
                 const status = item.status;
 
-                const handleStatusButtonClick = async (newStatus: ApplicationStatus) => {
-                  await handleStatusChange(item.id, newStatus);
-                };
-
                 const renderStatusCell = () => {
                   if (status === "pending") {
                     if (noticeItem?.closed) {
@@ -189,7 +215,9 @@ export default function OwnerTable({
                         <Button
                           variant="outline"
                           size="md"
-                          onClick={() => handleStatusButtonClick("rejected")}
+                          onClick={() =>
+                            handleStatusButtonClick(item.id, "rejected", userItem?.name || "신청자")
+                          }
                           className="h-8 w-17 border px-1 text-xs font-medium md:h-10 md:w-24 md:px-5 md:text-sm md:font-semibold"
                         >
                           거절하기
@@ -197,7 +225,9 @@ export default function OwnerTable({
                         <Button
                           variant="outline"
                           size="md"
-                          onClick={() => handleStatusButtonClick("accepted")}
+                          onClick={() =>
+                            handleStatusButtonClick(item.id, "accepted", userItem?.name || "신청자")
+                          }
                           className="border-blue-20 text-blue-20 h-8 w-17 border px-1 text-xs font-medium md:h-10 md:w-24 md:px-5 md:text-sm md:font-semibold"
                         >
                           승인하기
@@ -272,6 +302,38 @@ export default function OwnerTable({
           </div>
         )}
       </div>
+
+      {/* 상태 변경 확인 모달 */}
+      <Modal
+        open={modalOpen}
+        onClose={handleModalCancel}
+        variant="icon"
+        icon={
+          <Image
+            src="/icon/checked.svg"
+            alt="확인 아이콘"
+            width={25}
+            height={25}
+          />
+        }
+        description={
+          pendingAction
+            ? `신청을 ${pendingAction.status === "accepted" ? "승인" : "거절"}하시겠습니까?`
+            : ""
+        }
+        actions={[
+          {
+            label: "아니오",
+            onClick: handleModalCancel,
+            variant: "outline",
+          },
+          {
+            label: `${pendingAction?.status === "accepted" ? "승인하기" : "거절하기"}`,
+            onClick: handleModalConfirm,
+            variant: "primary",
+          },
+        ]}
+      />
     </div>
   );
 }
