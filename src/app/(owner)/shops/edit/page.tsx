@@ -36,9 +36,8 @@ export default async function ShopEditPage() {
                     로그인 하기
                   </Button>
                 </Link>
+              </div>
             </div>
-            </div>
-            
           </section>
         </main>
       </>

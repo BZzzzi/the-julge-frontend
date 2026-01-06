@@ -38,7 +38,6 @@ type CardProps = {
   closedLabel?: string;
 };
 
-
 const BASE_HOURLY_PAY = 10320;
 
 function formatKSTDateTime(date: Date) {
@@ -128,7 +127,12 @@ export default function Card({
 
               <div className="mx-3 mt-3 sm:mx-3 sm:mt-3 md:mx-4 md:mt-4">
                 <div className="bg-gray-30 relative h-21 w-full overflow-hidden rounded-xl sm:h-21 lg:h-40">
-                  <Image src={c.imageUrl} alt={c.name} fill className={`object-cover ${imgDim}`} />
+                  <Image
+                    src={c.imageUrl}
+                    alt={c.name}
+                    fill
+                    className={`object-cover ${imgDim}`}
+                  />
                 </div>
               </div>
 
@@ -217,7 +221,10 @@ export default function Card({
                 </div>
               </div>
 
-              <div className="absolute inset-0 z-10 cursor-pointer" aria-hidden />
+              <div
+                className="absolute inset-0 z-10 cursor-pointer"
+                aria-hidden
+              />
             </div>
           );
         })}

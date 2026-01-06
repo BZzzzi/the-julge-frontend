@@ -27,12 +27,14 @@ export default async function MyShopPage() {
           <section className="mx-auto max-w-5xl px-4 py-10">
             <h1 className="mb-6 text-2xl font-bold">내 가게</h1>
 
-            <div className="rounded-xl border border-gray-20 p-14 text-center">
-              <p className="mb-6 text-lg text-black">
-                내 가게를 소개하고 공고도 등록해 보세요.
-              </p>
+            <div className="border-gray-20 rounded-xl border p-14 text-center">
+              <p className="mb-6 text-lg text-black">내 가게를 소개하고 공고도 등록해 보세요.</p>
               <Link href={"/shops/new"}>
-                <Button variant="primary" size="lg" className="w-86.5">
+                <Button
+                  variant="primary"
+                  size="lg"
+                  className="w-86.5"
+                >
                   가게 등록하기
                 </Button>
               </Link>
@@ -83,13 +85,27 @@ export default async function MyShopPage() {
               footer={
                 <div className="flex gap-3">
                   <div className="flex w-full justify-between gap-4">
-                    <Link href={`/shops/edit`} className="block w-full">
-                      <Button variant="outline" size="lg" className="w-full">
+                    <Link
+                      href={`/shops/edit`}
+                      className="block w-full"
+                    >
+                      <Button
+                        variant="outline"
+                        size="lg"
+                        className="w-full"
+                      >
                         편집하기
                       </Button>
                     </Link>
-                    <Link href={`/notice/notice-new`} className="block w-full">
-                      <Button variant="primary" size="lg" className="w-full">
+                    <Link
+                      href={`/notice/notice-new`}
+                      className="block w-full"
+                    >
+                      <Button
+                        variant="primary"
+                        size="lg"
+                        className="w-full"
+                      >
                         공고 등록하기
                       </Button>
                     </Link>
@@ -100,11 +116,11 @@ export default async function MyShopPage() {
           </div>
         </section>
 
-        <section className="w-full bg-gray-5">
+        <section className="bg-gray-5 w-full">
           <div className="mx-auto max-w-5xl px-4 py-14">
             <div className="mx-auto w-87.75 md:w-170 lg:w-241">
               {notices.length === 0 ? (
-                <div className="rounded-xl border border-gray-20 p-14 text-center">
+                <div className="border-gray-20 rounded-xl border p-14 text-center">
                   <p className="mb-6 text-lg text-black">공고를 등록해 보세요.</p>
                   <Link href={`/notice/notice-new`}>
                     <Button

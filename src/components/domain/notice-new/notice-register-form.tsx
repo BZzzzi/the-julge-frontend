@@ -28,11 +28,7 @@ export default function NoticeRegisterForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
 
-  const {
-    register,
-    handleSubmit,
-    watch,
-  } = useForm<NoticeFormInputs>({
+  const { register, handleSubmit, watch } = useForm<NoticeFormInputs>({
     mode: "onBlur",
   });
 
@@ -136,7 +132,11 @@ export default function NoticeRegisterForm() {
       <div className="w-full max-w-[964px]">
         <div className="mb-8 flex items-center justify-between">
           <h1 className="text-3xl font-bold text-black">공고 등록</h1>
-          <button type="button" onClick={handleClose} aria-label="닫기">
+          <button
+            type="button"
+            onClick={handleClose}
+            aria-label="닫기"
+          >
             <svg
               width="32"
               height="32"
@@ -150,7 +150,10 @@ export default function NoticeRegisterForm() {
           </button>
         </div>
 
-        <form onSubmit={handleSubmit(onSubmit)} className="flex flex-col gap-8">
+        <form
+          onSubmit={handleSubmit(onSubmit)}
+          className="flex flex-col gap-8"
+        >
           <div className="flex flex-wrap gap-5">
             <Field
               label="시급"
@@ -201,7 +204,10 @@ export default function NoticeRegisterForm() {
             </Field>
           </div>
 
-          <Field label="공고 설명" htmlFor="description">
+          <Field
+            label="공고 설명"
+            htmlFor="description"
+          >
             <FieldInput
               as="textarea"
               id="description"

@@ -40,19 +40,19 @@
   --animate-animateGirl: animateGirl 10s linear infinite;
 
   @keyframes animateGirl {
-  0% {
-    transform: translateX(calc(100% + 100vw));
+    0% {
+      transform: translateX(calc(100% + 100vw));
+    }
+    50% {
+      transform: translateX(calc(-100% - 100vw));
+    }
+    50.01% {
+      transform: translateX(calc(-100% - 100vw)) rotateY(180deg);
+    }
+    100% {
+      transform: translateX(calc(100% + 100vw)) rotateY(180deg);
+    }
   }
-  50% {
-    transform: translateX(calc(-100% - 100vw));
-  }
-  50.01% {
-    transform: translateX(calc(-100% - 100vw)) rotateY(180deg);
-  }
-  100% {
-    transform: translateX(calc(100% + 100vw)) rotateY(180deg);
-  }
-}
   --animate-animate1: animate 20s linear infinite;
   --animate-animate2: animate 14s linear infinite;
   --animate-animate3: animate 12s linear infinite;
