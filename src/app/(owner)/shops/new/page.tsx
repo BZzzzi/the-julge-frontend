@@ -374,7 +374,7 @@ export default function ShopRegisterPage() {
                   <Button
                     type="submit"
                     size="lg"
-                    className="w-75"
+                    className="w-full md:w-75"
                     disabled={uploading || submitting}
                   >
                     {submitting ? "등록 중..." : uploading ? "업로드 중..." : "등록하기"}

@@ -21,28 +21,30 @@ export default async function MyShopPage() {
 
   if (!shop) {
     return (
-      <>
-        <Header />
-        <main>
-          <section className="mx-auto max-w-5xl px-4 py-10">
-            <h1 className="mb-6 text-2xl font-bold">내 가게</h1>
+      <div className="flex h-dvh flex-col justify-between">
+        <div>
+          <Header />
+          <main>
+            <section className="mx-auto max-w-5xl px-4 py-10">
+              <h1 className="mb-6 text-2xl font-bold">내 가게</h1>
 
-            <div className="border-gray-20 rounded-xl border p-14 text-center">
-              <p className="mb-6 text-lg text-black">내 가게를 소개하고 공고도 등록해 보세요.</p>
-              <Link href={"/shops/new"}>
-                <Button
-                  variant="primary"
-                  size="lg"
-                  className="w-86.5"
-                >
-                  가게 등록하기
-                </Button>
-              </Link>
-            </div>
-          </section>
-        </main>
+              <div className="border-gray-20 rounded-xl border p-14 text-center">
+                <p className="mb-6 text-lg text-black">내 가게를 소개하고 공고도 등록해 보세요.</p>
+                <Link href={"/shops/new"}>
+                  <Button
+                    variant="primary"
+                    size="lg"
+                    className="w-full md:w-86.5"
+                  >
+                    가게 등록하기
+                  </Button>
+                </Link>
+              </div>
+            </section>
+          </main>
+        </div>
         <Footer />
-      </>
+      </div>
     );
   }
 
@@ -98,7 +100,7 @@ export default async function MyShopPage() {
                       </Button>
                     </Link>
                     <Link
-                      href={`/notice/notice-new`}
+                      href={`/notice/notice-detail/${shop.id}/new`}
                       className="block w-full"
                     >
                       <Button
