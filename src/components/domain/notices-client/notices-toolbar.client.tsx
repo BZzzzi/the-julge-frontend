@@ -1,3 +1,4 @@
+// components/domain/notices-client/notices-toolbar.client.tsx
 "use client";
 
 import { useEffect, useMemo, useRef, useState } from "react";
