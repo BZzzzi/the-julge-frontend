@@ -13,6 +13,7 @@ import FilterModal, {
   buildNoticesFilterQueryString,
   type NoticeFilter,
 } from "@/components/domain/notices-client/notices-filter-modal";
+import { ApiLink } from "@/types/common";
 
 import NoticesToolbar, {
   type SortValue,
@@ -38,10 +39,14 @@ type NoticesResponse = {
       };
     };
   }>;
+  offset?: number;
+  limit?: number;
+  count?: number;
+  links?: ApiLink[];
+  // 하위 호환성을 위한 필드들
   totalPage?: number | string;
   totalPages?: number | string;
   totalCount?: number | string;
-  count?: number | string;
   total?: number | string;
 };
 
@@ -261,7 +266,17 @@ export default function NoticesPageClient() {
 
   const [fitCards, setFitCards] = useState<CardData[]>([]);
   const [cards, setCards] = useState<CardData[]>([]);
-  const [totalPage, setTotalPage] = useState(1);
+  const [paginationData, setPaginationData] = useState<{
+    links: ApiLink[];
+    offset: number;
+    limit: number;
+    count: number;
+  }>({
+    links: [],
+    offset: 0,
+    limit: LIST_LIMIT,
+    count: 0,
+  });
 
   const filterQueryString = useMemo(
     () => buildNoticesFilterQueryString(appliedFilter),
@@ -287,6 +302,21 @@ export default function NoticesPageClient() {
     else params.set("page", String(nextPage));
     const qs = params.toString();
     router.push(qs ? `${pathname}?${qs}` : pathname);
+  };
+
+  // href에서 offset을 파싱해서 페이지 번호로 변환하고 URL 업데이트
+  const handlePageChange = (href: string) => {
+    try {
+      const url = new URL(href, window.location.origin);
+      const offsetParam = url.searchParams.get("offset");
+      if (offsetParam) {
+        const offset = parseInt(offsetParam, 10);
+        const page = Math.floor(offset / LIST_LIMIT) + 1;
+        setUrlPage(page);
+      }
+    } catch {
+      // href 파싱 실패 시 무시
+    }
   };
 
   const resetToFirstPage = () => {
@@ -327,14 +357,34 @@ export default function NoticesPageClient() {
         const sorted = applyClientSort(mapped, sortValue);
         setCards(sorted);
 
-        const nextTotalPage = getTotalPage(data);
-        setTotalPage(nextTotalPage);
+        // links 기반 페이지네이션 데이터 설정
+        const offset = data.offset ?? (pageParam - 1) * LIST_LIMIT;
+        const limit = data.limit ?? LIST_LIMIT;
+        const count =
+          data.count ?? parsePositiveInt(data.totalCount) ?? parsePositiveInt(data.total) ?? 0;
+        const links = data.links ?? [];
 
-        if (pageParam > nextTotalPage) setUrlPage(nextTotalPage);
+        setPaginationData({
+          links,
+          offset,
+          limit,
+          count,
+        });
+
+        // 하위 호환성: totalPage가 있으면 페이지 범위 체크
+        const nextTotalPage = getTotalPage(data);
+        if (pageParam > nextTotalPage && nextTotalPage > 0) {
+          setUrlPage(nextTotalPage);
+        }
       })
       .catch(() => {
         setCards([]);
-        setTotalPage(1);
+        setPaginationData({
+          links: [],
+          offset: 0,
+          limit: LIST_LIMIT,
+          count: 0,
+        });
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listQueryString, sortValue]);
@@ -378,12 +428,11 @@ export default function NoticesPageClient() {
 
           <div className="mt-8 flex justify-center">
             <Pagination
-              totalPage={totalPage}
-              currentPage={pageParam}
-              onPageChange={(p) => {
-                if (p < 1 || p > totalPage) return;
-                setUrlPage(p);
-              }}
+              links={paginationData.links}
+              offset={paginationData.offset}
+              limit={paginationData.limit}
+              count={paginationData.count}
+              onPageChange={handlePageChange}
             />
           </div>
         </section>
