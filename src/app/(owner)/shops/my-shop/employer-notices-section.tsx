@@ -12,14 +12,9 @@ export default function EmployerNoticesSection({ cards }: Props) {
   const router = useRouter();
   const [selectedNoticeId, setSelectedNoticeId] = useState<string | null>(null);
 
-  const handleSelect = (payload: { noticeId: string; shopId: string; isPast: boolean }) => {
-    const target = cards.find((c) => c.noticeId === payload.noticeId);
-    const isBlocked = target?.isPast || target?.isClosed;
-
-    if (isBlocked) return;
-
+  const handleSelect = (payload: { noticeId: string; shopId: string }) => {
     setSelectedNoticeId(payload.noticeId);
-    router.push(`/notices/notice-detail/${payload.shopId}/${payload.noticeId}`);
+    router.push(`/notice/notice-detail/${payload.shopId}/${payload.noticeId}`);
   };
 
   return (

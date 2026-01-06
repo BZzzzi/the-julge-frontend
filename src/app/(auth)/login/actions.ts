@@ -36,6 +36,5 @@ export async function login(
     path: "/",
   });
 
-  // TODO: 로그인 후, 페이지 이동
-  redirect("/notice/notices-list");
+  redirect("/");
 }
