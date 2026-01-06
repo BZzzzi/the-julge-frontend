@@ -88,7 +88,6 @@ const getServerSort = (sortValue: SortValue) => {
   return sortValue;
 };
 
-// ✅ any 없이, 런타임 안전하게
 const applyClientSort = (cards: CardData[], sortValue: SortValue) => {
   const next = [...cards];
 
