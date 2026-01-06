@@ -33,9 +33,7 @@ export function getUserIdFromToken(token: string): string | null {
   }
 }
 
-export function getUserIdFromUserInfoCookie(
-  cookieValue?: string
-): string | null {
+export function getUserIdFromUserInfoCookie(cookieValue?: string): string | null {
   if (!cookieValue) return null;
 
   try {

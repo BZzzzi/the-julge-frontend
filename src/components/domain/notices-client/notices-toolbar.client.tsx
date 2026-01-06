@@ -39,7 +39,10 @@ export default function NoticesToolbar({ sortValue, onChangeSort, onOpenFilter }
 
   return (
     <div className="flex items-center gap-2.5 md:justify-end">
-      <div className="relative" ref={sortWrapRef}>
+      <div
+        className="relative"
+        ref={sortWrapRef}
+      >
         <button
           type="button"
           onClick={() => setSortOpen((v) => !v)}

@@ -151,7 +151,13 @@ export default function NoticeDetailPage() {
               wageBadge={{
                 text: "기존 시급보다 50% ↑",
                 icon: (
-                  <svg width="12" height="12" viewBox="0 0 12 12" fill="none" className="ml-1">
+                  <svg
+                    width="12"
+                    height="12"
+                    viewBox="0 0 12 12"
+                    fill="none"
+                    className="ml-1"
+                  >
                     <path
                       d="M6 2L6 10M6 2L2 6M6 2L10 6"
                       stroke="white"
@@ -171,8 +177,16 @@ export default function NoticeDetailPage() {
                 급해서 시급도 높였고 그렇게 바쁜 날이 아니라서 괜찮을거예요.`,
               }}
               footer={
-                <Link href="/notice/notice-edit" passHref className="w-full">
-                  <Button variant="outline" size="lg" className="w-full bg-white">
+                <Link
+                  href="/notice/notice-edit"
+                  passHref
+                  className="w-full"
+                >
+                  <Button
+                    variant="outline"
+                    size="lg"
+                    className="w-full bg-white"
+                  >
                     공고 편집하기
                   </Button>
                 </Link>
