@@ -6,7 +6,7 @@ import { useState } from "react";
 import { Button } from "@/components/common/button";
 import Footer from "@/components/common/layouts/footer";
 import Header from "@/components/common/layouts/header";
-import ShopInfoCard from "@/components/common/shop-info/ShopInfoCard";
+import ShopInfoCard from "@/components/common/shop-info/shop-info-card";
 import Table from "@/components/common/table";
 
 import { NoticeApplicationItem } from "@/types/application";

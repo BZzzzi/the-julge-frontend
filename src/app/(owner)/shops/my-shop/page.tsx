@@ -1,7 +1,7 @@
 import { Button } from "@/components/common/button";
 import Footer from "@/components/common/layouts/footer";
 import Header from "@/components/common/layouts/header";
-import ShopInfoCard from "@/components/common/shop-info/ShopInfoCard";
+import ShopInfoCard from "@/components/common/shop-info/shop-info-card";
 import { apiClient } from "@/lib/api";
 import { getUserIdFromUserInfoCookie } from "@/lib/auth";
 import { cookies } from "next/headers";
