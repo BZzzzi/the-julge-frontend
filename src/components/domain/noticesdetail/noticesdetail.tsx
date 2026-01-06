@@ -1,7 +1,7 @@
 "use client";
 
 import Modal from "@/components/common/modal/Modal";
-import ShopInfoCard from "@/components/common/shop-info/ShopInfoCard";
+import ShopInfoCard from "@/components/common/shop-info/shop-info-card";
 import Card, { CardData } from "@/components/domain/card";
 import { apiClient } from "@/lib/api";
 import Image from "next/image";
