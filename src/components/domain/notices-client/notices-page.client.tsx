@@ -181,8 +181,9 @@ const FitCards = ({
 
   return (
     <>
-      <div className="md:hidden lg:hidden">
-        <div className="-mr-3 w-full min-w-0 overflow-hidden">
+      {/* ✅ 모바일 + 태블릿: Swiper 하나로 통합 */}
+      <div className="lg:hidden">
+        <div className="-mr-3 w-full min-w-0 overflow-hidden md:-mr-8">
           <Swiper
             slidesPerView={2.1}
             slidesPerGroup={1}
@@ -201,10 +202,17 @@ const FitCards = ({
             onSwiper={handleSwiperReady}
             onSlideChangeTransitionEnd={handleAfterSlideChange}
             className="[&_.swiper-slide]:h-auto [&_.swiper-wrapper]:items-stretch"
+            breakpoints={{
+              // ✅ md(태블릿)부터 값 변경
+              768: {
+                slidesPerView: 2.15,
+                spaceBetween: 12,
+              },
+            }}
           >
             {cards.slice(0, 6).map((c) => (
-              <SwiperSlide key={c.noticeId} className="h-auto!">
-                <div className="[&_.grid]:[grid-cols-1]">
+              <SwiperSlide key={c.noticeId} className="!h-auto">
+                <div className="[&_.grid]:!grid-cols-1">
                   <Card
                     title=""
                     cards={[c]}
@@ -219,45 +227,7 @@ const FitCards = ({
         </div>
       </div>
 
-      <div className="hidden md:block lg:hidden">
-        <div className="-mr-8 w-full min-w-0 overflow-hidden">
-          <Swiper
-            slidesPerView={2.15}
-            slidesPerGroup={1}
-            spaceBetween={12}
-            style={{ paddingBottom: 4 }}
-            autoHeight
-            nested
-            simulateTouch
-            touchStartPreventDefault={false}
-            resistanceRatio={0.6}
-            threshold={5}
-            observer
-            observeParents
-            resizeObserver
-            updateOnWindowResize
-            onSwiper={handleSwiperReady}
-            onSlideChangeTransitionEnd={handleAfterSlideChange}
-            className="[&_.swiper-slide]:h-auto [&_.swiper-wrapper]:items-stretch"
-          >
-            {cards.slice(0, 6).map((c) => (
-              <SwiperSlide key={c.noticeId} className="h-auto!">
-                <div className="[&_.grid]:[grid-cols-1]">
-                  <Card
-                    title=""
-                    cards={[c]}
-                    selectedNoticeId={null}
-                    onSelect={onSelect}
-                    onCardClick={onCardClick}
-                  />
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
-      </div>
-
-      {/* PC */}
+      {/* ✅ PC */}
       <div className="hidden lg:block">
         <Card
           title=""
@@ -372,7 +342,7 @@ export default function NoticesPageClient() {
   return (
     <>
       {isLoggedIn && (
-        <section className="bg-red-10]">
+        <section className="bg-red-10">
           <div className="mx-auto w-full max-w-87.5 py-12 md:max-w-169.5 lg:max-w-241 lg:py-10">
             <h3 className="text-black">맞춤 공고</h3>
             <FitCards cards={fitCards} onSelect={handleSelect} onCardClick={handleCardClick} />
