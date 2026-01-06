@@ -38,15 +38,12 @@ export default function NoticesToolbar({ sortValue, onChangeSort, onOpenFilter }
   }, []);
 
   return (
-    <div className="flex items-center gap-[10px] md:justify-end">
-      <div
-        className="relative"
-        ref={sortWrapRef}
-      >
+    <div className="flex items-center gap-2.5 md:justify-end">
+      <div className="relative" ref={sortWrapRef}>
         <button
           type="button"
           onClick={() => setSortOpen((v) => !v)}
-          className="flex h-[30px] w-[105px] cursor-pointer items-center justify-between rounded-md bg-[var(--color-gray-10)] px-2 text-[14px] font-bold text-[var(--color-black)]"
+          className="bg-gray-10 flex h-7.5 w-26.25 cursor-pointer items-center justify-between rounded-md px-2 text-[14px] font-bold text-black"
         >
           <span className="truncate">{selectedSortLabel}</span>
 
@@ -69,7 +66,7 @@ export default function NoticesToolbar({ sortValue, onChangeSort, onOpenFilter }
         </button>
 
         {sortOpen && (
-          <div className="absolute top-full left-0 z-30 mt-2 w-[105px] overflow-hidden rounded-md border border-[var(--color-gray-20)] bg-white shadow-md">
+          <div className="w-26.25overflow-hidden border-gray-10 absolute top-full left-0 z-30 mt-2 rounded-md border bg-white shadow-md">
             {SORT_OPTIONS.map((opt) => {
               const isSelected = opt.value === sortValue;
               return (
@@ -81,7 +78,7 @@ export default function NoticesToolbar({ sortValue, onChangeSort, onOpenFilter }
                     setSortOpen(false);
                   }}
                   className={[
-                    "flex h-[30px] w-full items-center px-3 text-left text-[14px] text-[var(--color-black)] hover:bg-[var(--color-gray-10)]",
+                    "hover:bg-gray-10 flex h-7.5 w-full items-center px-3 text-left text-[14px] text-black",
                     isSelected ? "font-bold" : "font-normal",
                   ].join(" ")}
                 >
@@ -96,7 +93,7 @@ export default function NoticesToolbar({ sortValue, onChangeSort, onOpenFilter }
       <button
         type="button"
         onClick={onOpenFilter}
-        className="h-[30px] w-[79px] cursor-pointer rounded-md bg-[var(--color-red-30)] text-[14px] font-bold text-[var(--color-white)]"
+        className="bg-red-30 h-7.5 w-19.75 cursor-pointer rounded-md text-[14px] font-bold text-white"
       >
         상세필터
       </button>
