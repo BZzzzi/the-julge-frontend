@@ -2,8 +2,11 @@
 
 import { UserInfo } from "@/types/user";
 import { create } from "zustand";
-import { combine, devtools } from "zustand/middleware";
+import { combine, createJSONStorage, devtools, persist } from "zustand/middleware";
 
+/** =========================
+ *  User Store
+========================= */
 type UserState = { isLoggedIn: true; user: UserInfo } | { isLoggedIn: false; user: null };
 
 const initialState = {
@@ -15,11 +18,9 @@ const useUserStore = create(
   devtools(
     combine(initialState, (set) => ({
       actions: {
-        // 로그인 성공 시 또는 Hydration 시 유저 정보 설정
         setUserInfo: (userInfo: UserInfo) => {
           set({ user: userInfo, isLoggedIn: true });
         },
-        // 로그아웃 시 상태 초기화
         clearUserInfo: () => {
           set({ ...initialState });
         },
@@ -29,15 +30,38 @@ const useUserStore = create(
   ),
 );
 
-// 1. 유저 정보 및 로그인 여부 확인용
 export const useUser = () => {
   const user = useUserStore((state) => state.user);
   const isLoggedIn = useUserStore((state) => state.isLoggedIn);
   return { user, isLoggedIn };
 };
 
-// 2. 액션만 따로 가져오기
 export const useUserActions = () => useUserStore((state) => state.actions);
 
-// 3. employer/employee 구분용
 export const useUserType = () => useUserStore((state) => state.user?.userType ?? "employer");
+
+/** =========================
+ *  Notice Selection Store (notices -> notices-detail 전달)
+========================= */
+export type SelectedNotice = { shopId: string; noticeId: string } | null;
+
+type NoticeSelectionState = {
+  selected: SelectedNotice;
+  setSelected: (v: SelectedNotice) => void;
+  clear: () => void;
+};
+
+export const useNoticeSelection = create<NoticeSelectionState>()(
+  persist(
+    (set) => ({
+      selected: null,
+      setSelected: (v) => set({ selected: v }),
+      clear: () => set({ selected: null }),
+    }),
+    {
+      name: "noticeSelection",
+      storage: createJSONStorage(() => sessionStorage), 
+      partialize: (s) => ({ selected: s.selected }),
+    },
+  ),
+);

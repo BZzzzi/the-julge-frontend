@@ -1,25 +1,51 @@
 "use client";
 
-import { useUser } from "@/store/user";
+import { useNoticeSelection, useUser } from "@/store/user";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
-
-import type { Swiper as SwiperType } from "swiper";
-import "swiper/css";
-import { Swiper, SwiperSlide } from "swiper/react";
 
 import { Pagination } from "@/components/common/pagination";
 import FilterModal, {
   buildNoticesFilterQueryString,
   type NoticeFilter,
 } from "@/components/domain/notices-client/notices-filter-modal";
-
-import NoticesToolbar, {
-  type SortValue,
-} from "@/components/domain/notices-client/notices-toolbar.client";
+import NoticesToolbar, { type SortValue } from "@/components/domain/notices-client/notices-toolbar.client";
 
 import Card, { type CardData } from "@/components/domain/card";
 
+/** =========================
+ *  최근 클릭 기록(로그인/비로그인 분리)
+========================= */
+type RecentKey = string;
+
+function makeKey(shopId: string, noticeId: string) {
+  return `${shopId}:${noticeId}`;
+}
+
+function getRecentStorageKey(userId: string | null) {
+  return userId ? `recentNotices:${userId}` : "recentNotices:guest";
+}
+
+function loadRecent(key: string): RecentKey[] {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as RecentKey[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecent(key: string, list: RecentKey[]) {
+  localStorage.setItem(key, JSON.stringify(list));
+}
+
+function pushToFrontRecent(list: RecentKey[], key: RecentKey, limit = 6) {
+  return [key, ...list.filter((k) => k !== key)].slice(0, limit);
+}
+
+/** =========================
+ *  API
+========================= */
 type NoticesResponse = {
   items: Array<{
     item: {
@@ -28,14 +54,7 @@ type NoticesResponse = {
       startsAt: string;
       workhour: number;
       closed?: boolean;
-      shop: {
-        item: {
-          id?: string;
-          name: string;
-          address1: string;
-          imageUrl: string;
-        };
-      };
+      shop: { item: { id?: string; name: string; address1: string; imageUrl: string } };
     };
   }>;
   totalPage?: number | string;
@@ -85,13 +104,8 @@ const getServerSort = (sortValue: SortValue) => {
 
 const applyClientSort = (cards: CardData[], sortValue: SortValue) => {
   const next = [...cards];
-
-  if (sortValue === "workhour") {
-    next.sort((a, b) => (a.workhour ?? 0) - (b.workhour ?? 0));
-  } else if (sortValue === "name") {
-    next.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "", "ko"));
-  }
-
+  if (sortValue === "workhour") next.sort((a, b) => (a.workhour ?? 0) - (b.workhour ?? 0));
+  else if (sortValue === "name") next.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "", "ko"));
   return next;
 };
 
@@ -130,11 +144,9 @@ const fetchNotices = async (queryString: string) => {
 
 const mapToCardData = (data: NoticesResponse): CardData[] => {
   const now = Date.now();
-
   return data.items.map((n) => {
     const startsAt = n.item.startsAt;
     const isPast = new Date(startsAt).getTime() < now;
-
     return {
       noticeId: n.item.id,
       shopId: n.item.shop.item.id ?? "",
@@ -153,91 +165,9 @@ const mapToCardData = (data: NoticesResponse): CardData[] => {
 const TitleBlock = ({ keyword }: { keyword: string }) => {
   if (!keyword) return <h3 className="mb-0 text-black">전체 공고</h3>;
   return (
-    <h3 className="text-black] mb-0">
+    <h3 className="mb-0 text-black">
       <span className="text-red-40">{keyword}</span>에 대한 공고 목록
     </h3>
-  );
-};
-
-const FitCards = ({
-  cards,
-  onSelect,
-  onCardClick,
-}: {
-  cards: CardData[];
-  onSelect: (payload: CardClickPayload) => void;
-  onCardClick: (payload: CardClickPayload) => void;
-}) => {
-  if (!cards.length) return null;
-
-  const handleSwiperReady = (swiper: SwiperType) => {
-    requestAnimationFrame(() => swiper.update());
-  };
-
-  const handleAfterSlideChange = (swiper: SwiperType) => {
-    requestAnimationFrame(() => swiper.update());
-  };
-
-  return (
-    <>
-      <div className="lg:hidden">
-        <div className="-mr-3 w-full min-w-0 overflow-hidden md:-mr-8">
-          <Swiper
-            slidesPerView={2.1}
-            slidesPerGroup={1}
-            spaceBetween={8}
-            style={{ paddingBottom: 4 }}
-            autoHeight
-            nested
-            simulateTouch
-            touchStartPreventDefault={false}
-            resistanceRatio={0.6}
-            threshold={5}
-            observer
-            observeParents
-            resizeObserver
-            updateOnWindowResize
-            onSwiper={handleSwiperReady}
-            onSlideChangeTransitionEnd={handleAfterSlideChange}
-            className="[&_.swiper-slide]:h-auto [&_.swiper-wrapper]:items-stretch"
-            breakpoints={{
-              768: {
-                slidesPerView: 2.15,
-                spaceBetween: 12,
-              },
-            }}
-          >
-            {cards.slice(0, 6).map((c) => (
-              <SwiperSlide
-                key={c.noticeId}
-                className="h-auto!"
-              >
-                <div className="[&_.grid]:grid-cols-1!">
-                  <Card
-                    title=""
-                    cards={[c]}
-                    selectedNoticeId={null}
-                    onSelect={onSelect}
-                    onCardClick={onCardClick}
-                  />
-                </div>
-              </SwiperSlide>
-            ))}
-          </Swiper>
-        </div>
-      </div>
-
-      {/* ✅ PC */}
-      <div className="hidden lg:block">
-        <Card
-          title=""
-          cards={cards.slice(0, 3)}
-          selectedNoticeId={null}
-          onSelect={onSelect}
-          onCardClick={onCardClick}
-        />
-      </div>
-    </>
   );
 };
 
@@ -245,7 +175,11 @@ export default function NoticesPageClient() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
-  const { isLoggedIn } = useUser();
+
+  const { user } = useUser();
+  const userId = (user as unknown as { id?: string } | null)?.id ?? null;
+
+  const setSelected = useNoticeSelection((s) => s.setSelected);
 
   const keyword = (searchParams.get("keyword") ?? "").trim();
   const pageParam = parsePositiveInt(searchParams.get("page") ?? "1") ?? 1;
@@ -258,15 +192,10 @@ export default function NoticesPageClient() {
   });
 
   const [sortValue, setSortValue] = useState<SortValue>("time");
-
-  const [fitCards, setFitCards] = useState<CardData[]>([]);
   const [cards, setCards] = useState<CardData[]>([]);
   const [totalPage, setTotalPage] = useState(1);
 
-  const filterQueryString = useMemo(
-    () => buildNoticesFilterQueryString(appliedFilter),
-    [appliedFilter],
-  );
+  const filterQueryString = useMemo(() => buildNoticesFilterQueryString(appliedFilter), [appliedFilter]);
 
   const listQueryString = useMemo(() => {
     const offset = (pageParam - 1) * LIST_LIMIT;
@@ -298,27 +227,21 @@ export default function NoticesPageClient() {
 
   const handleSelect = (_payload: CardClickPayload) => {};
 
-  const handleCardClick = (payload: CardClickPayload) => {
-    const qs = new URLSearchParams({ noticeId: payload.noticeId });
-    router.push(`/notice/notices-detail?${qs.toString()}`);
+  //로그인/비로그인 상관없이 동일하게 detail로 이동
+  const handleCardClick = ({ shopId, noticeId }: CardClickPayload) => {
+    // 1) 선택값 저장 (detail에서 읽음)
+    setSelected({ shopId, noticeId });
+
+    // 2) 최근본 저장
+    const storageKey = getRecentStorageKey(userId);
+    const key = makeKey(shopId, noticeId);
+    const prev = loadRecent(storageKey);
+    const next = pushToFrontRecent(prev, key, 6);
+    saveRecent(storageKey, next);
+
+    // 3) 이동
+    router.push("/notice/notices-detail");
   };
-
-  // ✅ 맞춤공고
-  useEffect(() => {
-    if (!isLoggedIn) return;
-
-    fetchNotices(
-      buildListQuery({
-        limit: 6,
-        offset: 0,
-        sort: "time",
-        keyword: "",
-        filterQueryString: "",
-      }),
-    )
-      .then((data) => setFitCards(mapToCardData(data)))
-      .catch(() => setFitCards([]));
-  }, [isLoggedIn]);
 
   useEffect(() => {
     fetchNotices(listQueryString)
@@ -329,7 +252,6 @@ export default function NoticesPageClient() {
 
         const nextTotalPage = getTotalPage(data);
         setTotalPage(nextTotalPage);
-
         if (pageParam > nextTotalPage) setUrlPage(nextTotalPage);
       })
       .catch(() => {
@@ -341,21 +263,8 @@ export default function NoticesPageClient() {
 
   return (
     <>
-      {isLoggedIn && (
-        <section className="bg-red-10">
-          <div className="mx-auto w-full max-w-87.5 py-12 md:max-w-169.5 lg:max-w-241 lg:py-10">
-            <h3 className="text-black">맞춤 공고</h3>
-            <FitCards
-              cards={fitCards}
-              onSelect={handleSelect}
-              onCardClick={handleCardClick}
-            />
-          </div>
-        </section>
-      )}
-
       <main className="mx-auto w-full max-w-87.5 pb-10 md:max-w-169.5 lg:max-w-241">
-        <section className={isLoggedIn ? "mt-10" : "mt-6"}>
+        <section className="mt-6">
           <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <TitleBlock keyword={keyword} />
             <NoticesToolbar

@@ -4,35 +4,69 @@ import Modal from "@/components/common/modal/Modal";
 import ShopInfoCard from "@/components/common/shop-info/shop-info-card";
 import Card, { CardData } from "@/components/domain/card";
 import { apiClient } from "@/lib/api";
+import { useNoticeSelection, useUser } from "@/store/user";
 import Image from "next/image";
-import { useEffect, useMemo, useRef, useState } from "react";
-
-type NoticesResponse = {
-  items: Array<{
-    item: {
-      id: string;
-      hourlyPay: number;
-      startsAt: string;
-      workhour: number;
-      description?: string;
-      closed?: boolean;
-      shop: {
-        item: {
-          id: string;
-          name: string;
-          category?: string;
-          address1: string;
-          address2?: string;
-          description?: string;
-          imageUrl: string;
-          originalHourlyPay?: number;
-        };
-      };
-    };
-  }>;
-};
+import { useEffect, useMemo, useState } from "react";
 
 const BASE_HOURLY_PAY = 10320;
+
+/** =========================
+ *  최근본 storage
+========================= */
+type RecentKey = string;
+
+function getRecentStorageKey(userId: string | null) {
+  return userId ? `recentNotices:${userId}` : "recentNotices:guest";
+}
+
+function loadRecent(key: string): RecentKey[] {
+  try {
+    const raw = localStorage.getItem(key);
+    return raw ? (JSON.parse(raw) as RecentKey[]) : [];
+  } catch {
+    return [];
+  }
+}
+
+function saveRecent(key: string, list: RecentKey[]) {
+  localStorage.setItem(key, JSON.stringify(list));
+}
+
+function makeKey(shopId: string, noticeId: string) {
+  return `${shopId}:${noticeId}`;
+}
+
+function splitKey(k: string) {
+  const [shopId, noticeId] = k.split(":");
+  return { shopId: shopId ?? "", noticeId: noticeId ?? "" };
+}
+
+function pushToFrontRecent(list: RecentKey[], key: RecentKey, limit = 6) {
+  return [key, ...list.filter((x) => x !== key)].slice(0, limit);
+}
+
+/** =========================
+ *  타입 (필요한 필드만)
+========================= */
+type Shop = {
+  id: string;
+  name: string;
+  address1: string;
+  imageUrl: string;
+  description?: string;
+};
+
+type NoticeDetail = {
+  id: string;
+  hourlyPay: number;
+  startsAt: string;
+  workhour: number;
+  description?: string;
+  closed?: boolean;
+  shop: { item?: Shop } | Shop;
+};
+
+type ModalMode = "apply" | "cancel";
 
 function formatKSTDateTime(date: Date) {
   const parts = new Intl.DateTimeFormat("ko-KR", {
@@ -61,152 +95,137 @@ function formatKSTTime(date: Date) {
   return `${get("hour")}:${get("minute")}`;
 }
 
-type ModalMode = "apply" | "cancel";
-
-type Props = {
-  userId: string | null;
-};
-
-/** =========================
- *  최근 클릭 기록 (로그인/비로그인 분리)
-========================= */
-type RecentKey = string;
-
-function getRecentStorageKey(userId: string | null) {
-  return userId ? `recentNotices:${userId}` : "recentNotices:guest";
+function unwrapShop(shop: NoticeDetail["shop"]): Shop | null {
+  if (!shop) return null;
+  const maybe = shop as { item?: Shop };
+  if (maybe.item) return maybe.item;
+  return shop as Shop;
 }
 
-function loadRecent(key: string): RecentKey[] {
-  try {
-    const raw = localStorage.getItem(key);
-    return raw ? (JSON.parse(raw) as RecentKey[]) : [];
-  } catch {
-    return [];
-  }
-}
+export default function NoticeListWithDetailPage() {
+  const { user } = useUser();
+  const userId = (user as unknown as { id?: string } | null)?.id ?? null;
 
-function saveRecent(key: string, list: RecentKey[]) {
-  localStorage.setItem(key, JSON.stringify(list));
-}
+  const selected = useNoticeSelection((s) => s.selected);
+  const setSelected = useNoticeSelection((s) => s.setSelected);
 
-function makeKey(shopId: string, noticeId: string) {
-  return `${shopId}:${noticeId}`;
-}
-
-function pushToFrontRecent(list: RecentKey[], key: RecentKey, limit = 6) {
-  return [key, ...list.filter((k) => k !== key)].slice(0, limit);
-}
-
-function reorderByRecent(cards: CardData[], recent: RecentKey[]) {
-  const rank = new Map<RecentKey, number>();
-  recent.forEach((k, idx) => rank.set(k, idx));
-
-  return cards
-    .map((c, idx) => ({ c, idx }))
-    .sort((a, b) => {
-      const ka = makeKey(a.c.shopId, a.c.noticeId);
-      const kb = makeKey(b.c.shopId, b.c.noticeId);
-      const ra = rank.has(ka) ? (rank.get(ka) as number) : 1_000_000;
-      const rb = rank.has(kb) ? (rank.get(kb) as number) : 1_000_000;
-
-      if (ra !== rb) return ra - rb; // recent 앞쪽이 먼저
-      return a.idx - b.idx; // recent에 없으면 기존 순서 유지
-    })
-    .map((x) => x.c);
-}
-
-export default function NoticeListWithDetailPage({ userId }: Props) {
-  const [items, setItems] = useState<NoticesResponse["items"]>([]);
   const [cards, setCards] = useState<CardData[]>([]);
+  const [detailsByKey, setDetailsByKey] = useState<Record<string, NoticeDetail>>({});
+
   const [applied, setApplied] = useState(false);
   const [open, setOpen] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>("apply");
-  const [selectedNoticeId, setSelectedNoticeId] = useState<string | null>(null);
-  const [selectedIsPast, setSelectedIsPast] = useState(false);
-  const [selectedIsClosed, setSelectedIsClosed] = useState(false);
-  const selectedIsBlocked = selectedIsPast || selectedIsClosed;
+
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
-  const scrollYRef = useRef(0);
 
+  /** ✅ 선택 키 */
+  const selectedKey = selected ? makeKey(selected.shopId, selected.noticeId) : null;
+
+  /** =========================
+   *  최근본 + 선택값 기준으로 목록/상세 불러오기
+  ========================= */
   useEffect(() => {
     let alive = true;
 
-    async function fetchNotices() {
+    async function fetchAll() {
       try {
         setLoading(true);
         setErrorMsg(null);
 
-        const data = (await apiClient.notices.getNotices({
-          limit: 6,
-          sort: "time",
-        })) as unknown as NoticesResponse;
-
-        if (!alive) return;
-
-        setItems(data.items);
-
-        const now = Date.now();
-
-        const mapped: CardData[] = data.items.map((n) => {
-          const startsAt = n.item.startsAt;
-          const isPast = new Date(startsAt).getTime() < now;
-          const isClosed = Boolean(n.item.closed);
-
-          return {
-            noticeId: n.item.id,
-            shopId: n.item.shop.item.id,
-            name: n.item.shop.item.name,
-            startsAt,
-            address1: n.item.shop.item.address1,
-            hourlyPay: n.item.hourlyPay,
-            workhour: n.item.workhour,
-            imageUrl: n.item.shop.item.imageUrl,
-            isPast,
-            isClosed,
-          };
-        });
-
-        // 최근 클릭 기록 기반으로 카드 순서 재정렬
         const storageKey = getRecentStorageKey(userId);
         const recent = loadRecent(storageKey);
-        const reordered = reorderByRecent(mapped, recent);
-
-        setCards(reordered);
-
-        // 기본 선택 = 맨 앞 카드
-        if (reordered.length > 0) {
-          setSelectedNoticeId(reordered[0].noticeId);
-          setSelectedIsPast(reordered[0].isPast);
-          setSelectedIsClosed(Boolean(reordered[0].isClosed));
+        let recentFinal = recent;
+        if (selected) {
+          const k = makeKey(selected.shopId, selected.noticeId);
+          recentFinal = pushToFrontRecent(recent, k, 6);
+          saveRecent(storageKey, recentFinal);
         }
+
+        if (recentFinal.length === 0) {
+          if (!alive) return;
+          setCards([]);
+          setDetailsByKey({});
+          return;
+        }
+        
+        const results = await Promise.all(
+          recentFinal.map(async (k) => {
+            const { shopId, noticeId } = splitKey(k);
+            if (!shopId || !noticeId) return null;
+
+            const res = (await apiClient.notices.getShopOnlyNotice(shopId, noticeId)) as unknown as
+              | { item: NoticeDetail }
+              | NoticeDetail;
+
+            const notice: NoticeDetail = (res as { item?: NoticeDetail }).item ?? (res as NoticeDetail);
+            const shop = unwrapShop(notice.shop);
+            if (!shop) return null;
+
+            const now = Date.now();
+            const isPast = new Date(notice.startsAt).getTime() < now;
+            const isClosed = Boolean(notice.closed);
+
+            const card: CardData = {
+              noticeId: notice.id,
+              shopId,
+              name: shop.name,
+              startsAt: notice.startsAt,
+              workhour: notice.workhour,
+              address1: shop.address1,
+              hourlyPay: notice.hourlyPay,
+              imageUrl: shop.imageUrl,
+              isPast,
+              isClosed,
+            };
+
+            return { key: k, notice, card };
+          }),
+        );
+
+        const nextDetails: Record<string, NoticeDetail> = {};
+        const nextCards: CardData[] = [];
+
+        results.forEach((r) => {
+          if (!r) return;
+          nextDetails[r.key] = r.notice;
+          nextCards.push(r.card);
+        });
+
+        if (!alive) return;
+        setDetailsByKey(nextDetails);
+        setCards(nextCards);
       } catch (e) {
         if (!alive) return;
-        setErrorMsg(e instanceof Error ? e.message : "리스트를 불러오지 못했습니다.");
+        setErrorMsg(e instanceof Error ? e.message : "불러오지 못했습니다.");
       } finally {
         if (!alive) return;
         setLoading(false);
       }
     }
 
-    fetchNotices();
+    fetchAll();
     return () => {
       alive = false;
     };
-  }, [userId]);
+  }, [userId, selectedKey]);
 
-  const selected = useMemo(() => {
-    if (!selectedNoticeId) return null;
-    return items.find((n) => n.item.id === selectedNoticeId)?.item ?? null;
-  }, [items, selectedNoticeId]);
+  /** ✅ 선택된 공고 상세 (선택 없으면 null -> 빈 화면) */
+  const detail = useMemo(() => {
+    if (!selectedKey) return null;
+    return detailsByKey[selectedKey] ?? null;
+  }, [detailsByKey, selectedKey]);
 
   const derived = useMemo(() => {
-    if (!selected) return null;
+    if (!detail) return null;
 
-    const start = new Date(selected.startsAt);
-    const end = new Date(start.getTime() + selected.workhour * 60 * 60 * 1000);
+    const shop = unwrapShop(detail.shop);
+    if (!shop) return null;
 
-    const diffPercent = ((selected.hourlyPay - BASE_HOURLY_PAY) / BASE_HOURLY_PAY) * 100;
+    const start = new Date(detail.startsAt);
+    const end = new Date(start.getTime() + detail.workhour * 60 * 60 * 1000);
+
+    const diffPercent = ((detail.hourlyPay - BASE_HOURLY_PAY) / BASE_HOURLY_PAY) * 100;
     const isUp = diffPercent >= 0;
     const percentText = Math.round(Math.abs(diffPercent));
 
@@ -220,21 +239,27 @@ export default function NoticeListWithDetailPage({ userId }: Props) {
       />
     );
 
+    const isPast = start.getTime() < Date.now();
+    const isClosed = Boolean(detail.closed);
+    const selectedIsBlocked = isPast || isClosed;
+
     return {
-      imageUrl: selected.shop.item.imageUrl,
-      imageAlt: selected.shop.item.name,
-      wageText: `${selected.hourlyPay.toLocaleString()}원`,
+      selectedIsBlocked,
+      imageUrl: shop.imageUrl,
+      imageAlt: shop.name,
+      wageText: `${detail.hourlyPay.toLocaleString()}원`,
       wageBadgeText: `기존 시급보다 ${percentText}%`,
       wageBadgeIcon,
-      scheduleText: `${formatKSTDateTime(start)} ~ ${formatKSTTime(end)} (${selected.workhour}시간)`,
-      address: selected.shop.item.address1,
-      infoDescription: selected.shop.item.description ?? "가게 설명이 없습니다.",
-      detailDescription: selected.description ?? "공고 설명이 없습니다.",
+      scheduleText: `${formatKSTDateTime(start)} ~ ${formatKSTTime(end)} (${detail.workhour}시간)`,
+      address: shop.address1,
+      infoDescription: shop.description ?? "가게 설명이 없습니다.",
+      detailDescription: detail.description ?? "공고 설명이 없습니다.",
     };
-  }, [selected]);
+  }, [detail]);
 
   const handlePrimaryButtonClick = () => {
-    if (selectedIsBlocked) return;
+    if (!derived) return;
+    if (derived.selectedIsBlocked) return;
 
     if (!applied) {
       setModalMode("apply");
@@ -247,19 +272,9 @@ export default function NoticeListWithDetailPage({ userId }: Props) {
 
   const modalIcon = useMemo(() => {
     return modalMode === "apply" ? (
-      <Image
-        src="/icon/checked.svg"
-        alt="확인"
-        width={24}
-        height={24}
-      />
+      <Image src="/icon/checked.svg" alt="확인" width={24} height={24} />
     ) : (
-      <Image
-        src="/icon/caution.svg"
-        alt="주의"
-        width={24}
-        height={24}
-      />
+      <Image src="/icon/caution.svg" alt="주의" width={24} height={24} />
     );
   }, [modalMode]);
 
@@ -303,7 +318,7 @@ export default function NoticeListWithDetailPage({ userId }: Props) {
   return (
     <div>
       <div className="mt-15 flex items-start justify-center">
-        {selected && derived ? (
+        {detail && derived ? (
           <ShopInfoCard
             variant="notice"
             imageUrl={derived.imageUrl}
@@ -314,11 +329,8 @@ export default function NoticeListWithDetailPage({ userId }: Props) {
             address={derived.address}
             description={derived.infoDescription}
             footer={
-              selectedIsBlocked ? (
-                <button
-                  disabled
-                  className="bg-gray-40 w-full cursor-not-allowed rounded-xl py-3 font-bold text-white"
-                >
+              derived.selectedIsBlocked ? (
+                <button disabled className="bg-gray-40 w-full cursor-not-allowed rounded-xl py-3 font-bold text-white">
                   신청 불가
                 </button>
               ) : (
@@ -337,33 +349,27 @@ export default function NoticeListWithDetailPage({ userId }: Props) {
             detail={{ title: "공고 설명", content: derived.detailDescription }}
           />
         ) : (
-          <div className="p-6 text-sm text-neutral-500">공고를 선택하면 상세가 표시됩니다.</div>
+          <div className="p-6 text-sm text-neutral-500">
+            아직 선택된 공고가 없습니다. (notices 페이지에서 공고를 클릭하면 상세가 표시됩니다)
+          </div>
         )}
       </div>
 
       <div className="my-30">
         <Card
           cards={cards}
-          selectedNoticeId={selectedNoticeId}
+          selectedNoticeId={selected?.noticeId ?? null}
           title="최근에 본 공고"
           pastLabel="지난 공고"
           closedLabel="마감 공고"
-          onSelect={({ noticeId, shopId, isPast, isClosed }) => {
-            scrollYRef.current = window.scrollY;
-            setSelectedNoticeId(noticeId);
-            setSelectedIsPast(isPast);
-            setSelectedIsClosed(isClosed);
+          onSelect={({ shopId, noticeId }) => {
+            setSelected({ shopId, noticeId });
 
-            // 클릭한 공고를 맨 앞으로: localStorage + cards 재정렬
             const storageKey = getRecentStorageKey(userId);
             const key = makeKey(shopId, noticeId);
             const prev = loadRecent(storageKey);
             const next = pushToFrontRecent(prev, key, 6);
             saveRecent(storageKey, next);
-            setCards((prevCards) => reorderByRecent(prevCards, next));
-            requestAnimationFrame(() => {
-              window.scrollTo({ top: scrollYRef.current });
-            });
           }}
         />
       </div>
@@ -381,16 +387,11 @@ export default function NoticeListWithDetailPage({ userId }: Props) {
 }
 
 /* =========================
-  Skeleton UI
+  Skeleton UI (그대로)
 ========================= */
 
 function Skeleton({ className }: { className: string }) {
-  return (
-    <div
-      className={["bg-gray-20/70 animate-pulse rounded-lg", className].join(" ")}
-      aria-hidden="true"
-    />
-  );
+  return <div className={["bg-gray-20/70 animate-pulse rounded-lg", className].join(" ")} aria-hidden="true" />;
 }
 
 function NoticeDetailSkeleton() {
@@ -452,10 +453,7 @@ function NoticeDetailSkeleton() {
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-2 md:grid-cols-2 md:gap-3.5 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div
-              key={i}
-              className="border-gray-20 relative h-full overflow-hidden rounded-lg border bg-white"
-            >
+            <div key={i} className="border-gray-20 relative h-full overflow-hidden rounded-lg border bg-white">
               <div className="mx-3 mt-3 sm:mx-3 sm:mt-3 md:mx-4 md:mt-4">
                 <Skeleton className="h-21 w-full rounded-xl sm:h-21 lg:h-40" />
               </div>
