@@ -1,4 +1,3 @@
-// components/domain/notices-client/notices-page.client.tsx
 "use client";
 
 import { useUser } from "@/store/user";
@@ -182,7 +181,6 @@ const FitCards = ({
 
   return (
     <>
-      {/* ✅ 모바일: 2개는 완전 + 3번째 살짝, 그리고 1개씩 넘김 */}
       <div className="md:hidden lg:hidden">
         <div className="-mr-3 w-full min-w-0 overflow-hidden">
           <Swiper
@@ -206,7 +204,6 @@ const FitCards = ({
           >
             {cards.slice(0, 6).map((c) => (
               <SwiperSlide key={c.noticeId} className="h-auto!">
-                {/* 1개 넣을 때 Card 내부 2열 grid 빈칸 방지 */}
                 <div className="[&_.grid]:[grid-cols-1]">
                   <Card
                     title=""
@@ -222,7 +219,6 @@ const FitCards = ({
         </div>
       </div>
 
-      {/* ✅ 태블릿: 2개 정상 + 1개 잘림 */}
       <div className="hidden md:block lg:hidden">
         <div className="-mr-8 w-full min-w-0 overflow-hidden">
           <Swiper
@@ -332,7 +328,6 @@ export default function NoticesPageClient() {
 
   const handleSelect = (_payload: CardClickPayload) => {};
 
-  // ✅ 여기만 수정: "기존 디테일 페이지"로 쿼리 붙여서 이동
   const handleCardClick = (payload: CardClickPayload) => {
     const qs = new URLSearchParams({ noticeId: payload.noticeId });
     router.push(`/notice/notices-detail?${qs.toString()}`);
