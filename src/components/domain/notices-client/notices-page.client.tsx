@@ -208,7 +208,10 @@ const FitCards = ({
             }}
           >
             {cards.slice(0, 6).map((c) => (
-              <SwiperSlide key={c.noticeId} className="h-auto!">
+              <SwiperSlide
+                key={c.noticeId}
+                className="h-auto!"
+              >
                 <div className="[&_.grid]:grid-cols-1!">
                   <Card
                     title=""
@@ -342,7 +345,11 @@ export default function NoticesPageClient() {
         <section className="bg-red-10">
           <div className="mx-auto w-full max-w-87.5 py-12 md:max-w-169.5 lg:max-w-241 lg:py-10">
             <h3 className="text-black">맞춤 공고</h3>
-            <FitCards cards={fitCards} onSelect={handleSelect} onCardClick={handleCardClick} />
+            <FitCards
+              cards={fitCards}
+              onSelect={handleSelect}
+              onCardClick={handleCardClick}
+            />
           </div>
         </section>
       )}

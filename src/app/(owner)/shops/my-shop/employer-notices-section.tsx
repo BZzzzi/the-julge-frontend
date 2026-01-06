@@ -27,9 +27,9 @@ export default function EmployerNoticesSection({ cards }: Props) {
       cards={cards}
       selectedNoticeId={selectedNoticeId}
       onSelect={handleSelect}
-      title="내가 등록한 공고"    
-      pastLabel="지난 공고"    
-      closedLabel="마감 공고"      
+      title="내가 등록한 공고"
+      pastLabel="지난 공고"
+      closedLabel="마감 공고"
     />
   );
 }
