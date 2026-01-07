@@ -137,7 +137,14 @@ export default async function MyShopPage() {
                   </Link>
                 </div>
               ) : (
-                <EmployerNoticesSection cards={cards} />
+                <EmployerNoticesSection 
+                  initialCards={cards}
+                  shopInfo={{
+                    id: shop.id,
+                    name: shop.name,
+                    address1: shop.address1,
+                    imageUrl: shop.imageUrl
+                  }} />
               )}
             </div>
           </div>
