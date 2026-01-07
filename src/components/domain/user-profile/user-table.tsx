@@ -116,11 +116,6 @@ export default function UserTable({
     }
   };
 
-  const handleCancelClick = (applicationId: string) => {
-    setPendingCancelId(applicationId);
-    setModalOpen(true);
-  };
-
   const handleModalConfirm = async () => {
     if (!pendingCancelId) return;
 

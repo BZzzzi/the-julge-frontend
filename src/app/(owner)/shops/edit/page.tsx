@@ -48,7 +48,7 @@ export default async function ShopEditPage() {
   if (!userId) {
     return (
       <>
-        <Header />
+        <Header showSearchInput={false}/>
         <main className="bg-gray-5 min-h-screen">
           <section className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4">
             <div className="border-gray-20 w-full max-w-md rounded-xl border bg-white p-14 text-center">
