@@ -1,11 +1,32 @@
 import { NextResponse, type NextRequest } from "next/server";
 
 export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  if (pathname.startsWith("/api")) {
+    // OPTIONS 요청 처리
+    if (request.method === "OPTIONS") {
+      return new NextResponse(null, {
+        status: 204,
+        headers: {
+          "Access-Control-Allow-Origin": "*",
+          "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+          "Access-Control-Allow-Headers": "Content-Type, Authorization",
+          "Access-Control-Max-Age": "86400",
+        },
+      });
+    }
+
+    // 다른 API 요청은 CORS 헤더만 추가하고 통과
+    const response = NextResponse.next();
+    response.headers.set("Access-Control-Allow-Origin", "*");
+    response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+    response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    return response;
+  }
   // 주의! 미들웨어의 request.cookies는 비동기가 아님
   const token = request.cookies.get("token")?.value;
   const userInfoCookie = request.cookies.get("userInfo")?.value;
-  const { pathname } = request.nextUrl;
-
   const publicPages = ["/", "/login", "/signup", "/notice/notices-detail", "/notice/notices-list"];
 
   // 토큰이 없는데 publicPage가 아닌 곳에 접근하면 로그인 페이지로 리다이렉트
