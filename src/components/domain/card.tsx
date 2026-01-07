@@ -28,7 +28,7 @@ type CardProps = {
 
   onSelect: (payload: CardClickPayload) => void;
 
-  /** ✅ 라우팅 등 “추가 동작”이 필요할 때만 넘김 */
+  //라우팅 등 “추가 동작”이 필요할 때만 넘김 
   onCardClick?: (payload: CardClickPayload) => void;
 
   title?: string;
