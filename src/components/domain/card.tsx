@@ -15,23 +15,21 @@ export type CardData = {
   isClosed: boolean;
 };
 
+type CardClickPayload = {
+  noticeId: string;
+  shopId: string;
+  isPast: boolean;
+  isClosed: boolean;
+};
+
 type CardProps = {
   cards: CardData[];
   selectedNoticeId: string | null;
 
-  onSelect: (payload: {
-    noticeId: string;
-    shopId: string;
-    isPast: boolean;
-    isClosed: boolean;
-  }) => void;
+  onSelect: (payload: CardClickPayload) => void;
 
-  onCardClick?: (payload: {
-    noticeId: string;
-    shopId: string;
-    isPast: boolean;
-    isClosed: boolean;
-  }) => void;
+  /** ✅ 라우팅 등 “추가 동작”이 필요할 때만 넘김 */
+  onCardClick?: (payload: CardClickPayload) => void;
 
   title?: string;
   pastLabel?: string;
@@ -78,7 +76,9 @@ export default function Card({
 }: CardProps) {
   return (
     <div className="mx-auto max-w-87.5 sm:max-w-87.5 md:max-w-169.5 lg:max-w-241">
-      <p className="mb-4 text-xl font-bold text-black md:mb-8 md:text-[28px]">{title}</p>
+      {title ? (
+        <p className="mb-4 text-xl font-bold text-black md:mb-8 md:text-[28px]">{title}</p>
+      ) : null}
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-2 md:grid-cols-2 md:gap-3.5 lg:grid-cols-3">
         {cards.map((c) => {
@@ -91,17 +91,13 @@ export default function Card({
 
           const isSelected = selectedNoticeId === c.noticeId;
 
-          // 마감/지난공고면 blocked
           const isBlocked = c.isClosed || c.isPast;
-
-          // 오버레이 텍스트 결정(마감 우선)
           const overlayText = c.isClosed ? closedLabel : pastLabel;
-
           const imgDim = isBlocked ? "opacity-70 grayscale" : "opacity-100";
 
           return (
             <div
-              key={c.noticeId}
+              key={`${c.shopId}:${c.noticeId}`}
               onClick={() => {
                 const payload = {
                   noticeId: c.noticeId,
@@ -109,16 +105,14 @@ export default function Card({
                   isPast: c.isPast,
                   isClosed: c.isClosed,
                 };
-
                 onSelect(payload);
-                onCardClick?.(payload); // ✅ 있으면 이동까지
+                onCardClick?.(payload);
               }}
               className={[
-                "border-gray-20 relative h-full cursor-pointer overflow-hidden rounded-lg border",
+                "border-gray-20 relative h-full cursor-pointer overflow-hidden rounded-lg border bg-white",
                 isSelected ? "border-orange-600 ring-2 ring-orange-200" : "",
               ].join(" ")}
             >
-              {/* 마감/지난 공고 오버레이 */}
               {isBlocked && (
                 <div className="pointer-events-none absolute inset-0 z-20 flex items-start justify-center bg-black/25 pt-19.75">
                   <span className="text-[28px] font-bold text-white">{overlayText}</span>
@@ -127,18 +121,15 @@ export default function Card({
 
               <div className="mx-3 mt-3 sm:mx-3 sm:mt-3 md:mx-4 md:mt-4">
                 <div className="bg-gray-30 relative h-21 w-full overflow-hidden rounded-xl sm:h-21 lg:h-40">
-                  <Image
-                    src={c.imageUrl}
-                    alt={c.name}
-                    fill
-                    className={`object-cover ${imgDim}`}
-                  />
+                  <Image src={c.imageUrl} alt={c.name} fill className={`object-cover ${imgDim}`} />
                 </div>
               </div>
 
               <div className="mt-3 px-3 sm:mt-3 sm:px-3 lg:mt-4 lg:px-4">
                 <p
-                  className={`text-[16px] font-bold sm:text-[16px] md:text-[20px] ${isBlocked ? "text-gray-30" : "text-black"}`}
+                  className={`text-[16px] font-bold sm:text-[16px] md:text-[20px] ${
+                    isBlocked ? "text-gray-30" : "text-black"
+                  }`}
                 >
                   {c.name}
                 </p>
@@ -152,7 +143,9 @@ export default function Card({
                     className={`md:h-5 md:w-5 ${imgDim}`}
                   />
                   <div
-                    className={`font-regular text-xs md:text-sm ${isBlocked ? "text-gray-30" : "text-gray-50"}`}
+                    className={`font-regular text-xs md:text-sm ${
+                      isBlocked ? "text-gray-30" : "text-gray-50"
+                    }`}
                   >
                     <div className="sm:block md:hidden">
                       <div>{formatKSTDateTime(start).slice(0, 10)}</div>
@@ -176,16 +169,16 @@ export default function Card({
                     className={`md:h-5 md:w-4 ${imgDim}`}
                   />
                   <p
-                    className={`font-regular text-xs md:text-sm ${isBlocked ? "text-gray-30" : "text-gray-50"}`}
+                    className={`font-regular text-xs md:text-sm ${
+                      isBlocked ? "text-gray-30" : "text-gray-50"
+                    }`}
                   >
                     {c.address1}
                   </p>
                 </div>
 
-                <div className="items-left mt-4 mb-4 flex flex-col justify-between md:flex-row">
-                  <p
-                    className={`text-lg font-bold md:text-2xl ${isBlocked ? "text-gray-30" : "text-black"}`}
-                  >
+                <div className="items-left mt-4 mb-4 flex flex-col justify-between whitespace-nowrap shrink-0 md:flex-row">
+                  <p className={`text-lg font-bold md:text-2xl ${isBlocked ? "text-gray-30" : "text-black"}`}>
                     {c.hourlyPay.toLocaleString()}원
                   </p>
 
@@ -195,9 +188,7 @@ export default function Card({
                     }`}
                   >
                     <div className="font-regular flex w-full items-center justify-start gap-0.5 text-xs md:justify-center md:text-sm">
-                      <span
-                        className={`md:text-white ${isBlocked ? "text-gray-30" : "text-red-40"}`}
-                      >
+                      <span className={`md:text-white ${isBlocked ? "text-gray-30" : "text-red-40"}`}>
                         기존 시급보다 {percentText}%
                       </span>
 
@@ -221,10 +212,7 @@ export default function Card({
                 </div>
               </div>
 
-              <div
-                className="absolute inset-0 z-10 cursor-pointer"
-                aria-hidden
-              />
+              <div className="absolute inset-0 z-10 cursor-pointer" aria-hidden />
             </div>
           );
         })}
