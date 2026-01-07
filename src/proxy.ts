@@ -16,7 +16,6 @@ export function proxy(request: NextRequest) {
     });
   }
 
-  // 2. API 요청 처리 (CORS 헤더 추가)
   if (pathname.startsWith("/api")) {
     const response = NextResponse.next();
     response.headers.set("Access-Control-Allow-Origin", "*");
