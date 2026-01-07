@@ -4,7 +4,7 @@ import NoticesPageClient from "@/components/domain/notices-client/notices-page.c
 
 export default function NoticesPage() {
   return (
-    <div className="min-h-dvh bg-[var(--color-white)]">
+    <div className="min-h-dvh bg-white">
       <Header />
       <NoticesPageClient />
       <Footer />

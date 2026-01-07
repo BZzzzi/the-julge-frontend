@@ -194,7 +194,7 @@ export default function NoticesPageClient() {
   const [sortValue, setSortValue] = useState<SortValue>("time");
   const [cards, setCards] = useState<CardData[]>([]);
   const [totalPage, setTotalPage] = useState(1);
-
+  
   const filterQueryString = useMemo(() => buildNoticesFilterQueryString(appliedFilter), [appliedFilter]);
 
   const listQueryString = useMemo(() => {
@@ -260,7 +260,7 @@ export default function NoticesPageClient() {
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listQueryString, sortValue]);
-
+ 
   return (
     <>
       <main className="mx-auto w-full max-w-87.5 pb-10 md:max-w-169.5 lg:max-w-241">
@@ -287,13 +287,26 @@ export default function NoticesPageClient() {
 
           <div className="mt-8 flex justify-center">
             <Pagination
-              totalPage={totalPage}
-              currentPage={pageParam}
-              onPageChange={(p) => {
-                if (p < 1 || p > totalPage) return;
-                setUrlPage(p);
-              }}
-            />
+            links={[
+              { 
+                rel: "self", 
+                href: `?offset=${(pageParam - 1) * 10}&limit=10`,
+                method: "GET",
+                description: "self link"
+              }
+            ]}
+            offset={(pageParam - 1) * 10}
+            limit={10}
+            count={totalPage * 10}
+            onPageChange={(href) => {
+              const match = href.match(/offset=(\d+)/);
+              if (match) {
+                const nextOffset = parseInt(match[1], 10);
+                const nextPage = Math.floor(nextOffset / 10) + 1;
+                setUrlPage(nextPage);
+              }
+            }}
+          />
           </div>
         </section>
       </main>

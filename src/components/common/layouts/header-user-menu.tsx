@@ -32,9 +32,7 @@ export default function UserMenu() {
       {isLoggedIn ? (
         <>
           <Link
-            href={
-              user?.userType === "employer" ? `/shops/${user?.userId}` : `/profile/${user?.userId}`
-            }
+            href={user?.userType === "employer" ? `/shops/my-shop` : `/profile/my-profile`}
             className={buttonStyle}
           >
             {user?.userType === "employer" ? "내 가게" : "내 프로필"}
