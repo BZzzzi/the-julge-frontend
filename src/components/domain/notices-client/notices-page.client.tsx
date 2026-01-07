@@ -1,8 +1,12 @@
 "use client";
 
+import { apiClient } from "@/lib/api";
 import { useNoticeSelection, useUser } from "@/store/user";
 import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useEffect, useMemo, useState } from "react";
+import type { Swiper as SwiperType } from "swiper";
+import "swiper/css";
+import { Swiper, SwiperSlide } from "swiper/react";
 
 import { Pagination } from "@/components/common/pagination";
 import FilterModal, {
@@ -171,12 +175,93 @@ const TitleBlock = ({ keyword }: { keyword: string }) => {
   );
 };
 
+/** =========================
+ *  맞춤공고 Swiper 컴포넌트(원래 있던 것 복구)
+========================= */
+const FitCards = ({
+  cards,
+  onSelect,
+  onCardClick,
+}: {
+  cards: CardData[];
+  onSelect: (payload: CardClickPayload) => void;
+  onCardClick: (payload: CardClickPayload) => void;
+}) => {
+  if (!cards.length) return null;
+
+  const handleSwiperReady = (swiper: SwiperType) => {
+    requestAnimationFrame(() => swiper.update());
+  };
+
+  const handleAfterSlideChange = (swiper: SwiperType) => {
+    requestAnimationFrame(() => swiper.update());
+  };
+
+  return (
+    <>
+      <div className="lg:hidden">
+        <div className="-mr-3 w-full min-w-0 overflow-hidden md:-mr-8">
+          <Swiper
+            slidesPerView={2.1}
+            slidesPerGroup={1}
+            spaceBetween={8}
+            style={{ paddingBottom: 4 }}
+            autoHeight
+            nested
+            simulateTouch
+            touchStartPreventDefault={false}
+            resistanceRatio={0.6}
+            threshold={5}
+            observer
+            observeParents
+            resizeObserver
+            updateOnWindowResize
+            onSwiper={handleSwiperReady}
+            onSlideChangeTransitionEnd={handleAfterSlideChange}
+            className="[&_.swiper-slide]:h-auto [&_.swiper-wrapper]:items-stretch"
+            breakpoints={{
+              768: {
+                slidesPerView: 2.15,
+                spaceBetween: 12,
+              },
+            }}
+          >
+            {cards.slice(0, 6).map((c) => (
+              <SwiperSlide key={c.noticeId} className="h-auto!">
+                <div className="[&_.grid]:grid-cols-1!">
+                  <Card
+                    title=""
+                    cards={[c]}
+                    selectedNoticeId={null}
+                    onSelect={onSelect}
+                    onCardClick={onCardClick}
+                  />
+                </div>
+              </SwiperSlide>
+            ))}
+          </Swiper>
+        </div>
+      </div>
+
+      <div className="hidden lg:block">
+        <Card
+          title=""
+          cards={cards.slice(0, 3)}
+          selectedNoticeId={null}
+          onSelect={onSelect}
+          onCardClick={onCardClick}
+        />
+      </div>
+    </>
+  );
+};
+
 export default function NoticesPageClient() {
   const router = useRouter();
   const pathname = usePathname();
   const searchParams = useSearchParams();
 
-  const { user } = useUser();
+  const { user, isLoggedIn } = useUser();
   const userId = (user as unknown as { id?: string } | null)?.id ?? null;
 
   const setSelected = useNoticeSelection((s) => s.setSelected);
@@ -194,7 +279,10 @@ export default function NoticesPageClient() {
   const [sortValue, setSortValue] = useState<SortValue>("time");
   const [cards, setCards] = useState<CardData[]>([]);
   const [totalPage, setTotalPage] = useState(1);
-  
+
+  /** 맞춤공고 state 복구 */
+  const [fitCards, setFitCards] = useState<CardData[]>([]);
+
   const filterQueryString = useMemo(() => buildNoticesFilterQueryString(appliedFilter), [appliedFilter]);
 
   const listQueryString = useMemo(() => {
@@ -227,7 +315,7 @@ export default function NoticesPageClient() {
 
   const handleSelect = () => {};
 
-  //로그인/비로그인 상관없이 동일하게 detail로 이동
+  // 로그인/비로그인 상관없이 동일하게 detail로 이동(기존 로직 유지)
   const handleCardClick = ({ shopId, noticeId }: CardClickPayload) => {
     // 1) 선택값 저장 (detail에서 읽음)
     setSelected({ shopId, noticeId });
@@ -243,6 +331,83 @@ export default function NoticesPageClient() {
     router.push("/notice/notices-detail");
   };
 
+
+useEffect(() => {
+  if (!isLoggedIn) {
+    setFitCards([]);
+    return;
+  }
+
+  let alive = true;
+
+  const getUserIdSafe = (u: unknown): string | null => {
+    if (!u || typeof u !== "object") return null;
+    const obj = u as Record<string, unknown>;
+    const id = obj.id;
+    const userId = obj.userId;
+    if (typeof id === "string" && id.trim()) return id.trim();
+    if (typeof userId === "string" && userId.trim()) return userId.trim();
+    return null;
+  };
+
+  (async () => {
+    try {
+      const uid = getUserIdSafe(user);
+      if (!uid) {
+        if (alive) setFitCards([]);
+        return;
+      }
+
+      // 1) 내 프로필(주소) 가져오기
+      const meRes = await apiClient.user.getUser(uid);
+      const me =
+        (meRes as unknown as { item?: { address?: string } }).item ??
+        (meRes as unknown as { address?: string });
+
+      const address = (me?.address ?? "").trim();
+      if (!address) {
+        if (alive) setFitCards([]);
+        return;
+      }
+
+      const tokens = address.split(" ").map((t) => t.trim()).filter(Boolean);
+      const lastToken = tokens.length ? tokens[Math.min(1, tokens.length - 1)] : ""; 
+      const cityGu = tokens.slice(0, 2).join(" "); 
+      const raw = await fetchNotices(
+        buildListQuery({
+          limit: 60,
+          offset: 0,
+          sort: "time",
+          keyword: "",
+          filterQueryString: "",
+        }),
+      );
+
+      const mapped = mapToCardData(raw);
+
+      const filtered = mapped.filter((c) => {
+        const a = (c.address1 ?? "").trim();
+        return (cityGu && a.includes(cityGu)) || (lastToken && a.includes(lastToken));
+      });
+
+      const finalCards = (filtered.length ? filtered : mapped).slice(0, 6);
+
+      if (!alive) return;
+      setFitCards(finalCards);
+    } catch {
+      if (!alive) return;
+      setFitCards([]);
+    }
+  })();
+
+  return () => {
+    alive = false;
+  };
+}, [isLoggedIn, user]); // apiClient는 보통 안정적이지만 린트가 뭐라하면 넣어도 됨
+
+
+
+  // 공고 리스트 fetch (기존 로직 유지)
   useEffect(() => {
     fetchNotices(listQueryString)
       .then((data) => {
@@ -260,11 +425,20 @@ export default function NoticesPageClient() {
       });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [listQueryString, sortValue]);
- 
+
   return (
     <>
+      {isLoggedIn && (
+        <section className="bg-red-10">
+          <div className="mx-auto w-full max-w-87.5 py-12 md:max-w-169.5 lg:max-w-241 lg:py-10">
+            <h3 className="text-black">맞춤 공고</h3>
+            <FitCards cards={fitCards} onSelect={handleSelect} onCardClick={handleCardClick} />
+          </div>
+        </section>
+      )}
+
       <main className="mx-auto w-full max-w-87.5 pb-10 md:max-w-169.5 lg:max-w-241">
-        <section className="mt-6">
+        <section className={isLoggedIn ? "mt-10" : "mt-6"}>
           <div className="mb-4 flex flex-col gap-2 md:flex-row md:items-center md:justify-between">
             <TitleBlock keyword={keyword} />
             <NoticesToolbar
@@ -287,26 +461,26 @@ export default function NoticesPageClient() {
 
           <div className="mt-8 flex justify-center">
             <Pagination
-            links={[
-              { 
-                rel: "self", 
-                href: `?offset=${(pageParam - 1) * 10}&limit=10`,
-                method: "GET",
-                description: "self link"
-              }
-            ]}
-            offset={(pageParam - 1) * 10}
-            limit={10}
-            count={totalPage * 10}
-            onPageChange={(href) => {
-              const match = href.match(/offset=(\d+)/);
-              if (match) {
-                const nextOffset = parseInt(match[1], 10);
-                const nextPage = Math.floor(nextOffset / 10) + 1;
-                setUrlPage(nextPage);
-              }
-            }}
-          />
+              links={[
+                {
+                  rel: "self",
+                  href: `?offset=${(pageParam - 1) * 10}&limit=10`,
+                  method: "GET",
+                  description: "self link",
+                },
+              ]}
+              offset={(pageParam - 1) * 10}
+              limit={10}
+              count={totalPage * 10}
+              onPageChange={(href) => {
+                const match = href.match(/offset=(\d+)/);
+                if (match) {
+                  const nextOffset = parseInt(match[1], 10);
+                  const nextPage = Math.floor(nextOffset / 10) + 1;
+                  setUrlPage(nextPage);
+                }
+              }}
+            />
           </div>
         </section>
       </main>

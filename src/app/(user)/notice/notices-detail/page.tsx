@@ -5,7 +5,7 @@ import NoticeListWithDetailPage from "@/components/domain/noticesdetail/noticesd
 export default function Page() {
   return (
     <div>
-      <Header />
+      <Header showSearchInput={false} />
       <NoticeListWithDetailPage />
       <Footer />
     </div>

@@ -2,16 +2,19 @@
 
 import Modal from "@/components/common/modal/Modal";
 import ShopInfoCard from "@/components/common/shop-info/shop-info-card";
-import Card, { CardData } from "@/components/domain/card";
+import Card, { type CardData } from "@/components/domain/card";
 import { apiClient } from "@/lib/api";
 import { useNoticeSelection, useUser } from "@/store/user";
+import type { ApplicationStatusReq } from "@/types/application";
+import type { UserInfo } from "@/types/user";
 import Image from "next/image";
-import { useEffect, useMemo, useState } from "react";
+import { useRouter } from "next/navigation";
+import { useCallback, useEffect, useMemo, useState } from "react";
 
 const BASE_HOURLY_PAY = 10320;
 
 /** =========================
- *  최근본 storage
+ *  최근본 storage (로그인/비로그인 분리)
 ========================= */
 type RecentKey = string;
 
@@ -46,8 +49,39 @@ function pushToFrontRecent(list: RecentKey[], key: RecentKey, limit = 6) {
 }
 
 /** =========================
- *  타입 (필요한 필드만)
+ *  신청(applicationId) 저장 (취소 PUT에 필요)
 ========================= */
+const APP_ID_PREFIX = "applicationId";
+
+function getAppIdStorageKey(userId: string, selectedKey: string) {
+  return `${APP_ID_PREFIX}:${userId}:${selectedKey}`;
+}
+
+function loadApplicationId(userId: string | null, selectedKey: string | null) {
+  if (!userId || !selectedKey) return null;
+  try {
+    return localStorage.getItem(getAppIdStorageKey(userId, selectedKey));
+  } catch {
+    return null;
+  }
+}
+
+function saveApplicationId(userId: string | null, selectedKey: string | null, applicationId: string) {
+  if (!userId || !selectedKey) return;
+  try {
+    localStorage.setItem(getAppIdStorageKey(userId, selectedKey), applicationId);
+  } catch {
+  }
+}
+
+function clearApplicationId(userId: string | null, selectedKey: string | null) {
+  if (!userId || !selectedKey) return;
+  try {
+    localStorage.removeItem(getAppIdStorageKey(userId, selectedKey));
+  } catch {
+  }
+}
+
 type Shop = {
   id: string;
   name: string;
@@ -56,17 +90,95 @@ type Shop = {
   description?: string;
 };
 
-type NoticeDetail = {
+type NoticeCore = {
   id: string;
   hourlyPay: number;
   startsAt: string;
   workhour: number;
   description?: string;
   closed?: boolean;
-  shop: { item?: Shop } | Shop;
+  shop: unknown;
 };
 
-type ModalMode = "apply" | "cancel";
+type ApiItem<T> = { item: T } | T;
+
+function unwrapItem<T>(res: ApiItem<T>): T {
+  if (res && typeof res === "object" && "item" in (res as Record<string, unknown>)) {
+    return (res as { item: T }).item;
+  }
+  return res as T;
+}
+
+function unwrapShop(shopLike: unknown): Shop | null {
+  if (!shopLike) return null;
+
+  if (
+    typeof shopLike === "object" &&
+    shopLike !== null &&
+    "item" in (shopLike as Record<string, unknown>)
+  ) {
+    return unwrapShop((shopLike as { item?: unknown }).item);
+  }
+
+  if (typeof shopLike !== "object" || shopLike === null) return null;
+
+  const s = shopLike as Partial<Shop>;
+  if (typeof s.id !== "string") return null;
+  if (typeof s.name !== "string") return null;
+  if (typeof s.address1 !== "string") return null;
+  if (typeof s.imageUrl !== "string") return null;
+
+  return {
+    id: s.id,
+    name: s.name,
+    address1: s.address1,
+    imageUrl: s.imageUrl,
+    description: typeof s.description === "string" ? s.description : undefined,
+  };
+}
+
+function parseNotice(res: unknown): NoticeCore | null {
+  if (!res || typeof res !== "object") return null;
+
+  const obj = res as Record<string, unknown>;
+  const core = ("item" in obj ? obj.item : res) as unknown;
+  if (!core || typeof core !== "object") return null;
+
+  const n = core as Record<string, unknown>;
+  if (typeof n.id !== "string") return null;
+  if (typeof n.hourlyPay !== "number") return null;
+  if (typeof n.startsAt !== "string") return null;
+  if (typeof n.workhour !== "number") return null;
+
+  return {
+    id: n.id,
+    hourlyPay: n.hourlyPay,
+    startsAt: n.startsAt,
+    workhour: n.workhour,
+    description: typeof n.description === "string" ? n.description : undefined,
+    closed: typeof n.closed === "boolean" ? n.closed : undefined,
+    shop: n.shop,
+  };
+}
+
+function isProfileFilled(userLike: unknown) {
+  if (!userLike || typeof userLike !== "object") return false;
+  const u = userLike as Record<string, unknown>;
+  const has = (v: unknown) => typeof v === "string" && v.trim().length > 0;
+  return has(u.name) && has(u.phone) && has(u.address) && has(u.bio);
+}
+
+// 신청 응답에서 applicationId 뽑기 
+function getApplicationIdFromResponse(res: unknown): string | null {
+  const item = unwrapItem(res as ApiItem<unknown>);
+  if (!item || typeof item !== "object") return null;
+
+  const obj = item as Record<string, unknown>;
+  const id = obj.id;
+  return typeof id === "string" ? id : null;
+}
+
+type ModalMode = "apply" | "cancel" | "loginRequired" | "profileRequired";
 
 function formatKSTDateTime(date: Date) {
   const parts = new Intl.DateTimeFormat("ko-KR", {
@@ -95,36 +207,41 @@ function formatKSTTime(date: Date) {
   return `${get("hour")}:${get("minute")}`;
 }
 
-function unwrapShop(shop: NoticeDetail["shop"]): Shop | null {
-  if (!shop) return null;
-  const maybe = shop as { item?: Shop };
-  if (maybe.item) return maybe.item;
-  return shop as Shop;
-}
-
 export default function NoticeListWithDetailPage() {
-  const { user } = useUser();
-  const userId = (user as unknown as { id?: string } | null)?.id ?? null;
+  const router = useRouter();
+
+  const { user, isLoggedIn } = useUser();
+
+  // userId 키가 id 인지 userId 인지 
+  const u = user as (UserInfo & { id?: string; userId?: string }) | null;
+  const userId = u?.userId ?? u?.id ?? null;
 
   const selected = useNoticeSelection((s) => s.selected);
   const setSelected = useNoticeSelection((s) => s.setSelected);
 
   const [cards, setCards] = useState<CardData[]>([]);
-  const [detailsByKey, setDetailsByKey] = useState<Record<string, NoticeDetail>>({});
+  const [detailsByKey, setDetailsByKey] = useState<Record<string, NoticeCore>>({});
 
   const [applied, setApplied] = useState(false);
+  const [applicationId, setApplicationId] = useState<string | null>(null);
+
   const [open, setOpen] = useState(false);
   const [modalMode, setModalMode] = useState<ModalMode>("apply");
+  const [submitting, setSubmitting] = useState(false);
 
   const [loading, setLoading] = useState(true);
   const [errorMsg, setErrorMsg] = useState<string | null>(null);
 
-  /** ✅ 선택 키 */
   const selectedKey = selected ? makeKey(selected.shopId, selected.noticeId) : null;
 
-  /** =========================
-   *  최근본 + 선택값 기준으로 목록/상세 불러오기
-  ========================= */
+  // 선택 바뀔 때마다 저장된 applicationId 복원 (취소 가능하게)
+  useEffect(() => {
+    const id = loadApplicationId(userId, selectedKey);
+    setApplicationId(id);
+    setApplied(Boolean(id));
+  }, [userId, selectedKey]);
+
+  // 최근본 + (선택값 있으면) 그걸 맨 앞으로 하여 카드/상세 로드
   useEffect(() => {
     let alive = true;
 
@@ -135,30 +252,26 @@ export default function NoticeListWithDetailPage() {
 
         const storageKey = getRecentStorageKey(userId);
         const recent = loadRecent(storageKey);
-        let recentFinal = recent;
-        if (selected) {
-          const k = makeKey(selected.shopId, selected.noticeId);
-          recentFinal = pushToFrontRecent(recent, k, 6);
-          saveRecent(storageKey, recentFinal);
-        }
 
-        if (recentFinal.length === 0) {
+        const finalKeys = selectedKey ? pushToFrontRecent(recent, selectedKey, 6) : recent.slice(0, 6);
+        if (selectedKey) saveRecent(storageKey, finalKeys);
+
+        if (finalKeys.length === 0) {
           if (!alive) return;
           setCards([]);
           setDetailsByKey({});
           return;
         }
-        
+
         const results = await Promise.all(
-          recentFinal.map(async (k) => {
+          finalKeys.map(async (k) => {
             const { shopId, noticeId } = splitKey(k);
             if (!shopId || !noticeId) return null;
 
-            const res = (await apiClient.notices.getShopOnlyNotice(shopId, noticeId)) as unknown as
-              | { item: NoticeDetail }
-              | NoticeDetail;
+            const res = (await apiClient.notices.getShopOnlyNotice(shopId, noticeId)) as unknown;
+            const notice = parseNotice(res);
+            if (!notice) return null;
 
-            const notice: NoticeDetail = (res as { item?: NoticeDetail }).item ?? (res as NoticeDetail);
             const shop = unwrapShop(notice.shop);
             if (!shop) return null;
 
@@ -183,7 +296,7 @@ export default function NoticeListWithDetailPage() {
           }),
         );
 
-        const nextDetails: Record<string, NoticeDetail> = {};
+        const nextDetails: Record<string, NoticeCore> = {};
         const nextCards: CardData[] = [];
 
         results.forEach((r) => {
@@ -208,10 +321,8 @@ export default function NoticeListWithDetailPage() {
     return () => {
       alive = false;
     };
-    
-  }, [userId, selected, selectedKey]);
+  }, [userId, selectedKey]);
 
-  /** ✅ 선택된 공고 상세 (선택 없으면 null -> 빈 화면) */
   const detail = useMemo(() => {
     if (!selectedKey) return null;
     return detailsByKey[selectedKey] ?? null;
@@ -258,39 +369,151 @@ export default function NoticeListWithDetailPage() {
     };
   }, [detail]);
 
-  const handlePrimaryButtonClick = () => {
+  // 신청하기 클릭: 로그인/프로필 체크 -> 모달 분기 
+  const handlePrimaryButtonClick = async () => {
     if (!derived) return;
     if (derived.selectedIsBlocked) return;
 
-    if (!applied) {
-      setModalMode("apply");
+    // 1) 비로그인
+    if (!isLoggedIn || !userId) {
+      setModalMode("loginRequired");
       setOpen(true);
-    } else {
-      setModalMode("cancel");
-      setOpen(true);
+      return;
     }
+
+    // 2) 프로필 미작성 체크
+    try {
+      const res = await apiClient.user.getUser(userId);
+      const me = unwrapItem(res as ApiItem<unknown>);
+
+      if (!isProfileFilled(me)) {
+        setModalMode("profileRequired");
+        setOpen(true);
+        return;
+      }
+    } catch {
+      setModalMode("loginRequired");
+      setOpen(true);
+      return;
+    }
+
+    // 3) 정상 -> 지원/취소 모달
+    setModalMode(applied ? "cancel" : "apply");
+    setOpen(true);
   };
 
-  const modalIcon = useMemo(() => {
-    return modalMode === "apply" ? (
-      <Image src="/icon/checked.svg" alt="확인" width={24} height={24} />
-    ) : (
-      <Image src="/icon/caution.svg" alt="주의" width={24} height={24} />
+  /** (핵심) apply confirm -> POST 호출 */
+  const submitApply = useCallback(async () => {
+  if (!selected || !selectedKey) return;
+  if (!userId) return;
+
+  try {
+    setSubmitting(true);
+
+    const res = (await apiClient.applications.createShopNoticeApplication(
+      selected.shopId,
+      selected.noticeId,
+    )) as unknown;
+
+    const appId = getApplicationIdFromResponse(res);
+    if (!appId) throw new Error("applicationId를 응답에서 찾지 못했습니다.");
+
+    saveApplicationId(userId, selectedKey, appId);
+    setApplicationId(appId);
+    setApplied(true);
+
+    setOpen(false);
+  } catch (e) {
+    alert(e instanceof Error ? e.message : "지원에 실패했습니다.");
+  } finally {
+    setSubmitting(false);
+  }
+}, [selected, selectedKey, userId]);
+
+const submitCancel = useCallback(async () => {
+  if (!selected || !selectedKey) return;
+  if (!userId) return;
+
+  const appId = applicationId ?? loadApplicationId(userId, selectedKey);
+  if (!appId) {
+    alert("취소할 신청(applicationId)을 찾지 못했습니다. (신청 후 저장이 필요)");
+    return;
+  }
+
+  try {
+    setSubmitting(true);
+    const data = { status: "canceled" } as unknown as ApplicationStatusReq;
+
+    await apiClient.applications.updateShopNoticeApplicationStatus(
+      selected.shopId,
+      selected.noticeId,
+      appId,
+      data,
     );
+
+    clearApplicationId(userId, selectedKey);
+    setApplicationId(null);
+    setApplied(false);
+
+    setOpen(false);
+  } catch (e) {
+    alert(e instanceof Error ? e.message : "취소에 실패했습니다.");
+  } finally {
+    setSubmitting(false);
+  }
+}, [selected, selectedKey, userId, applicationId]);
+
+
+  const modalIcon = useMemo(() => {
+    if (modalMode === "cancel") {
+      return <Image src="/icon/caution.svg" alt="주의" width={24} height={24} />;
+    }
+    return <Image src="/icon/checked.svg" alt="확인" width={24} height={24} />;
   }, [modalMode]);
 
   const modalProps = useMemo(() => {
+    if (modalMode === "loginRequired") {
+      return {
+        description: "로그인이 필요합니다.",
+        actions: [
+          { label: "취소", onClick: () => setOpen(false), variant: "outline" as const },
+          {
+            label: "확인",
+            onClick: () => {
+              setOpen(false);
+              router.push("/login");
+            },
+            variant: "primary" as const,
+          },
+        ] as const,
+      };
+    }
+
+    if (modalMode === "profileRequired") {
+      return {
+        description: "내 프로필을 먼저 작성해주세요.",
+        actions: [
+          { label: "취소", onClick: () => setOpen(false), variant: "outline" as const },
+          {
+            label: "확인",
+            onClick: () => {
+              setOpen(false);
+              router.push("/profile/my-profile");
+            },
+            variant: "primary" as const,
+          },
+        ] as const,
+      };
+    }
+
     if (modalMode === "apply") {
       return {
         description: "지원하시겠어요?",
         actions: [
           { label: "취소", onClick: () => setOpen(false), variant: "outline" as const },
           {
-            label: "확인",
-            onClick: () => {
-              setApplied(true);
-              setOpen(false);
-            },
+            label: submitting ? "처리중..." : "확인",
+            onClick: submitApply, // POST
             variant: "primary" as const,
           },
         ] as const,
@@ -302,16 +525,13 @@ export default function NoticeListWithDetailPage() {
       actions: [
         { label: "아니오", onClick: () => setOpen(false), variant: "outline" as const },
         {
-          label: "취소하기",
-          onClick: () => {
-            setApplied(false);
-            setOpen(false);
-          },
+          label: submitting ? "처리중..." : "취소하기",
+          onClick: submitCancel, // PUT
           variant: "primary" as const,
         },
       ] as const,
     };
-  }, [modalMode]);
+  }, [modalMode, router, submitting, submitApply, submitCancel]);
 
   if (loading) return <NoticeDetailSkeleton />;
   if (errorMsg) return <div className="p-6">에러: {errorMsg}</div>;
@@ -331,7 +551,10 @@ export default function NoticeListWithDetailPage() {
             description={derived.infoDescription}
             footer={
               derived.selectedIsBlocked ? (
-                <button disabled className="bg-gray-40 w-full cursor-not-allowed rounded-xl py-3 font-bold text-white">
+                <button
+                  disabled
+                  className="bg-gray-40 w-full cursor-not-allowed rounded-xl py-3 font-bold text-white"
+                >
                   신청 불가
                 </button>
               ) : (
@@ -388,11 +611,12 @@ export default function NoticeListWithDetailPage() {
 }
 
 /* =========================
-  Skeleton UI (그대로)
+  Skeleton UI
 ========================= */
-
 function Skeleton({ className }: { className: string }) {
-  return <div className={["bg-gray-20/70 animate-pulse rounded-lg", className].join(" ")} aria-hidden="true" />;
+  return (
+    <div className={["bg-gray-20/70 animate-pulse rounded-lg", className].join(" ")} aria-hidden="true" />
+  );
 }
 
 function NoticeDetailSkeleton() {
@@ -409,40 +633,24 @@ function NoticeDetailSkeleton() {
           ].join(" ")}
         >
           <Skeleton className="h-44.5 w-full rounded-2xl md:h-76.75 lg:h-77 lg:w-134.75" />
-
           <div className="flex flex-1 flex-col gap-3">
             <Skeleton className="h-5 w-16 md:h-6" />
             <Skeleton className="h-8 w-40 md:h-10 md:w-56" />
             <Skeleton className="h-6 w-56 rounded-full md:w-72" />
-
             <div className="mt-1 flex items-center gap-2">
               <Skeleton className="h-5 w-5 rounded-md" />
               <Skeleton className="h-4 w-64 md:h-5 md:w-80" />
             </div>
-
             <div className="mt-1 flex items-center gap-2">
               <Skeleton className="h-5 w-5 rounded-md" />
               <Skeleton className="h-4 w-48 md:h-5 md:w-72" />
             </div>
-
             <div className="mt-2 flex-1 space-y-2">
               <Skeleton className="h-4 w-full" />
               <Skeleton className="h-4 w-[92%]" />
               <Skeleton className="h-4 w-[80%]" />
             </div>
-
             <Skeleton className="h-12 w-full rounded-xl" />
-          </div>
-        </div>
-      </div>
-
-      <div className="mx-auto mt-4 w-full max-w-241 px-4 lg:px-0">
-        <div className="bg-gray-10 w-full rounded-2xl px-6 py-5 md:px-8 md:py-6">
-          <Skeleton className="h-5 w-24 md:h-6" />
-          <div className="mt-3 space-y-2">
-            <Skeleton className="h-4 w-full" />
-            <Skeleton className="h-4 w-[95%]" />
-            <Skeleton className="h-4 w-[85%]" />
           </div>
         </div>
       </div>
@@ -458,14 +666,12 @@ function NoticeDetailSkeleton() {
               <div className="mx-3 mt-3 sm:mx-3 sm:mt-3 md:mx-4 md:mt-4">
                 <Skeleton className="h-21 w-full rounded-xl sm:h-21 lg:h-40" />
               </div>
-
               <div className="mt-3 px-3 sm:mt-3 sm:px-3 lg:mt-4 lg:px-4">
                 <Skeleton className="h-5 w-32 md:h-6 md:w-40" />
                 <div className="mt-2 space-y-2">
                   <Skeleton className="h-4 w-56 md:w-64" />
                   <Skeleton className="h-4 w-44 md:w-56" />
                 </div>
-
                 <div className="mt-4 mb-4 flex flex-col justify-between gap-2 md:flex-row md:items-center">
                   <Skeleton className="h-7 w-24 md:h-8 md:w-28" />
                   <Skeleton className="h-5 w-28 rounded-full md:h-8 md:w-42" />
