@@ -126,7 +126,7 @@ export default async function MyShopPage() {
               {notices.length === 0 ? (
                 <div className="border-gray-20 rounded-xl border p-14 text-center">
                   <p className="mb-6 text-lg text-black">공고를 등록해 보세요.</p>
-                  <Link href={`/notice/notice-new`}>
+                  <Link href={`/notice/notice-detail/${shop.id}/new`}>
                     <Button
                       variant="primary"
                       size="lg"
