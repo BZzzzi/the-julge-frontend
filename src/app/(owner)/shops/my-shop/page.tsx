@@ -75,7 +75,7 @@ export default async function MyShopPage() {
 
   return (
     <>
-      <Header />
+      <Header showSearchInput={false}/>
       <main>
         <section className="mx-auto max-w-5xl px-4 py-14">
           <div className="mx-auto w-87.75 md:w-170 lg:w-241">
@@ -126,7 +126,7 @@ export default async function MyShopPage() {
               {notices.length === 0 ? (
                 <div className="border-gray-20 rounded-xl border p-14 text-center">
                   <p className="mb-6 text-lg text-black">공고를 등록해 보세요.</p>
-                  <Link href={`/notice/notice-new`}>
+                  <Link href={`/notice/notice-detail/${shop.id}/new`}>
                     <Button
                       variant="primary"
                       size="lg"
@@ -137,7 +137,14 @@ export default async function MyShopPage() {
                   </Link>
                 </div>
               ) : (
-                <EmployerNoticesSection cards={cards} />
+                <EmployerNoticesSection 
+                  initialCards={cards}
+                  shopInfo={{
+                    id: shop.id,
+                    name: shop.name,
+                    address1: shop.address1,
+                    imageUrl: shop.imageUrl
+                  }} />
               )}
             </div>
           </div>

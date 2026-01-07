@@ -225,7 +225,7 @@ export default function NoticesPageClient() {
     router.replace(qs ? `${pathname}?${qs}` : pathname);
   };
 
-  const handleSelect = (_payload: CardClickPayload) => {};
+  const handleSelect = () => {};
 
   //로그인/비로그인 상관없이 동일하게 detail로 이동
   const handleCardClick = ({ shopId, noticeId }: CardClickPayload) => {
