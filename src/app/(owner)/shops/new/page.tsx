@@ -167,7 +167,7 @@ export default function ShopRegisterPage() {
 
   return (
     <>
-      <Header />
+      <Header showSearchInput={false}/>
       <main className="bg-gray-5 min-h-screen py-10">
         <section>
           <div className="mx-auto px-4 md:px-6 lg:px-0">

@@ -75,7 +75,7 @@ export default async function MyShopPage() {
 
   return (
     <>
-      <Header />
+      <Header showSearchInput={false}/>
       <main>
         <section className="mx-auto max-w-5xl px-4 py-14">
           <div className="mx-auto w-87.75 md:w-170 lg:w-241">
