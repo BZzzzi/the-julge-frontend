@@ -4,9 +4,15 @@ import { Button } from "@/components/common/button";
 import { UserInfoRes } from "@/types/user";
 import Image from "next/image";
 import Link from "next/link";
+import { useMemo } from "react";
 
 export default function ProfileCard({ userInfo }: { userInfo: UserInfoRes }) {
   const userItem = userInfo.item ?? null;
+
+  const truncatedBio = useMemo(() => {
+    if (!userItem?.bio) return "";
+    return userItem.bio.length > 100 ? `${userItem.bio.slice(0, 100)}...` : userItem.bio;
+  }, [userItem]);
 
   if (!userItem) {
     return null;
@@ -15,7 +21,7 @@ export default function ProfileCard({ userInfo }: { userInfo: UserInfoRes }) {
   return (
     <div>
       <section className="mx-auto flex w-full flex-col justify-between md:w-170 lg:w-241 lg:flex-row">
-        <h1 className="mb-6 text-2xl font-bold">내 프로필</h1>
+        <h1 className="mb-6 text-xl font-bold md:text-[28px]">내 프로필</h1>
         <div className="bg-red-10 flex w-full justify-between rounded-xl p-5 text-center md:w-[665px] md:p-8">
           <div className="flex flex-col gap-5 text-left md:gap-7">
             <div>
@@ -40,7 +46,7 @@ export default function ProfileCard({ userInfo }: { userInfo: UserInfoRes }) {
                 <p className="text-sm text-gray-50 md:text-[16px]">{userItem.address}</p>
               </div>
             </div>
-            <p className="text-sm md:text-[16px]">{userItem.bio}</p>
+            <p className="text-xs md:text-[16px]">{truncatedBio}</p>
           </div>
           <Link href={`/profile/my-profile/${userItem.id}`}>
             <Button
