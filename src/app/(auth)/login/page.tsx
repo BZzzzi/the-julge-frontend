@@ -1,4 +1,4 @@
-import Logindesign from "@/components/domain/auth/login-design";
+import LoginDesign from "@/components/domain/auth/login-design";
 import LoginForm from "@/components/domain/auth/login-form";
 import Image from "next/image";
 import Link from "next/link";
@@ -6,7 +6,7 @@ import Link from "next/link";
 export default function Login() {
   return (
     <div className="relative flex min-h-screen w-full items-center justify-center overflow-hidden bg-[url('/icon/bg.jpg')] bg-cover bg-center object-cover">
-      <Logindesign />
+      <LoginDesign />
       <div className="z-30 flex h-full w-[500px] flex-col items-center justify-center rounded-3xl border border-white border-r-white/50 border-b-white/50 bg-white/25 p-15 backdrop-blur-lg">
         <Link href="/">
           <Image

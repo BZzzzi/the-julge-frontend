@@ -13,7 +13,7 @@ export default async function NoticeEditPage({ params }: PageProps) {
 
   return (
     <div className="bg-gray-5 flex min-h-screen flex-col">
-      <Header />
+      <Header showSearchInput={false} />
       <NoticeUpsertForm
         shopId={shopId}
         noticeId={noticeId}

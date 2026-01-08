@@ -4,6 +4,7 @@ import { useUserAlerts } from "@/hooks/use-user-alerts";
 import type { UserAlertItem } from "@/types/alert";
 import { formatNoticeTimeRange, formatRelativeTime } from "@/utils/date";
 import Image from "next/image";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 import { useInView } from "react-intersection-observer";
 
@@ -30,7 +31,7 @@ function formatAlertMessage(alert: UserAlertItem) {
       ) : (
         <span className="text-red-500">거절</span>
       )}
-      되었어요.
+      되었습니다.
     </>
   );
 }
@@ -43,9 +44,11 @@ function AlertItem({
   alert: UserAlertItem;
   onMarkAsRead: (alertId: string) => void;
 }) {
+  const router = useRouter();
   const handleClick = () => {
     if (!alert.item.read) {
       onMarkAsRead(alert.item.id);
+      router.push("/profile/my-profile");
     }
   };
 
@@ -127,6 +130,12 @@ function AlertList({
     }
   }, [inView, alertsData?.hasNext, isLoadingMore, loadMore]);
 
+  // accepted와 rejected만 필터링 (canceled 제외)
+  const filteredItems =
+    alertsData?.items.filter(
+      (alert) => alert.item.result === "accepted" || alert.item.result === "rejected",
+    ) ?? [];
+
   return (
     <div className="mt-4 flex flex-1 flex-col gap-2 overflow-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
       {error && (
@@ -134,18 +143,18 @@ function AlertList({
           <p className="text-red-600">에러: {error.message}</p>
         </div>
       )}
-      {!error && alertsData?.items.length === 0 && (
+      {!error && filteredItems.length === 0 && (
         <p className="text-center text-gray-500">알림이 없습니다.</p>
       )}
       {!error &&
-        alertsData?.items.map((alert) => (
+        filteredItems.map((alert) => (
           <AlertItem
             key={alert.item.id}
             alert={alert}
             onMarkAsRead={onMarkAsRead}
           />
         ))}
-      {!error && alertsData && alertsData.items.length > 0 && (
+      {!error && filteredItems.length > 0 && (
         <div ref={ref}>
           {isLoadingMore && <p className="text-center text-gray-500">로딩 중...</p>}
         </div>

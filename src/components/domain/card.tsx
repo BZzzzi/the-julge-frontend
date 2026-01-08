@@ -28,7 +28,7 @@ type CardProps = {
 
   onSelect: (payload: CardClickPayload) => void;
 
-  //라우팅 등 “추가 동작”이 필요할 때만 넘김 
+  //라우팅 등 “추가 동작”이 필요할 때만 넘김
   onCardClick?: (payload: CardClickPayload) => void;
 
   title?: string;
@@ -76,9 +76,7 @@ export default function Card({
 }: CardProps) {
   return (
     <div className="mx-auto max-w-87.5 sm:max-w-87.5 md:max-w-169.5 lg:max-w-241">
-      {title ? (
-        <p className="mb-4 text-xl font-bold text-black md:mb-8 md:text-[28px]">{title}</p>
-      ) : null}
+      {title ? <h1 className="text-xl font-bold text-black md:text-[28px]">{title}</h1> : null}
 
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-2 md:grid-cols-2 md:gap-3.5 lg:grid-cols-3">
         {cards.map((c) => {
@@ -121,7 +119,12 @@ export default function Card({
 
               <div className="mx-3 mt-3 sm:mx-3 sm:mt-3 md:mx-4 md:mt-4">
                 <div className="bg-gray-30 relative h-21 w-full overflow-hidden rounded-xl sm:h-21 lg:h-40">
-                  <Image src={c.imageUrl} alt={c.name} fill className={`object-cover ${imgDim}`} />
+                  <Image
+                    src={c.imageUrl}
+                    alt={c.name}
+                    fill
+                    className={`object-cover ${imgDim}`}
+                  />
                 </div>
               </div>
 
@@ -177,8 +180,10 @@ export default function Card({
                   </p>
                 </div>
 
-                <div className="items-left mt-4 mb-4 flex flex-col justify-between whitespace-nowrap shrink-0 md:flex-row">
-                  <p className={`text-lg font-bold md:text-2xl ${isBlocked ? "text-gray-30" : "text-black"}`}>
+                <div className="items-left mt-4 mb-4 flex shrink-0 flex-col justify-between whitespace-nowrap md:flex-row">
+                  <p
+                    className={`text-lg font-bold md:text-2xl ${isBlocked ? "text-gray-30" : "text-black"}`}
+                  >
                     {c.hourlyPay.toLocaleString()}원
                   </p>
 
@@ -188,7 +193,9 @@ export default function Card({
                     }`}
                   >
                     <div className="font-regular flex w-full items-center justify-start gap-0.5 text-xs md:justify-center md:text-sm">
-                      <span className={`md:text-white ${isBlocked ? "text-gray-30" : "text-red-40"}`}>
+                      <span
+                        className={`md:text-white ${isBlocked ? "text-gray-30" : "text-red-40"}`}
+                      >
                         기존 시급보다 {percentText}%
                       </span>
 
@@ -212,7 +219,10 @@ export default function Card({
                 </div>
               </div>
 
-              <div className="absolute inset-0 z-10 cursor-pointer" aria-hidden />
+              <div
+                className="absolute inset-0 z-10 cursor-pointer"
+                aria-hidden
+              />
             </div>
           );
         })}

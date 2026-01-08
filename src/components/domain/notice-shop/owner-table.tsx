@@ -152,7 +152,7 @@ export default function OwnerTable({
   if (!applications || applications.length === 0 || totalCount === 0) {
     return (
       <div className="mx-auto flex w-full flex-col gap-6 md:w-170 lg:w-241">
-        <h1 className="text-2xl font-bold text-black">{title}</h1>
+        <h1 className="text-xl font-bold text-black md:text-[28px]">{title}</h1>
         <div className="flex h-[200px] items-center justify-center rounded-[10px] border border-gray-200 bg-white">
           <p className="text-base text-gray-500">{emptyMessage}</p>
         </div>
@@ -171,7 +171,7 @@ export default function OwnerTable({
 
   return (
     <div className="mx-auto flex w-full flex-col gap-6 md:w-170 lg:w-241">
-      <h1 className="text-2xl font-bold text-black">{title}</h1>
+      <h1 className="text-xl font-bold text-black md:text-[28px]">{title}</h1>
 
       <div className="border-gray-20 w-full overflow-hidden rounded-[10px] border bg-white">
         <div className="w-full overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -218,7 +218,7 @@ export default function OwnerTable({
                           onClick={() =>
                             handleStatusButtonClick(item.id, "rejected", userItem?.name || "신청자")
                           }
-                          className="h-8 w-17 border px-1 text-xs font-medium md:h-10 md:w-24 md:px-5 md:text-sm md:font-semibold"
+                          className="h-8 w-17 border bg-white px-1 text-xs font-medium hover:bg-red-50 md:h-10 md:w-24 md:px-5 md:text-sm md:font-semibold"
                         >
                           거절하기
                         </Button>
@@ -228,7 +228,7 @@ export default function OwnerTable({
                           onClick={() =>
                             handleStatusButtonClick(item.id, "accepted", userItem?.name || "신청자")
                           }
-                          className="border-blue-20 text-blue-20 h-8 w-17 border px-1 text-xs font-medium md:h-10 md:w-24 md:px-5 md:text-sm md:font-semibold"
+                          className="border-blue-20 text-blue-20 h-8 w-17 border bg-white px-1 text-xs font-medium hover:bg-blue-50 md:h-10 md:w-24 md:px-5 md:text-sm md:font-semibold"
                         >
                           승인하기
                         </Button>

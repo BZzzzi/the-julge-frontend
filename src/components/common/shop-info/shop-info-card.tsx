@@ -141,7 +141,7 @@ function NoticeContent({
         </p>
 
         {wageBadge && (
-          <span className="inline-flex items-center rounded-full bg-orange-600 px-3 py-1.5 text-sm font-extrabold text-white">
+          <span className="inline-flex items-center rounded-full bg-orange-600 px-3 py-1.5 text-xs font-extrabold text-white md:text-sm">
             {wageBadge.text}
 
             {wageBadge.icon ? <span className="shrink-0">{wageBadge.icon}</span> : null}

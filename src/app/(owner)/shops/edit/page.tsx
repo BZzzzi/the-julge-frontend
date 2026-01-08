@@ -14,7 +14,7 @@ export default async function ShopEditPage() {
   if (!token) {
     return (
       <>
-        <Header />
+        <Header showSearchInput={false} />
         <main className="bg-gray-10 min-h-screen">
           <section className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4">
             <div className="mx-auto w-87.75 md:w-170 lg:w-241">
@@ -48,7 +48,7 @@ export default async function ShopEditPage() {
   if (!userId) {
     return (
       <>
-        <Header showSearchInput={false}/>
+        <Header showSearchInput={false} />
         <main className="bg-gray-5 min-h-screen">
           <section className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4">
             <div className="border-gray-20 w-full max-w-md rounded-xl border bg-white p-14 text-center">
@@ -82,7 +82,7 @@ export default async function ShopEditPage() {
   if (!shop) {
     return (
       <>
-        <Header />
+        <Header showSearchInput={false} />
         <main className="bg-gray-5 min-h-screen">
           <section className="flex min-h-[calc(100vh-80px)] items-center justify-center px-4">
             <div className="border-gray-20 w-full max-w-md rounded-xl border bg-white p-14 text-center">
@@ -112,14 +112,8 @@ export default async function ShopEditPage() {
 
   return (
     <>
-      <Header />
-      <main className="bg-gray-5 min-h-screen">
-        <div className="mx-auto max-w-5xl px-4 py-10">
-          <div className="mx-auto w-87.75 md:w-170 lg:w-241">
-            <ShopEditForm initialShop={shop} />
-          </div>
-        </div>
-      </main>
+      <Header showSearchInput={false} />
+      <ShopEditForm initialShop={shop} />
     </>
   );
 }

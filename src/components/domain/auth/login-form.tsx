@@ -104,15 +104,7 @@ export default function LoginForm() {
         />
       </Field>
 
-      {/* TODO: 서버에서 내려주는 에러 메시지 모달 컴포넌트로 만들기 */}
-      {state?.error && (
-        <div
-          className="text-sm text-red-600"
-          role="alert"
-        >
-          {state.error}
-        </div>
-      )}
+      {state?.error && <div className="text-center font-semibold text-red-600">{state.error}</div>}
 
       <Button
         variant="primary"

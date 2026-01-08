@@ -23,7 +23,7 @@ export default async function MyShopPage() {
     return (
       <div className="flex h-dvh flex-col justify-between">
         <div>
-          <Header />
+          <Header showSearchInput={false} />
           <main>
             <section className="mx-auto w-87.75 px-4 py-10 md:w-170 lg:w-241">
               <h1 className="mb-6 text-2xl font-bold">내 가게</h1>
@@ -75,7 +75,7 @@ export default async function MyShopPage() {
 
   return (
     <>
-      <Header showSearchInput={false}/>
+      <Header showSearchInput={false} />
       <main>
         <section className="mx-auto max-w-5xl px-4 py-14">
           <div className="mx-auto w-87.75 md:w-170 lg:w-241">
@@ -137,14 +137,15 @@ export default async function MyShopPage() {
                   </Link>
                 </div>
               ) : (
-                <EmployerNoticesSection 
+                <EmployerNoticesSection
                   initialCards={cards}
                   shopInfo={{
                     id: shop.id,
                     name: shop.name,
                     address1: shop.address1,
-                    imageUrl: shop.imageUrl
-                  }} />
+                    imageUrl: shop.imageUrl,
+                  }}
+                />
               )}
             </div>
           </div>

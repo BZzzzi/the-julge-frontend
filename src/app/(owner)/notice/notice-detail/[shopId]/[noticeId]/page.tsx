@@ -35,9 +35,9 @@ export default async function NoticeDetailPage({ params }: PageProps) {
 
   return (
     <div className="bg-gray-5 flex min-h-screen flex-col">
-      <Header />
+      <Header showSearchInput={false} />
       <main className="flex flex-1 flex-col items-center py-10 md:py-[60px]">
-        <div className="flex w-full max-w-[964px] flex-col gap-8 px-4 md:gap-12">
+        <div className="flex max-w-87.5 flex-col gap-8 px-4 md:max-w-170 md:gap-12 lg:max-w-241">
           <NoticeShopCard
             shopId={shopId}
             noticeId={noticeId}

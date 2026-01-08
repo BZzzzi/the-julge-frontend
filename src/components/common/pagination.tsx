@@ -55,7 +55,7 @@ export const Pagination = ({ links, offset, limit, count, onPageChange }: Pagina
         }}
         disabled={startPage === 1}
         className={cn(
-          "flex h-10 w-10 items-center justify-center rounded-[4px] bg-white transition-colors",
+          "flex h-10 w-10 cursor-pointer items-center justify-center rounded-[4px] bg-white transition-colors",
           "hover:bg-gray-10 disabled:cursor-not-allowed disabled:opacity-50",
         )}
       >
@@ -89,7 +89,7 @@ export const Pagination = ({ links, offset, limit, count, onPageChange }: Pagina
             "flex h-10 w-10 items-center justify-center rounded-[4px] text-sm font-medium transition-colors",
             page === currentPage
               ? "bg-red-30 hover:bg-red-30 text-white" // Active
-              : "hover:bg-gray-10 bg-white text-black", // Inactive
+              : "hover:bg-gray-10 cursor-pointer bg-white text-black", // Inactive
           )}
         >
           {page}
@@ -105,7 +105,7 @@ export const Pagination = ({ links, offset, limit, count, onPageChange }: Pagina
         }}
         disabled={endPage === totalPage}
         className={cn(
-          "flex h-10 w-10 items-center justify-center rounded-[4px] bg-white transition-colors",
+          "flex h-10 w-10 cursor-pointer items-center justify-center rounded-[4px] bg-white transition-colors",
           "hover:bg-gray-10 disabled:cursor-not-allowed disabled:opacity-50",
         )}
       >

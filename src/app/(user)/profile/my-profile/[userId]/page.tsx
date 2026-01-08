@@ -14,7 +14,7 @@ export default async function MyProfileUpsertPage({ params }: PageProps) {
 
   return (
     <div className="bg-gray-5 flex min-h-screen flex-col">
-      <Header />
+      <Header showSearchInput={false} />
       <ProfileUpsertForm userInfo={userRes} />
     </div>
   );
