@@ -185,11 +185,23 @@ const FitCards = ({
   cards,
   onSelect,
   onCardClick,
+  hasNoMatchingAddress,
 }: {
   cards: CardData[];
   onSelect: (payload: CardClickPayload) => void;
   onCardClick: (payload: CardClickPayload) => void;
+  hasNoMatchingAddress?: boolean;
 }) => {
+  if (hasNoMatchingAddress) {
+    return (
+      <div className="mt-6 flex items-center justify-center py-12">
+        <p className="text-[14px] leading-[20px] text-black/50 md:text-[16px]">
+          같은 지역의 공고가 없습니다.
+        </p>
+      </div>
+    );
+  }
+
   if (!cards.length) return null;
 
   const handleSwiperReady = (swiper: SwiperType) => {
@@ -288,6 +300,7 @@ export default function NoticesPageClient() {
 
   /** 맞춤공고 state 복구 */
   const [fitCards, setFitCards] = useState<CardData[]>([]);
+  const [hasNoMatchingAddress, setHasNoMatchingAddress] = useState(false);
 
   const filterQueryString = useMemo(
     () => buildNoticesFilterQueryString(appliedFilter),
@@ -343,6 +356,7 @@ export default function NoticesPageClient() {
   useEffect(() => {
     if (!isLoggedIn) {
       setFitCards([]);
+      setHasNoMatchingAddress(false);
       return;
     }
 
@@ -372,18 +386,14 @@ export default function NoticesPageClient() {
           (meRes as unknown as { item?: { address?: string } }).item ??
           (meRes as unknown as { address?: string });
 
-        const address = (me?.address ?? "").trim();
-        if (!address) {
+        const userAddress = (me?.address ?? "").trim();
+        if (!userAddress) {
           if (alive) setFitCards([]);
           return;
         }
 
-        const tokens = address
-          .split(" ")
-          .map((t) => t.trim())
-          .filter(Boolean);
-        const lastToken = tokens.length ? tokens[Math.min(1, tokens.length - 1)] : "";
-        const cityGu = tokens.slice(0, 2).join(" ");
+        // 사용자 주소를 기준으로 공고 필터링
+        // userAddress는 "서울시 강남구" 형식이며, 공고의 address1과 비교
         const raw = await fetchNotices(
           buildListQuery({
             limit: 60,
@@ -396,18 +406,27 @@ export default function NoticesPageClient() {
 
         const mapped = mapToCardData(raw);
 
+        // 사용자 주소(address1)와 공고의 address1이 일치하는지 확인
         const filtered = mapped.filter((c) => {
-          const a = (c.address1 ?? "").trim();
-          return (cityGu && a.includes(cityGu)) || (lastToken && a.includes(lastToken));
+          const noticeAddress = (c.address1 ?? "").trim();
+          // 정확히 일치하거나 사용자 주소가 공고 주소에 포함되는 경우
+          return noticeAddress === userAddress || noticeAddress.includes(userAddress);
         });
 
-        const finalCards = (filtered.length ? filtered : mapped).slice(0, 6);
-
         if (!alive) return;
-        setFitCards(finalCards);
+
+        // 필터링 결과가 비어있으면 메시지 표시
+        if (filtered.length === 0) {
+          setFitCards([]);
+          setHasNoMatchingAddress(true);
+        } else {
+          setFitCards(filtered.slice(0, 6));
+          setHasNoMatchingAddress(false);
+        }
       } catch {
         if (!alive) return;
         setFitCards([]);
+        setHasNoMatchingAddress(false);
       }
     })();
 
@@ -445,6 +464,7 @@ export default function NoticesPageClient() {
               cards={fitCards}
               onSelect={handleSelect}
               onCardClick={handleCardClick}
+              hasNoMatchingAddress={hasNoMatchingAddress}
             />
           </div>
         </section>
