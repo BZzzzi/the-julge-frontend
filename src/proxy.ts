@@ -1,0 +1,91 @@
+import { NextResponse, type NextRequest } from "next/server";
+
+export function proxy(request: NextRequest) {
+  const { pathname } = request.nextUrl;
+
+  // OPTIONS 요청 처리
+  if (request.method === "OPTIONS") {
+    return new NextResponse(null, {
+      status: 204,
+      headers: {
+        "Access-Control-Allow-Origin": request.headers.get("origin") || "*",
+        "Access-Control-Allow-Methods": "GET, POST, PUT, PATCH, DELETE, OPTIONS",
+        "Access-Control-Allow-Headers": "Content-Type, Authorization",
+        "Access-Control-Max-Age": "86400",
+      },
+    });
+  }
+
+  if (pathname.startsWith("/api")) {
+    const response = NextResponse.next();
+    response.headers.set("Access-Control-Allow-Origin", "*");
+    response.headers.set("Access-Control-Allow-Methods", "GET, POST, PUT, PATCH, DELETE, OPTIONS");
+    response.headers.set("Access-Control-Allow-Headers", "Content-Type, Authorization");
+    return response;
+  }
+
+  // 주의! 미들웨어의 request.cookies는 비동기가 아님
+  const token = request.cookies.get("token")?.value;
+  const userInfoCookie = request.cookies.get("userInfo")?.value;
+  const publicPages = ["/", "/login", "/signup", "/notice/notices-detail", "/notice/notices-list"];
+
+  // 토큰이 없는데 publicPage가 아닌 곳에 접근하면 루트 페이지로 리다이렉트
+  if (!token) {
+    const isPublic = publicPages.some((p) => pathname === p || pathname.startsWith(`${p}/`));
+    if (!isPublic) return NextResponse.redirect(new URL("/", request.url));
+    return NextResponse.next();
+  }
+
+  if (!userInfoCookie) return NextResponse.redirect(new URL("/", request.url));
+
+  // 쿠키가 JSON string이므로 파싱 필요했음
+  let user: { id: string; type: "employee" | "employer" };
+  try {
+    user = JSON.parse(userInfoCookie);
+  } catch {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+  // employee 전용 페이지 (src/app/(user))
+  const employeeOnlyPaths = [
+    "/notice/notices-list",
+    "/notice/notices-detail",
+    "/profile/my-profile",
+  ];
+
+  // employer 전용 페이지 (src/app/(owner))
+  const employerOnlyPaths = [
+    "/shops/my-shop",
+    "/shops/edit",
+    "/shops/new",
+    "/notice/notice-detail",
+  ];
+
+  const isEmployeeOnly = employeeOnlyPaths.some((p) => pathname.startsWith(p));
+  const isEmployerOnly = employerOnlyPaths.some((p) => pathname.startsWith(p));
+
+  // employee가 employer 영역 접근 → 차단
+  if (user.type === "employee" && isEmployerOnly) {
+    const url = new URL("/notice/notices-list", request.url);
+    url.searchParams.set("accessDenied", "true");
+    return NextResponse.redirect(url);
+  }
+
+  // employer가 employee 영역 접근 → 차단
+  if (user.type === "employer" && isEmployeeOnly) {
+    const url = new URL("/shops/my-shop", request.url);
+    url.searchParams.set("accessDenied", "true");
+    return NextResponse.redirect(url);
+  }
+
+  return NextResponse.next();
+}
+// 아래 경로를 제외한 모든 페이지에 미들웨어를 적용한다는 정규 표현식
+// _next/static/* (Next.js 정적 파일)
+// _next/image/* (Next.js 이미지 최적화)
+// favicon.ico (파비콘)
+// 정적 파일 확장자 (.svg, .png, .jpg 등)
+export const config = {
+  matcher: [
+    "/((?!api|_next/static|_next/image|favicon.ico|.*\\.(?:svg|png|jpg|jpeg|gif|webp|ico|woff|woff2|ttf|eot)).*)",
+  ],
+};
