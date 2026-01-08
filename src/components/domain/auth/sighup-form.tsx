@@ -3,10 +3,20 @@
 import { signup } from "@/app/(auth)/signup/actions";
 import { Button } from "@/components/common/button";
 import { Field, FieldInput } from "@/components/common/input";
+import Modal from "@/components/common/modal/Modal";
+import { useRouter } from "next/navigation";
 import { startTransition, useActionState, useState } from "react";
+import { createPortal } from "react-dom";
 
 export default function SignupForm() {
   const [state, formAction] = useActionState(signup, null);
+  const router = useRouter();
+
+  const isSuccess = state && "success" in state && state.success;
+
+  const handleSuccessConfirm = () => {
+    router.push("/login");
+  };
 
   const [emailError, setEmailError] = useState("");
   const [passwordError, setPasswordError] = useState("");
@@ -213,14 +223,8 @@ export default function SignupForm() {
         </div>
       </Field>
 
-      {/* TODO: 서버에서 내려주는 에러 메시지 모달 컴포넌트로 만들기 */}
-      {state?.error && (
-        <div
-          className="text-sm text-red-600"
-          role="alert"
-        >
-          {state.error}
-        </div>
+      {state && "error" in state && state.error && (
+        <div className="text-center font-semibold text-red-600">{state.error}</div>
       )}
 
       <Button
@@ -231,6 +235,19 @@ export default function SignupForm() {
       >
         가입하기
       </Button>
+      {typeof window !== "undefined" &&
+        isSuccess &&
+        createPortal(
+          <Modal
+            variant="basic"
+            open={!!isSuccess}
+            onClose={handleSuccessConfirm}
+            description="가입이 완료되었습니다!"
+            actionLabel="확인"
+            onAction={handleSuccessConfirm}
+          />,
+          document.body,
+        )}
     </form>
   );
 }
