@@ -29,48 +29,53 @@ export function proxy(request: NextRequest) {
   const userInfoCookie = request.cookies.get("userInfo")?.value;
   const publicPages = ["/", "/login", "/signup", "/notice/notices-detail", "/notice/notices-list"];
 
-  // 토큰이 없는데 publicPage가 아닌 곳에 접근하면 로그인 페이지로 리다이렉트
+  // 토큰이 없는데 publicPage가 아닌 곳에 접근하면 루트 페이지로 리다이렉트
   if (!token) {
     const isPublic = publicPages.some((p) => pathname === p || pathname.startsWith(`${p}/`));
-    if (!isPublic) return NextResponse.redirect(new URL("/login", request.url));
+    if (!isPublic) return NextResponse.redirect(new URL("/", request.url));
     return NextResponse.next();
   }
 
-  if (!userInfoCookie) return NextResponse.redirect(new URL("/login", request.url));
+  if (!userInfoCookie) return NextResponse.redirect(new URL("/", request.url));
 
-  // TODO: 개발 환경에서 주석 처리
-  // TODO: 바로 리다이렉트 아니고 클라이언트에서 alert 띄우도록 바꾸기
   // 쿠키가 JSON string이므로 파싱 필요했음
-  // let user: { id: string; type: "employee" | "employer" };
-  // try {
-  //   user = JSON.parse(userInfoCookie);
-  // } catch {
-  //   return NextResponse.redirect(new URL("/login", request.url));
-  // }
-  // employee 전용 페이지
-  // const employeeOnlyPaths = [
-  //   "/user",
-  //   "/notice/notices-list",
-  //   "/notice/notices-detail",
-  //   "/profile/profile-detail",
-  //   "/profile/profile-new",
-  // ];
+  let user: { id: string; type: "employee" | "employer" };
+  try {
+    user = JSON.parse(userInfoCookie);
+  } catch {
+    return NextResponse.redirect(new URL("/", request.url));
+  }
+  // employee 전용 페이지 (src/app/(user))
+  const employeeOnlyPaths = [
+    "/notice/notices-list",
+    "/notice/notices-detail",
+    "/profile/my-profile",
+  ];
 
-  // // employer 전용 페이지
-  // const employerOnlyPaths = ["/notice/notice-detail", "/notice/notice-new", "/shops/"];
+  // employer 전용 페이지 (src/app/(owner))
+  const employerOnlyPaths = [
+    "/shops/my-shop",
+    "/shops/edit",
+    "/shops/new",
+    "/notice/notice-detail",
+  ];
 
-  // const isEmployeeOnly = employeeOnlyPaths.some((p) => pathname.startsWith(p));
-  // const isEmployerOnly = employerOnlyPaths.some((p) => pathname.startsWith(p));
+  const isEmployeeOnly = employeeOnlyPaths.some((p) => pathname.startsWith(p));
+  const isEmployerOnly = employerOnlyPaths.some((p) => pathname.startsWith(p));
 
-  // // employee가 employer 영역 접근 → 차단
-  // if (user.type === "employee" && isEmployerOnly) {
-  //   return NextResponse.redirect(new URL("/notice/notices-list", request.url));
-  // }
+  // employee가 employer 영역 접근 → 차단
+  if (user.type === "employee" && isEmployerOnly) {
+    const url = new URL("/notice/notices-list", request.url);
+    url.searchParams.set("accessDenied", "true");
+    return NextResponse.redirect(url);
+  }
 
-  // // employer가 employee 영역 접근 → 차단
-  // if (user.type === "employer" && isEmployeeOnly) {
-  //   return NextResponse.redirect(new URL("/notice/notice-new", request.url));
-  // }
+  // employer가 employee 영역 접근 → 차단
+  if (user.type === "employer" && isEmployeeOnly) {
+    const url = new URL("/shops/my-shop", request.url);
+    url.searchParams.set("accessDenied", "true");
+    return NextResponse.redirect(url);
+  }
 
   return NextResponse.next();
 }

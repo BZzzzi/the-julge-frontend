@@ -1,7 +1,9 @@
+import AccessDeniedModal from "@/components/common/access-denied-modal";
 import StoreInitializer from "@/components/domain/auth/store-initializer";
 import type { Metadata } from "next";
 import localFont from "next/font/local";
 import { cookies } from "next/headers";
+import { Suspense } from "react";
 import "./globals.css";
 
 const spoqaHanSans = localFont({
@@ -43,7 +45,12 @@ export default async function RootLayout({
       className={`${spoqaHanSans.variable}`}
     >
       <StoreInitializer userInfo={userInfo} />
-      <body className="antialiased">{children}</body>
+      <body className="antialiased">
+        {children}
+        <Suspense fallback={null}>
+          <AccessDeniedModal />
+        </Suspense>
+      </body>
     </html>
   );
 }
