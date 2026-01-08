@@ -1,6 +1,6 @@
 import Image from "next/image";
 
-function Logindesign() {
+function LoginDesign() {
   return (
     <div className="pointer-events-none absolute inset-0">
       <Image
@@ -77,4 +77,4 @@ function Logindesign() {
   );
 }
 
-export default Logindesign;
+export default LoginDesign;
