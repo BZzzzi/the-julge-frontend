@@ -19,10 +19,21 @@ type Props = {
 
 const LIMIT = 6;
 
+function calcIsPast(startsAt: string) {
+  return new Date(startsAt).getTime() < Date.now();
+}
+
 export default function EmployerNoticesSection({ initialCards, shopInfo }: Props) {
   const router = useRouter();
 
-  const [cards, setCards] = useState<CardData[]>(initialCards);
+  const [cards, setCards] = useState<CardData[]>(() =>
+    initialCards.map((c) => ({
+      ...c,
+      isPast: calcIsPast(c.startsAt),
+      isClosed: Boolean(c.isClosed),
+    })),
+  );
+
   const [offset, setOffset] = useState(LIMIT);
   const [hasNextPage, setHasNextPage] = useState(initialCards.length === LIMIT);
   const [isLoading, setIsLoading] = useState(false);
@@ -48,7 +59,9 @@ export default function EmployerNoticesSection({ initialCards, shopInfo }: Props
 
       const newNotices = res.items ?? [];
 
-      if (newNotices.length < LIMIT) {
+      if ("hasNext" in res) {
+        setHasNextPage(Boolean((res as { hasNext?: boolean }).hasNext));
+      } else if (newNotices.length < LIMIT) {
         setHasNextPage(false);
       }
 
@@ -63,7 +76,7 @@ export default function EmployerNoticesSection({ initialCards, shopInfo }: Props
           address1: shopInfo.address1,
           hourlyPay: notice.hourlyPay,
           imageUrl: shopInfo.imageUrl,
-          isPast: false, 
+          isPast: calcIsPast(notice.startsAt), 
           isClosed: notice.closed,
         };
       });
