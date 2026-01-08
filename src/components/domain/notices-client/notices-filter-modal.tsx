@@ -1,6 +1,8 @@
 "use client";
 
-import { useEffect, useMemo } from "react";
+import Modal from "@/components/common/modal/Modal";
+import { useEffect, useMemo, useState } from "react";
+import { createPortal } from "react-dom";
 import { create } from "zustand";
 
 export type NoticeFilter = {
@@ -167,6 +169,21 @@ const FilterModal = ({ onClose, onApply }: FilterModalProps) => {
   const resetDraft = useNoticeFilterStore((state) => state.resetDraft);
   const applyDraft = useNoticeFilterStore((state) => state.applyDraft);
 
+  const [showPastDateModal, setShowPastDateModal] = useState(false);
+
+  // 과거 날짜인지 확인하는 함수
+  const isPastDate = (dateString: string): boolean => {
+    if (!isValidHyphenDate(dateString)) return false;
+
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const selectedDate = new Date(`${dateString}T00:00:00`);
+    selectedDate.setHours(0, 0, 0, 0);
+
+    return selectedDate < today;
+  };
+
   useEffect(() => {
     syncDraftFromApplied();
   }, [syncDraftFromApplied]);
@@ -299,6 +316,15 @@ const FilterModal = ({ onClose, onApply }: FilterModalProps) => {
                           return;
                         }
 
+                        // 날짜가 완전히 입력되었고 유효한 경우, 과거 날짜인지 확인
+                        if (formatted.length === 10 && isValidHyphenDate(formatted)) {
+                          if (isPastDate(formatted)) {
+                            setStartDate("");
+                            setShowPastDateModal(true);
+                            return;
+                          }
+                        }
+
                         setStartDate(formatted);
                       }}
                       className="h-16 w-full rounded-lg border border-black/10 px-3 text-[14px] leading-[20px] outline-none focus:border-orange-500"
@@ -385,6 +411,20 @@ const FilterModal = ({ onClose, onApply }: FilterModalProps) => {
           </div>
         </div>
       </div>
+
+      {typeof window !== "undefined" &&
+        showPastDateModal &&
+        createPortal(
+          <Modal
+            variant="basic"
+            open={showPastDateModal}
+            onClose={() => setShowPastDateModal(false)}
+            description="과거 날짜는 선택할 수 없습니다."
+            actionLabel="확인"
+            onAction={() => setShowPastDateModal(false)}
+          />,
+          document.body,
+        )}
     </div>
   );
 };
