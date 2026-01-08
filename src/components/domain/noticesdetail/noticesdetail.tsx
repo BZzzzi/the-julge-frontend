@@ -5,7 +5,7 @@ import ShopInfoCard from "@/components/common/shop-info/shop-info-card";
 import Card, { type CardData } from "@/components/domain/card";
 import { apiClient } from "@/lib/api";
 import { useNoticeSelection, useUser } from "@/store/user";
-import type { ApplicationStatusReq } from "@/types/application";
+import type { ApplicationStatus, ApplicationStatusReq } from "@/types/application";
 import type { UserInfo } from "@/types/user";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
@@ -66,20 +66,22 @@ function loadApplicationId(userId: string | null, selectedKey: string | null) {
   }
 }
 
-function saveApplicationId(userId: string | null, selectedKey: string | null, applicationId: string) {
+function saveApplicationId(
+  userId: string | null,
+  selectedKey: string | null,
+  applicationId: string,
+) {
   if (!userId || !selectedKey) return;
   try {
     localStorage.setItem(getAppIdStorageKey(userId, selectedKey), applicationId);
-  } catch {
-  }
+  } catch {}
 }
 
 function clearApplicationId(userId: string | null, selectedKey: string | null) {
   if (!userId || !selectedKey) return;
   try {
     localStorage.removeItem(getAppIdStorageKey(userId, selectedKey));
-  } catch {
-  }
+  } catch {}
 }
 
 type Shop = {
@@ -98,6 +100,13 @@ type NoticeCore = {
   description?: string;
   closed?: boolean;
   shop: unknown;
+  currentUserApplication?: {
+    item: {
+      id: string;
+      status: ApplicationStatus;
+      createdAt: string;
+    };
+  } | null;
 };
 
 type ApiItem<T> = { item: T } | T;
@@ -150,6 +159,33 @@ function parseNotice(res: unknown): NoticeCore | null {
   if (typeof n.startsAt !== "string") return null;
   if (typeof n.workhour !== "number") return null;
 
+  // currentUserApplication 파싱
+  let currentUserApplication: NoticeCore["currentUserApplication"] = undefined;
+  if (n.currentUserApplication !== undefined && n.currentUserApplication !== null) {
+    const app = n.currentUserApplication as unknown;
+    if (app && typeof app === "object") {
+      const appObj = app as Record<string, unknown>;
+      if ("item" in appObj && appObj.item && typeof appObj.item === "object") {
+        const item = appObj.item as Record<string, unknown>;
+        if (
+          typeof item.id === "string" &&
+          typeof item.status === "string" &&
+          typeof item.createdAt === "string"
+        ) {
+          currentUserApplication = {
+            item: {
+              id: item.id,
+              status: item.status as ApplicationStatus,
+              createdAt: item.createdAt,
+            },
+          };
+        }
+      }
+    }
+  } else if (n.currentUserApplication === null) {
+    currentUserApplication = null;
+  }
+
   return {
     id: n.id,
     hourlyPay: n.hourlyPay,
@@ -158,6 +194,7 @@ function parseNotice(res: unknown): NoticeCore | null {
     description: typeof n.description === "string" ? n.description : undefined,
     closed: typeof n.closed === "boolean" ? n.closed : undefined,
     shop: n.shop,
+    currentUserApplication,
   };
 }
 
@@ -168,7 +205,7 @@ function isProfileFilled(userLike: unknown) {
   return has(u.name) && has(u.phone) && has(u.address) && has(u.bio);
 }
 
-// 신청 응답에서 applicationId 뽑기 
+// 신청 응답에서 applicationId 뽑기
 function getApplicationIdFromResponse(res: unknown): string | null {
   const item = unwrapItem(res as ApiItem<unknown>);
   if (!item || typeof item !== "object") return null;
@@ -212,7 +249,7 @@ export default function NoticeListWithDetailPage() {
 
   const { user, isLoggedIn } = useUser();
 
-  // userId 키가 id 인지 userId 인지 
+  // userId 키가 id 인지 userId 인지
   const u = user as (UserInfo & { id?: string; userId?: string }) | null;
   const userId = u?.userId ?? u?.id ?? null;
 
@@ -253,7 +290,9 @@ export default function NoticeListWithDetailPage() {
         const storageKey = getRecentStorageKey(userId);
         const recent = loadRecent(storageKey);
 
-        const finalKeys = selectedKey ? pushToFrontRecent(recent, selectedKey, 6) : recent.slice(0, 6);
+        const finalKeys = selectedKey
+          ? pushToFrontRecent(recent, selectedKey, 6)
+          : recent.slice(0, 6);
         if (selectedKey) saveRecent(storageKey, finalKeys);
 
         if (finalKeys.length === 0) {
@@ -355,8 +394,28 @@ export default function NoticeListWithDetailPage() {
     const isClosed = Boolean(detail.closed);
     const selectedIsBlocked = isPast || isClosed;
 
+    // 신청 상태 확인
+    const applicationStatus = detail.currentUserApplication?.item.status;
+    const isAccepted = applicationStatus === "accepted";
+    const isRejected = applicationStatus === "rejected";
+    const buttonDisabled = selectedIsBlocked || isAccepted || isRejected;
+
+    // 버튼 텍스트 결정 (승인/거절 상태가 우선)
+    let buttonText = "신청 불가";
+    if (isAccepted) {
+      buttonText = "승인된 공고";
+    } else if (isRejected) {
+      buttonText = "거절된 공고";
+    } else if (selectedIsBlocked) {
+      buttonText = "신청 불가";
+    }
+
     return {
       selectedIsBlocked,
+      buttonDisabled,
+      isRejected,
+      isAccepted,
+      buttonText,
       imageUrl: shop.imageUrl,
       imageAlt: shop.name,
       wageText: `${detail.hourlyPay.toLocaleString()}원`,
@@ -369,10 +428,10 @@ export default function NoticeListWithDetailPage() {
     };
   }, [detail]);
 
-  // 신청하기 클릭: 로그인/프로필 체크 -> 모달 분기 
+  // 신청하기 클릭: 로그인/프로필 체크 -> 모달 분기
   const handlePrimaryButtonClick = async () => {
     if (!derived) return;
-    if (derived.selectedIsBlocked) return;
+    if (derived.buttonDisabled) return;
 
     // 1) 비로그인
     if (!isLoggedIn || !userId) {
@@ -404,71 +463,84 @@ export default function NoticeListWithDetailPage() {
 
   /** (핵심) apply confirm -> POST 호출 */
   const submitApply = useCallback(async () => {
-  if (!selected || !selectedKey) return;
-  if (!userId) return;
+    if (!selected || !selectedKey) return;
+    if (!userId) return;
 
-  try {
-    setSubmitting(true);
+    try {
+      setSubmitting(true);
 
-    const res = (await apiClient.applications.createShopNoticeApplication(
-      selected.shopId,
-      selected.noticeId,
-    )) as unknown;
+      const res = (await apiClient.applications.createShopNoticeApplication(
+        selected.shopId,
+        selected.noticeId,
+      )) as unknown;
 
-    const appId = getApplicationIdFromResponse(res);
-    if (!appId) throw new Error("applicationId를 응답에서 찾지 못했습니다.");
+      const appId = getApplicationIdFromResponse(res);
+      if (!appId) throw new Error("applicationId를 응답에서 찾지 못했습니다.");
 
-    saveApplicationId(userId, selectedKey, appId);
-    setApplicationId(appId);
-    setApplied(true);
+      saveApplicationId(userId, selectedKey, appId);
+      setApplicationId(appId);
+      setApplied(true);
 
-    setOpen(false);
-  } catch (e) {
-    alert(e instanceof Error ? e.message : "지원에 실패했습니다.");
-  } finally {
-    setSubmitting(false);
-  }
-}, [selected, selectedKey, userId]);
+      setOpen(false);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "지원에 실패했습니다.");
+    } finally {
+      setSubmitting(false);
+    }
+  }, [selected, selectedKey, userId]);
 
-const submitCancel = useCallback(async () => {
-  if (!selected || !selectedKey) return;
-  if (!userId) return;
+  const submitCancel = useCallback(async () => {
+    if (!selected || !selectedKey) return;
+    if (!userId) return;
 
-  const appId = applicationId ?? loadApplicationId(userId, selectedKey);
-  if (!appId) {
-    alert("취소할 신청(applicationId)을 찾지 못했습니다. (신청 후 저장이 필요)");
-    return;
-  }
+    const appId = applicationId ?? loadApplicationId(userId, selectedKey);
+    if (!appId) {
+      alert("취소할 신청(applicationId)을 찾지 못했습니다. (신청 후 저장이 필요)");
+      return;
+    }
 
-  try {
-    setSubmitting(true);
-    const data = { status: "canceled" } as unknown as ApplicationStatusReq;
+    try {
+      setSubmitting(true);
+      const data = { status: "canceled" } as unknown as ApplicationStatusReq;
 
-    await apiClient.applications.updateShopNoticeApplicationStatus(
-      selected.shopId,
-      selected.noticeId,
-      appId,
-      data,
-    );
+      await apiClient.applications.updateShopNoticeApplicationStatus(
+        selected.shopId,
+        selected.noticeId,
+        appId,
+        data,
+      );
 
-    clearApplicationId(userId, selectedKey);
-    setApplicationId(null);
-    setApplied(false);
+      clearApplicationId(userId, selectedKey);
+      setApplicationId(null);
+      setApplied(false);
 
-    setOpen(false);
-  } catch (e) {
-    alert(e instanceof Error ? e.message : "취소에 실패했습니다.");
-  } finally {
-    setSubmitting(false);
-  }
-}, [selected, selectedKey, userId, applicationId]);
-
+      setOpen(false);
+    } catch (e) {
+      alert(e instanceof Error ? e.message : "취소에 실패했습니다.");
+    } finally {
+      setSubmitting(false);
+    }
+  }, [selected, selectedKey, userId, applicationId]);
 
   const modalIcon = useMemo(() => {
     if (modalMode === "cancel") {
-      return <Image src="/icon/caution.svg" alt="주의" width={24} height={24} />;
+      return (
+        <Image
+          src="/icon/caution.svg"
+          alt="주의"
+          width={24}
+          height={24}
+        />
+      );
     }
-    return <Image src="/icon/checked.svg" alt="확인" width={24} height={24} />;
+    return (
+      <Image
+        src="/icon/checked.svg"
+        alt="확인"
+        width={24}
+        height={24}
+      />
+    );
   }, [modalMode]);
 
   const modalProps = useMemo(() => {
@@ -538,7 +610,7 @@ const submitCancel = useCallback(async () => {
 
   return (
     <div>
-      <div className="mt-15 mx-auto w-87.75 md:w-170 lg:w-241">
+      <div className="mx-auto mt-15 w-87.75 md:w-170 lg:w-241">
         {detail && derived ? (
           <ShopInfoCard
             variant="notice"
@@ -550,12 +622,12 @@ const submitCancel = useCallback(async () => {
             address={derived.address}
             description={derived.infoDescription}
             footer={
-              derived.selectedIsBlocked ? (
+              derived.buttonDisabled ? (
                 <button
                   disabled
                   className="bg-gray-40 w-full cursor-not-allowed rounded-xl py-3 font-bold text-white"
                 >
-                  신청 불가
+                  {derived.buttonText}
                 </button>
               ) : (
                 <button
@@ -615,7 +687,10 @@ const submitCancel = useCallback(async () => {
 ========================= */
 function Skeleton({ className }: { className: string }) {
   return (
-    <div className={["bg-gray-20/70 animate-pulse rounded-lg", className].join(" ")} aria-hidden="true" />
+    <div
+      className={["bg-gray-20/70 animate-pulse rounded-lg", className].join(" ")}
+      aria-hidden="true"
+    />
   );
 }
 
@@ -662,7 +737,10 @@ function NoticeDetailSkeleton() {
 
         <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 sm:gap-2 md:grid-cols-2 md:gap-3.5 lg:grid-cols-3">
           {Array.from({ length: 6 }).map((_, i) => (
-            <div key={i} className="border-gray-20 relative h-full overflow-hidden rounded-lg border bg-white">
+            <div
+              key={i}
+              className="border-gray-20 relative h-full overflow-hidden rounded-lg border bg-white"
+            >
               <div className="mx-3 mt-3 sm:mx-3 sm:mt-3 md:mx-4 md:mt-4">
                 <Skeleton className="h-21 w-full rounded-xl sm:h-21 lg:h-40" />
               </div>
