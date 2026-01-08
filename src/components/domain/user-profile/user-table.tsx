@@ -141,7 +141,7 @@ export default function UserTable({
     return (
       <div>
         <section className="mx-auto w-full px-2 py-10 md:w-170 lg:w-241">
-          <h1 className="mb-6 text-2xl font-bold">{title}</h1>
+          <h1 className="mb-6 text-xl font-bold md:text-[28px]">{title}</h1>
           <div className="border-gray-20 rounded-xl border px-5 py-15 text-center md:p-15">
             <p className="mb-6 text-sm text-black md:text-lg">아직 신청 내역이 없어요.</p>
             <Link href={`/notice/notices-list`}>
@@ -170,7 +170,7 @@ export default function UserTable({
 
   return (
     <div className="mx-auto flex w-full flex-col gap-6 md:w-170 lg:w-241">
-      <h1 className="text-2xl font-bold text-black">{title}</h1>
+      <h1 className="text-xl font-bold text-black md:text-[28px]">{title}</h1>
 
       <div className="border-gray-20 w-full overflow-hidden rounded-[10px] border bg-white">
         <div className="w-full overflow-x-auto [-ms-overflow-style:none] [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
@@ -234,7 +234,7 @@ export default function UserTable({
 
                   if (status === "canceled") {
                     return (
-                      <div className="bg-gray-20 flex h-8 w-19 items-center justify-center rounded-2xl text-xs font-medium text-gray-500 md:text-sm md:font-semibold">
+                      <div className="flex h-8 w-19 items-center justify-center rounded-2xl bg-yellow-100 text-xs font-medium text-yellow-600 md:text-sm md:font-semibold">
                         취소됨
                       </div>
                     );

@@ -90,6 +90,7 @@ type Shop = {
   address1: string;
   imageUrl: string;
   description?: string;
+  category?: string;
 };
 
 type NoticeCore = {
@@ -143,6 +144,7 @@ function unwrapShop(shopLike: unknown): Shop | null {
     address1: s.address1,
     imageUrl: s.imageUrl,
     description: typeof s.description === "string" ? s.description : undefined,
+    category: typeof s.category === "string" ? s.category : undefined,
   };
 }
 
@@ -418,6 +420,8 @@ export default function NoticeListWithDetailPage() {
       buttonText,
       imageUrl: shop.imageUrl,
       imageAlt: shop.name,
+      shopName: shop.name,
+      category: shop.category,
       wageText: `${detail.hourlyPay.toLocaleString()}원`,
       wageBadgeText: `기존 시급보다 ${percentText}%`,
       wageBadgeIcon,
@@ -612,38 +616,46 @@ export default function NoticeListWithDetailPage() {
     <div>
       <div className="mx-auto mt-15 w-87.75 md:w-170 lg:w-241">
         {detail && derived ? (
-          <ShopInfoCard
-            variant="notice"
-            imageUrl={derived.imageUrl}
-            imageAlt={derived.imageAlt}
-            wageText={derived.wageText}
-            wageBadge={{ text: derived.wageBadgeText, icon: derived.wageBadgeIcon }}
-            scheduleText={derived.scheduleText}
-            address={derived.address}
-            description={derived.infoDescription}
-            footer={
-              derived.buttonDisabled ? (
-                <button
-                  disabled
-                  className="bg-gray-40 w-full cursor-not-allowed rounded-xl py-3 font-bold text-white"
-                >
-                  {derived.buttonText}
-                </button>
-              ) : (
-                <button
-                  onClick={handlePrimaryButtonClick}
-                  className={[
-                    "w-full rounded-xl py-3 font-bold text-white",
-                    applied ? "bg-gray-700" : "bg-orange-600",
-                    "cursor-pointer",
-                  ].join(" ")}
-                >
-                  {applied ? "취소하기" : "신청하기"}
-                </button>
-              )
-            }
-            detail={{ title: "공고 설명", content: derived.detailDescription }}
-          />
+          <>
+            <div>
+              <span className="mb-2 block text-lg font-bold text-orange-600">
+                {derived.category || "식당"}
+              </span>
+              <h1 className="text-2xl font-bold text-black md:text-3xl">{derived.shopName}</h1>
+            </div>
+            <ShopInfoCard
+              variant="notice"
+              imageUrl={derived.imageUrl}
+              imageAlt={derived.imageAlt}
+              wageText={derived.wageText}
+              wageBadge={{ text: derived.wageBadgeText, icon: derived.wageBadgeIcon }}
+              scheduleText={derived.scheduleText}
+              address={derived.address}
+              description={derived.infoDescription}
+              footer={
+                derived.buttonDisabled ? (
+                  <button
+                    disabled
+                    className="bg-gray-40 w-full cursor-not-allowed rounded-xl py-3 font-bold text-white"
+                  >
+                    {derived.buttonText}
+                  </button>
+                ) : (
+                  <button
+                    onClick={handlePrimaryButtonClick}
+                    className={[
+                      "w-full rounded-xl py-3 font-bold text-white",
+                      applied ? "bg-gray-700" : "bg-orange-600",
+                      "cursor-pointer",
+                    ].join(" ")}
+                  >
+                    {applied ? "취소하기" : "신청하기"}
+                  </button>
+                )
+              }
+              detail={{ title: "공고 설명", content: derived.detailDescription }}
+            />
+          </>
         ) : (
           <div className="p-6 text-sm text-neutral-500">
             아직 선택된 공고가 없습니다. (notices 페이지에서 공고를 클릭하면 상세가 표시됩니다)

@@ -151,18 +151,27 @@ export default function ShopEditForm({ initialShop }: Props) {
   };
 
   return (
-    <main className="bg-gray-5 min-h-screen py-10">
+    <main className="bg-gray-5 min-h-screen px-5 py-[60px]">
       <section>
-        <div className="mx-auto w-full max-w-241 rounded-2xl p-8">
-          <header className="mb-4 flex items-center justify-between">
-            <h1 className="text-gray-90 text-[24px] font-extrabold">가게 정보</h1>
+        <div className="mx-auto max-w-[350px] md:max-w-[680px] lg:max-w-[964px]">
+          <header className="mb-8 flex items-center justify-between">
+            <h1 className="mb-0 text-2xl font-bold text-black md:text-3xl">가게 정보</h1>
             <button
               type="button"
-              aria-label="닫기"
-              className="text-gray-90 rounded-md p-2 hover:bg-black/5"
               onClick={() => router.push("/shops/my-shop")}
+              aria-label="닫기"
+              className="cursor-pointer"
             >
-              ✕
+              <svg
+                width="30"
+                height="30"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+              >
+                <path d="M18 6L6 18M6 6L18 18" />
+              </svg>
             </button>
           </header>
 

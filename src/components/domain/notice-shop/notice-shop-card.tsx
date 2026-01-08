@@ -78,11 +78,11 @@ export default function NoticeShopCard({ shopId, noticeId, initialNotice }: Noti
 
   return (
     <div className="flex w-full flex-col gap-6">
-      <div className="mx-auto w-full md:w-170 lg:w-241">
+      <div>
         <span className="mb-2 block text-lg font-bold text-orange-600">
           {shop.category || "식당"}
         </span>
-        <h1 className="text-3xl font-bold text-black">{shop.name}</h1>
+        <h1 className="text-2xl font-bold text-black md:text-3xl">{shop.name}</h1>
       </div>
 
       <ShopInfoCard
@@ -96,7 +96,7 @@ export default function NoticeShopCard({ shopId, noticeId, initialNotice }: Noti
         footer={
           <Link href={`/notice/notice-detail/${shopId}/${noticeId}/edit`}>
             <Button
-              variant="primary"
+              variant="outline"
               size="lg"
               fullWidth
               disabled={notice.closed}

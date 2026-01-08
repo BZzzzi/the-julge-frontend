@@ -19,7 +19,7 @@ export default async function MyProfilePage() {
     return (
       <div className="flex h-dvh flex-col justify-between">
         <div>
-          <Header />
+          <Header showSearchInput={false} />
           <main>
             <section className="mx-auto w-87.75 px-2 py-10 md:w-170 lg:w-241">
               <h1 className="mb-6 text-2xl font-bold">내 프로필</h1>
@@ -47,9 +47,9 @@ export default async function MyProfilePage() {
   }
   return (
     <div className="bg-gray-5 flex min-h-screen flex-col">
-      <Header />
+      <Header showSearchInput={false} />
       <main className="flex flex-1 flex-col items-center py-10 md:py-[60px]">
-        <div className="flex w-full max-w-[964px] flex-col gap-8 px-4 md:gap-12">
+        <div className="flex max-w-87.5 flex-col gap-8 px-4 md:max-w-170 md:gap-12 lg:max-w-241">
           <ProfileCard userInfo={userRes} />
           <UserTable userInfo={userRes} />
         </div>

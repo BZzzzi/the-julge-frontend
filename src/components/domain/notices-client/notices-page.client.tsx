@@ -13,7 +13,9 @@ import FilterModal, {
   buildNoticesFilterQueryString,
   type NoticeFilter,
 } from "@/components/domain/notices-client/notices-filter-modal";
-import NoticesToolbar, { type SortValue } from "@/components/domain/notices-client/notices-toolbar.client";
+import NoticesToolbar, {
+  type SortValue,
+} from "@/components/domain/notices-client/notices-toolbar.client";
 
 import Card, { type CardData } from "@/components/domain/card";
 
@@ -109,7 +111,8 @@ const getServerSort = (sortValue: SortValue) => {
 const applyClientSort = (cards: CardData[], sortValue: SortValue) => {
   const next = [...cards];
   if (sortValue === "workhour") next.sort((a, b) => (a.workhour ?? 0) - (b.workhour ?? 0));
-  else if (sortValue === "name") next.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "", "ko"));
+  else if (sortValue === "name")
+    next.sort((a, b) => (a.name ?? "").localeCompare(b.name ?? "", "ko"));
   return next;
 };
 
@@ -167,9 +170,9 @@ const mapToCardData = (data: NoticesResponse): CardData[] => {
 };
 
 const TitleBlock = ({ keyword }: { keyword: string }) => {
-  if (!keyword) return <h3 className="mb-0 text-black">전체 공고</h3>;
+  if (!keyword) return <h1 className="text-xl font-bold text-black md:text-[28px]">전체 공고</h1>;
   return (
-    <h3 className="mb-0 text-black">
+    <h3 className="text-xl font-bold text-black md:text-[28px]">
       <span className="text-red-40">{keyword}</span>에 대한 공고 목록
     </h3>
   );
@@ -227,7 +230,10 @@ const FitCards = ({
             }}
           >
             {cards.slice(0, 6).map((c) => (
-              <SwiperSlide key={c.noticeId} className="h-auto!">
+              <SwiperSlide
+                key={c.noticeId}
+                className="h-auto!"
+              >
                 <div className="[&_.grid]:grid-cols-1!">
                   <Card
                     title=""
@@ -283,7 +289,10 @@ export default function NoticesPageClient() {
   /** 맞춤공고 state 복구 */
   const [fitCards, setFitCards] = useState<CardData[]>([]);
 
-  const filterQueryString = useMemo(() => buildNoticesFilterQueryString(appliedFilter), [appliedFilter]);
+  const filterQueryString = useMemo(
+    () => buildNoticesFilterQueryString(appliedFilter),
+    [appliedFilter],
+  );
 
   const listQueryString = useMemo(() => {
     const offset = (pageParam - 1) * LIST_LIMIT;
@@ -331,81 +340,81 @@ export default function NoticesPageClient() {
     router.push("/notice/notices-detail");
   };
 
-
-useEffect(() => {
-  if (!isLoggedIn) {
-    setFitCards([]);
-    return;
-  }
-
-  let alive = true;
-
-  const getUserIdSafe = (u: unknown): string | null => {
-    if (!u || typeof u !== "object") return null;
-    const obj = u as Record<string, unknown>;
-    const id = obj.id;
-    const userId = obj.userId;
-    if (typeof id === "string" && id.trim()) return id.trim();
-    if (typeof userId === "string" && userId.trim()) return userId.trim();
-    return null;
-  };
-
-  (async () => {
-    try {
-      const uid = getUserIdSafe(user);
-      if (!uid) {
-        if (alive) setFitCards([]);
-        return;
-      }
-
-      // 1) 내 프로필(주소) 가져오기
-      const meRes = await apiClient.user.getUser(uid);
-      const me =
-        (meRes as unknown as { item?: { address?: string } }).item ??
-        (meRes as unknown as { address?: string });
-
-      const address = (me?.address ?? "").trim();
-      if (!address) {
-        if (alive) setFitCards([]);
-        return;
-      }
-
-      const tokens = address.split(" ").map((t) => t.trim()).filter(Boolean);
-      const lastToken = tokens.length ? tokens[Math.min(1, tokens.length - 1)] : ""; 
-      const cityGu = tokens.slice(0, 2).join(" "); 
-      const raw = await fetchNotices(
-        buildListQuery({
-          limit: 60,
-          offset: 0,
-          sort: "time",
-          keyword: "",
-          filterQueryString: "",
-        }),
-      );
-
-      const mapped = mapToCardData(raw);
-
-      const filtered = mapped.filter((c) => {
-        const a = (c.address1 ?? "").trim();
-        return (cityGu && a.includes(cityGu)) || (lastToken && a.includes(lastToken));
-      });
-
-      const finalCards = (filtered.length ? filtered : mapped).slice(0, 6);
-
-      if (!alive) return;
-      setFitCards(finalCards);
-    } catch {
-      if (!alive) return;
+  useEffect(() => {
+    if (!isLoggedIn) {
       setFitCards([]);
+      return;
     }
-  })();
 
-  return () => {
-    alive = false;
-  };
-}, [isLoggedIn, user]); // apiClient는 보통 안정적이지만 린트가 뭐라하면 넣어도 됨
+    let alive = true;
 
+    const getUserIdSafe = (u: unknown): string | null => {
+      if (!u || typeof u !== "object") return null;
+      const obj = u as Record<string, unknown>;
+      const id = obj.id;
+      const userId = obj.userId;
+      if (typeof id === "string" && id.trim()) return id.trim();
+      if (typeof userId === "string" && userId.trim()) return userId.trim();
+      return null;
+    };
 
+    (async () => {
+      try {
+        const uid = getUserIdSafe(user);
+        if (!uid) {
+          if (alive) setFitCards([]);
+          return;
+        }
+
+        // 1) 내 프로필(주소) 가져오기
+        const meRes = await apiClient.user.getUser(uid);
+        const me =
+          (meRes as unknown as { item?: { address?: string } }).item ??
+          (meRes as unknown as { address?: string });
+
+        const address = (me?.address ?? "").trim();
+        if (!address) {
+          if (alive) setFitCards([]);
+          return;
+        }
+
+        const tokens = address
+          .split(" ")
+          .map((t) => t.trim())
+          .filter(Boolean);
+        const lastToken = tokens.length ? tokens[Math.min(1, tokens.length - 1)] : "";
+        const cityGu = tokens.slice(0, 2).join(" ");
+        const raw = await fetchNotices(
+          buildListQuery({
+            limit: 60,
+            offset: 0,
+            sort: "time",
+            keyword: "",
+            filterQueryString: "",
+          }),
+        );
+
+        const mapped = mapToCardData(raw);
+
+        const filtered = mapped.filter((c) => {
+          const a = (c.address1 ?? "").trim();
+          return (cityGu && a.includes(cityGu)) || (lastToken && a.includes(lastToken));
+        });
+
+        const finalCards = (filtered.length ? filtered : mapped).slice(0, 6);
+
+        if (!alive) return;
+        setFitCards(finalCards);
+      } catch {
+        if (!alive) return;
+        setFitCards([]);
+      }
+    })();
+
+    return () => {
+      alive = false;
+    };
+  }, [isLoggedIn, user]); // apiClient는 보통 안정적이지만 린트가 뭐라하면 넣어도 됨
 
   // 공고 리스트 fetch (기존 로직 유지)
   useEffect(() => {
@@ -431,8 +440,12 @@ useEffect(() => {
       {isLoggedIn && (
         <section className="bg-red-10">
           <div className="mx-auto w-full max-w-87.5 py-12 md:max-w-169.5 lg:max-w-241 lg:py-10">
-            <h3 className="text-black">맞춤 공고</h3>
-            <FitCards cards={fitCards} onSelect={handleSelect} onCardClick={handleCardClick} />
+            <h1 className="text-xl font-bold text-black md:text-[28px]">맞춤 공고</h1>
+            <FitCards
+              cards={fitCards}
+              onSelect={handleSelect}
+              onCardClick={handleCardClick}
+            />
           </div>
         </section>
       )}

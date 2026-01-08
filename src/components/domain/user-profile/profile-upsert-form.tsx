@@ -123,7 +123,7 @@ export default function ProfileUpsertForm({ userInfo }: { userInfo: UserInfoRes 
     <div className="flex flex-1 flex-col items-center px-5 py-[60px]">
       <div className="w-full max-w-[350px] md:max-w-[680px] lg:max-w-[964px]">
         <div className="mb-8 flex items-center justify-between">
-          <h1 className="text-3xl font-bold text-black">
+          <h1 className="mb-0 text-2xl font-bold text-black md:text-3xl">
             {isEditMode ? "내 프로필 수정" : "내 프로필 등록"}
           </h1>
           <button
@@ -132,8 +132,8 @@ export default function ProfileUpsertForm({ userInfo }: { userInfo: UserInfoRes 
             aria-label="닫기"
           >
             <svg
-              width="32"
-              height="32"
+              width="30"
+              height="30"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
