@@ -538,7 +538,7 @@ const submitCancel = useCallback(async () => {
 
   return (
     <div>
-      <div className="mt-15 flex items-start justify-center">
+      <div className="mt-15 mx-auto w-87.75 md:w-170 lg:w-241">
         {detail && derived ? (
           <ShopInfoCard
             variant="notice"
