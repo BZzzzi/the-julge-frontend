@@ -225,7 +225,7 @@ export default function NoticeUpsertForm({ shopId, noticeId }: NoticeUpsertFormP
               type="submit"
               variant="primary"
               size="lg"
-              className="w-[312px]"
+              className="w-full md:w-[312px]"
               disabled={!isFormValid || isLoading || isLoadingNotice}
               loading={isLoading}
             >

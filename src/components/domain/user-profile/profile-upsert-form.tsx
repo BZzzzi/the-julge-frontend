@@ -242,7 +242,7 @@ export default function ProfileUpsertForm({ userInfo }: { userInfo: UserInfoRes 
               type="submit"
               variant="primary"
               size="lg"
-              className="w-[312px]"
+              className="w-full md:w-[312px]"
               disabled={!isFormValid || isLoading || isLoadingProfile}
               loading={isLoading}
             >
